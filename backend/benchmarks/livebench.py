@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.benchmarks.aime import extract_aime_answer
-from backend.benchmarks.ifeval import CHECKERS
+from backend.benchmarks.ifeval_official import instructions_registry
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,7 @@ class LiveBenchBenchmark(BaseBenchmark):
     """
     def __init__(self, db, client, quick_test=False):
         super().__init__(db, client, quick_test)
-        self.requires_docker = True
-        self._coding_executor = None
+        self.requires_docker = False
 
     def load_dataset(self) -> List[Dict[str, Any]]:
         filename = "livebench_mini.json" if self.quick_test else "livebench_full.json"
@@ -77,20 +76,29 @@ class LiveBenchBenchmark(BaseBenchmark):
 
         if category == "instruction_following":
             response = answer_content or raw_response
-            failed = []
+            is_following = []
             for i, instr_id in enumerate(instruction_ids):
-                checker = CHECKERS.get(instr_id)
-                if checker is None:
-                    failed.append(f"{instr_id}:unknown_checker")
+                cls = instructions_registry.INSTRUCTION_DICT.get(instr_id)
+                if cls is None:
+                    is_following.append(False)
                     continue
-                kw = dict(kwargs_list[i]) if i < len(kwargs_list) else {}
-                if instr_id == "combination:repeat_prompt":
-                    kw["prompt"] = prompt
                 try:
-                    if not checker(response, kw):
-                        failed.append(instr_id)
+                    instruction = cls(instr_id)
+                    accepted = instruction.get_instruction_args_keys()
+                    kw = dict(kwargs_list[i]) if i < len(kwargs_list) else {}
+                    kw = {k: v for k, v in kw.items() if k in accepted and v is not None}
+                    instruction.build_description(**kw)
+                    args = instruction.get_instruction_args()
+                    if args and "prompt" in args:
+                        instruction.build_description(prompt=prompt)
+                    if response.strip() and instruction.check_following(response):
+                        is_following.append(True)
+                    else:
+                        is_following.append(False)
                 except Exception as e:
-                    failed.append(f"{instr_id}:{e}")
+                    logger.warning("LiveBench IFEval %s failed: %s", instr_id, e)
+                    is_following.append(False)
+            failed = [instr_id for instr_id, ok in zip(instruction_ids, is_following) if not ok]
             correct = len(failed) == 0
             error_message = "; ".join(failed) if failed else None
             extracted = response
@@ -116,27 +124,26 @@ class LiveBenchBenchmark(BaseBenchmark):
                     "thinking_tokens": gen["thinking_tokens"],
                     "response_tokens": gen["response_tokens"]
                 }
-            from backend.sandbox.docker_executor import DockerExecutor
-            if self._coding_executor is None:
-                self._coding_executor = DockerExecutor()
-                self.requires_docker = True
-            executor = self._coding_executor
-            if executor.is_available():
-                response_text = answer_content or raw_response
-                code_blocks = re.findall(r"```(?:python)?\s*(.*?)\s*```", response_text, re.DOTALL | re.IGNORECASE)
-                code = code_blocks[0].strip() if code_blocks else response_text
-                test_script = f"{code}\n\n{test_suite}\n\nif __name__ == '__main__':\n    unittest.main(exit=True)\n"
-                try:
-                    res = executor.execute_python_code(test_script, timeout=10.0, benchmark_name="livebench")
-                    correct = res["success"]
-                    if not correct:
-                        error_message = res.get("error") or res.get("stderr")
-                except Exception as e:
-                    error_message = f"Docker execution error: {e}"
-                extracted = response_text
-            else:
-                error_message = "Docker unavailable for coding task"
-                extracted = answer_content or raw_response
+            from backend.sandbox.safe_executor import check_correctness_humaneval
+            response_text = answer_content or raw_response
+            code_blocks = re.findall(r"```(?:python)?\s*(.*?)\s*```", response_text, re.DOTALL | re.IGNORECASE)
+            code = code_blocks[0].strip() if code_blocks else response_text
+            entry_point = sample.get("entry_point", "solution")
+            prompt_text = sample.get("prompt", "")
+            try:
+                result = check_correctness_humaneval(
+                    entry_point=entry_point,
+                    prompt=prompt_text,
+                    completion=code,
+                    test_suite=test_suite,
+                    timeout=10.0,
+                )
+                correct = result["passed"]
+                if not correct:
+                    error_message = result["result"]
+            except Exception as e:
+                error_message = f"Execution error: {e}"
+            extracted = response_text
 
         else:
             answer_upper = answer_content.upper()
@@ -161,5 +168,4 @@ class LiveBenchBenchmark(BaseBenchmark):
         }
 
     def cleanup(self) -> None:
-        if self._coding_executor:
-            self._coding_executor.cleanup()
+        pass

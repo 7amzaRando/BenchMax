@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.lm_studio.client import LMStudioClient
+from backend.sandbox.bfcl_checker import ast_checker, Language
 
 logger = logging.getLogger(__name__)
 
@@ -247,19 +248,54 @@ class BFCLBenchmark(BaseBenchmark):
         if actual_calls is None:
             actual_calls = []
 
-        # Score using AST matching
-        score = self._score_ast(expected_answer, actual_calls, category)
+        # Score using official BFCL AST checker
+        if category == "irrelevance" or not expected_answer:
+            # Irrelevance: model should abstain
+            correct = len(actual_calls) == 0
+            score_data = {
+                "ast_score": 1.0 if correct else 0.0,
+                "refusal_detected": len(actual_calls) > 0 if not expected_answer else False,
+                "error_message": None if correct else "Model called functions when it should abstain",
+            }
+        else:
+            try:
+                official_answer = self._bm_to_official(expected_answer)
+                official_model_out = self._model_output_to_official(actual_calls)
+                result_check = ast_checker(
+                    func_description=functions,
+                    model_output=official_model_out,
+                    possible_answer=official_answer,
+                    language=Language.PYTHON,
+                    test_category=category,
+                    model_name=model_name,
+                )
+                correct = result_check["valid"]
+                err = "; ".join(result_check.get("error", [])) if not correct else None
+                score_data = {
+                    "ast_score": 1.0 if correct else 0.0,
+                    "refusal_detected": False,
+                    "error_message": err,
+                }
+            except Exception as e:
+                logger.warning(f"Official AST checker failed for {task_id}, using fallback: {e}")
+                correct = False
+                score_data = {
+                    "ast_score": 0.0,
+                    "refusal_detected": False,
+                    "error_message": f"Official checker error: {e}",
+                }
 
         result = {
             "prompt": system_prompt + "\n\n" + question,
             "raw_response": raw_response,
             "extracted_code": json.dumps(actual_calls),
+            "correct": correct,
             "elapsed_time": generation.get("elapsed_time", 0.0),
             "tps": generation.get("tps", 0.0),
             "ttft": generation.get("ttft", 0.0),
             "thinking_tokens": generation.get("thinking_tokens", 0),
             "response_tokens": generation.get("response_tokens", 0),
-            **score
+            **score_data
         }
 
         return result
@@ -292,106 +328,31 @@ class BFCLBenchmark(BaseBenchmark):
         
         return "\n".join(lines)
 
-    def _extract_function_calls(self, response: str, functions: List[Dict]) -> List[Dict]:
-        """Extract function calls from model response"""
-        extracted = []
+    @staticmethod
+    def _bm_to_official(answer: List[Dict]) -> List[Dict]:
+        """Convert BenchMax answer format to bfcl-eval expected format.
         
-        # Try to parse JSON from response first
-        try:
-            data = json.loads(response.strip())
-            if isinstance(data, list):
-                for item in data:
-                    if "name" in item and "arguments" in item:
-                        extracted.append(item)
-            elif isinstance(data, dict) and "tool_calls" in data:
-                for call in data["tool_calls"]:
-                    if "function" in call:
-                        func_call = call["function"]
-                        extracted.append({
-                            "name": func_call.get("name", ""),
-                            "arguments": func_call.get("arguments", {})
-                        })
-        except json.JSONDecodeError:
-            pass
-        
-        # If no JSON found, try to extract from text
-        if not extracted and response.strip():
-            # Look for function name patterns in text
-            for func in functions:
-                pattern = rf'{re.escape(func["name"])}\s*\(\s*([^)]*)\)'
-                matches = re.findall(pattern, response)
-                for match in matches:
-                    try:
-                        args = json.loads(match.strip()) if match.strip() else {}
-                        extracted.append({"name": func["name"], "arguments": args})
-                    except json.JSONDecodeError:
-                        pass
-
-        # Normalize arguments to consistent type
-        for call in extracted:
-            if isinstance(call.get("arguments"), dict):
-                call["arguments"] = json.dumps(call["arguments"])
-        
-        return extracted
-
-    def _score_ast(self, expected_answer: List[Dict], actual_calls: List[Dict], category: str) -> Dict[str, Any]:
-        """AST-based scoring of function calls"""
-        result = {
-            "correct": False,
-            "ast_score": 0.0,
-            "refusal_detected": False,
-            "error_message": None
-        }
-        
-        if not expected_answer:
-            # Irrelevance category - model should abstain
-            if not actual_calls:
-                result["correct"] = True
-                result["ast_score"] = 1.0
-                return result
-            else:
-                result["refusal_detected"] = False
-                return result
-        
-        if not actual_calls and expected_answer:
-            # Model refused to call any function when it should have
-            result["refusal_detected"] = True
-            result["error_message"] = "Model did not generate any function calls"
-            return result
-        
-        # Score each expected answer against actual calls
-        score_count = 0
-        total_expected = len(expected_answer)
-        
-        for expected in expected_answer:
-            expected_name = expected.get("name", "")
-            expected_args = expected.get("arguments", {})
-            
-            # Find matching actual call
-            found_match = False
-            for actual_call in actual_calls:
-                if actual_call["name"] == expected_name:
-                    actual_args = actual_call.get("arguments", {})
-                    
-                    # Check required arguments are present (allow extra optional args)
-                    all_required_present = True
-                    for ek in expected_args:
-                        if ek not in actual_args:
-                            all_required_present = False
-                            break
-
-                    if all_required_present:
-                        score_count += 1
-                        found_match = True
-                        break
-        
-        # Calculate AST score
-        if total_expected > 0:
-            ratio = score_count / total_expected
-            result["ast_score"] = min(1.0, ratio)
-        
-        # Determine correctness
-        if result["ast_score"] >= 1.0 or (category == "irrelevance" and not actual_calls):
-            result["correct"] = True
-        
+        BenchMax: [{"name": "func", "arguments": {"param": "val"}}]
+        Official: [{"func": {"param": ["val"]}}]
+        """
+        result = []
+        for item in answer:
+            name = item["name"]
+            args = item.get("arguments", {})
+            converted = {name: {k: [v] for k, v in args.items()}}
+            result.append(converted)
         return result
+
+    @staticmethod
+    def _model_output_to_official(calls: List[Dict]) -> List[Dict]:
+        """Convert BenchMax model output format to bfcl-eval format.
+        
+        BenchMax: [{"name": "func", "arguments": {"param": "val"}}]
+        Official: [{"func": {"param": "val"}}]
+        """
+        if not calls:
+            return [{}]
+        valid = [c for c in calls if isinstance(c, dict)]
+        if not valid:
+            return [{}]
+        return [{c["name"]: c.get("arguments", {})} for c in valid]

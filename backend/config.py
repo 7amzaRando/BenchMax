@@ -68,4 +68,4 @@ PROVIDER_PRESETS = {
     "SiliconFlow":  {"url": "https://api.siliconflow.cn/v1",  "needs_key": True},
 }
 
-DOCKER_BENCHMARKS = {"HumanEval", "BigCodeBench", "BigCodeBench-Hard", "LiveBench", "Aider Polyglot"}
+DOCKER_BENCHMARKS = set()

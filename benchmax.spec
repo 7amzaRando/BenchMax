@@ -174,6 +174,7 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,
+    icon=os.path.join(root_dir, "icon.ico"),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

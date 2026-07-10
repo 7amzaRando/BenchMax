@@ -5,16 +5,15 @@ from sqlalchemy.orm import Session
 
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.lm_studio.client import LMStudioClient
-from backend.sandbox.docker_executor import DockerExecutor
+from backend.sandbox.safe_executor import check_correctness_humaneval
 
 logger = logging.getLogger(__name__)
 
 class HumanEvalBenchmark(BaseBenchmark):
-    requires_docker = True
+    requires_docker = False
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):
         super().__init__(db, client, quick_test)
-        self.executor = DockerExecutor()
 
     def load_dataset(self) -> List[Dict[str, Any]]:
         filename = "humaneval_mini.json" if self.quick_test else "humaneval_full.json"
@@ -172,23 +171,28 @@ class HumanEvalBenchmark(BaseBenchmark):
                 "response_tokens": generation["response_tokens"]
             }
 
-        # Combine with test suite and invocation command
-        test_script = f"{runnable_code}\n\n{test_suite}\n\ncheck({entry_point})\n"
+        logger.info(f"Running local code execution for {task_id} in model {model_name}")
 
-        logger.info(f"Running sandbox execution for {task_id} in model {model_name}")
-        
         try:
             code_size = len(runnable_code)
             timeout = min(10.0, max(5.0, 3.0 + (code_size / 500)))
-            sandbox_res = self.executor.execute_python_code(test_script, timeout=timeout, benchmark_name="HumanEval")
+            result = check_correctness_humaneval(
+                entry_point=entry_point,
+                prompt=prompt,
+                completion=runnable_code,
+                test_suite=test_suite,
+                timeout=timeout,
+            )
+            correct = result["passed"]
+            error_msg = "" if result["passed"] else result["result"]
         except Exception as e:
-            logger.error(f"Sandbox execution error for {task_id}: {e}")
+            logger.error(f"Code execution error for {task_id}: {e}")
             return {
                 "prompt": prompt,
                 "raw_response": raw_response,
                 "extracted_code": extracted_code,
                 "correct": False,
-                "error_message": f"Sandbox timeout or error: {str(e)}",
+                "error_message": f"Execution error: {str(e)}",
                 "elapsed_time": generation["elapsed_time"],
                 "tps": generation["tps"],
                 "ttft": generation["ttft"],
@@ -200,17 +204,14 @@ class HumanEvalBenchmark(BaseBenchmark):
             "prompt": prompt,
             "raw_response": raw_response,
             "extracted_code": extracted_code,
-            "correct": sandbox_res["success"],
-            "error_message": "",
+            "correct": correct,
+            "error_message": error_msg,
             "elapsed_time": generation["elapsed_time"],
             "tps": generation["tps"],
             "ttft": generation["ttft"],
             "thinking_tokens": generation["thinking_tokens"],
             "response_tokens": generation["response_tokens"]
         }
-
-    def cleanup(self) -> None:
-        self.executor.cleanup()
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
         import difflib

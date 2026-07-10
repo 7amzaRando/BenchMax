@@ -2,16 +2,15 @@ import logging
 import re
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
-from backend.sandbox.docker_executor import DockerExecutor
+from backend.sandbox.safe_executor import check_correctness_bigcodebench
 
 logger = logging.getLogger(__name__)
 
 class BigCodeBenchBenchmark(BaseBenchmark):
-    requires_docker = True
+    requires_docker = False
 
     def __init__(self, db, client, quick_test=False, hard=False):
         super().__init__(db, client, quick_test)
-        self.executor = DockerExecutor()
         self.hard = hard
 
     def load_dataset(self) -> List[Dict[str, Any]]:
@@ -106,19 +105,27 @@ class BigCodeBenchBenchmark(BaseBenchmark):
                 "response_tokens": generation["response_tokens"],
             }
 
-        test_script = f"{extracted_code}\n\n{test_suite}\n\nif __name__ == '__main__':\n    unittest.main(exit=True)\n"
-
         label = "BigCodeBench-Hard" if self.hard else "BigCodeBench"
-        logger.info(f"Running {label} sandbox for {task_id}")
+        logger.info(f"Running {label} code execution for {task_id}")
         try:
-            sandbox_res = self.executor.execute_python_code(test_script, timeout=min(10.0, max(5.0, 3.0 + len(extracted_code) / 500)), benchmark_name="BigCodeBench")
+            timeout = min(10.0, max(5.0, 3.0 + len(extracted_code) / 500))
+            result = check_correctness_bigcodebench(
+                entry_point=entry_point,
+                code=extracted_code,
+                test_code=test_suite,
+                timeout=timeout,
+            )
+            correct = result["passed"]
+            error_msg = "" if result["passed"] else result["result"]
+            if not correct and result["details"]:
+                error_msg = "; ".join(result["details"][:3])
         except Exception as e:
             return {
                 "prompt": prompt,
                 "raw_response": raw_response,
                 "extracted_code": extracted_code,
                 "correct": False,
-                "error_message": f"Sandbox error: {str(e)}",
+                "error_message": f"Execution error: {str(e)}",
                 "elapsed_time": generation["elapsed_time"],
                 "tps": generation["tps"],
                 "ttft": generation["ttft"],
@@ -130,14 +137,11 @@ class BigCodeBenchBenchmark(BaseBenchmark):
             "prompt": prompt,
             "raw_response": raw_response,
             "extracted_code": extracted_code,
-            "correct": sandbox_res["success"],
-            "error_message": sandbox_res.get("error") or sandbox_res.get("stderr"),
+            "correct": correct,
+            "error_message": error_msg,
             "elapsed_time": generation["elapsed_time"],
             "tps": generation["tps"],
             "ttft": generation["ttft"],
             "thinking_tokens": generation["thinking_tokens"],
             "response_tokens": generation["response_tokens"],
         }
-
-    def cleanup(self) -> None:
-        self.executor.cleanup()

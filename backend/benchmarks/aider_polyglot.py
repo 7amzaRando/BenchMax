@@ -1,3 +1,4 @@
+import glob as glob_mod
 import json
 import logging
 import os
@@ -9,62 +10,18 @@ import tempfile
 from pathlib import Path
 from typing import Dict, Any, List
 
-from sqlalchemy.orm import Session
-
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
-from backend.lm_studio.client import LMStudioClient
 
 logger = logging.getLogger(__name__)
 
-# Python runs locally via unittest; JS/Java/Go/Rust/C++ use Docker sandboxes with pre-installed deps
-LANGUAGE_CONFIGS = {
-    "python": {
-        "runner": "local",
-        "test_cmd": lambda src_name, tmpdir: [
-            sys.executable, "-m", "unittest", src_name.replace(os.sep, '.').replace(".py", ""),
-        ],
-    },
-    "javascript": {
-        "runner": "docker",
-        "image": "benchmax-node",
-        "test_cmd": lambda src_name, tmpdir: [
-            "jest", "--no-coverage", "--passWithNoTests",
-        ],
-    },
-    "java": {
-        "runner": "docker",
-        "image": "benchmax-java",
-        "test_cmd": lambda src_name, tmpdir: [
-            "bash", "-c",
-            "cd /workspace && "
-            "javac -d /tmp/classes src/main/java/*.java 2>&1 && "
-            "javac -d /tmp/classes -cp /tmp/classes:/opt/jars/junit.jar:/opt/jars/assertj.jar src/test/java/*.java 2>&1 && "
-            "java -jar /opt/jars/junit.jar --classpath /tmp/classes:/opt/jars/assertj.jar --select-class " +
-            _java_test_class(src_name) + " 2>&1",
-        ],
-    },
-    "go": {
-        "runner": "docker",
-        "image": "benchmax-go",
-        "test_cmd": lambda src_name, tmpdir: ["go", "test", "./..."],
-    },
-    "rust": {
-        "runner": "docker",
-        "image": "benchmax-rust",
-        "test_cmd": lambda src_name, tmpdir: ["cargo", "test", "--", "--test-threads=1"],
-    },
-    "cpp": {
-        "runner": "docker",
-        "image": "benchmax-gcc",
-        "test_cmd": lambda src_name, tmpdir: [
-            "bash", "-c",
-            "cd /workspace && "
-            "g++ -std=c++20 -I/usr/local/include -DEXERCISM_RUN_ALL_TESTS -DEXERCISM_TEST_SUITE -DCATCH_CONFIG_MAIN -o /tmp/test " +
-            src_name.replace('.cpp', '_test.cpp') + " 2>&1 && "
-            "/tmp/test"
-        ],
-    },
-}
+RUNTIMES_DIR = Path(__file__).parents[2] / ".runtimes"
+GO_BIN = RUNTIMES_DIR / "go" / "go" / "bin" / "go.exe"
+RUST_DIR = RUNTIMES_DIR / "rust_standalone" / "rust-1.97.0-x86_64-pc-windows-msvc"
+RUSTC_BIN = RUST_DIR / "rustc" / "bin"
+CARGO_BIN = RUST_DIR / "cargo" / "bin"
+GCC_BIN = RUNTIMES_DIR / "w64devkit" / "w64devkit" / "bin"
+JARS_DIR = RUNTIMES_DIR / "jars"
+NODE_MODULES = RUNTIMES_DIR / "node_pkg" / "node_modules"
 
 
 def _java_test_class(src_name: str) -> str:
@@ -74,12 +31,118 @@ def _java_test_class(src_name: str) -> str:
     return stem.replace("Test", "") + "Test"
 
 
-class AiderPolyglotBenchmark(BaseBenchmark):
-    requires_docker = True
+LANGUAGE_CONFIGS = {
+    "python": {
+        "test_cmd": lambda src_name, tmpdir: [
+            sys.executable, "-m", "unittest", src_name.replace(os.sep, '.').replace(".py", ""),
+        ],
+    },
+    "javascript": {
+        "test_cmd": lambda src_name, tmpdir: [
+            "node", "--experimental-vm-modules",
+            os.path.join(NODE_MODULES, ".bin", "jest"),
+            "--no-coverage", "--passWithNoTests",
+        ],
+        "env": {"NODE_PATH": str(NODE_MODULES)},
+    },
+    "java": {
+        "test_cmd": None,
+        "run_test": lambda src_name, tmpdir: _run_java_test(src_name, tmpdir),
+    },
+    "go": {
+        "test_cmd": lambda src_name, tmpdir: [str(GO_BIN), "test", "./..."],
+    },
+    "rust": {
+        "test_cmd": lambda src_name, tmpdir: [str(CARGO_BIN / "cargo.exe"), "test", "--", "--test-threads=1"],
+    },
+    "cpp": {
+        "test_cmd": None,
+        "run_test": lambda src_name, tmpdir: _run_cpp_test(src_name, tmpdir),
+    },
+}
 
-    def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):
+
+def _run_java_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
+    classes_dir = os.path.join(tmpdir, "classes")
+    os.makedirs(classes_dir, exist_ok=True)
+    javac_cmd = "javac"
+    java_cmd = "java"
+    junit_jar = str(JARS_DIR / "junit-platform-console-standalone-1.11.4.jar")
+    assertj_jar = str(JARS_DIR / "assertj-core-3.27.3.jar")
+    sep = ";"
+
+    def run(cmd, timeout=30):
+        try:
+            r = subprocess.run(cmd, cwd=tmpdir, capture_output=True, text=True, timeout=timeout)
+            return r
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception as e:
+            return type("R", (), {"returncode": -1, "stdout": "", "stderr": str(e)})()
+
+    src_files = glob_mod.glob(os.path.join(tmpdir, "src", "main", "java", "*.java"))
+    if not src_files:
+        return {"success": False, "stdout": "", "stderr": "", "error": "No Java source files found"}
+    r = run([javac_cmd, "-d", classes_dir] + src_files)
+    if r is None or r.returncode != 0:
+        return {"success": False, "stdout": r.stdout if r else "", "stderr": (r.stderr if r else "Compile timeout"), "error": f"javac main failed: {(r.stderr if r else '')[:500]}"}
+
+    test_files = glob_mod.glob(os.path.join(tmpdir, "src", "test", "java", "*.java"))
+    if not test_files:
+        return {"success": True, "stdout": "No tests found", "stderr": "", "error": None}
+    cp = f"{classes_dir}{sep}{junit_jar}{sep}{assertj_jar}"
+    r = run([javac_cmd, "-d", classes_dir, "-cp", cp] + test_files)
+    if r is None or r.returncode != 0:
+        return {"success": False, "stdout": r.stdout if r else "", "stderr": (r.stderr if r else "Test compile timeout"), "error": f"javac test failed: {(r.stderr if r else '')[:500]}"}
+
+    test_class = _java_test_class(src_name)
+    r = run([java_cmd, "-jar", junit_jar, "--classpath", f"{classes_dir}{sep}{junit_jar}{sep}{assertj_jar}", "--select-class", test_class], timeout=30)
+    if r is None:
+        return {"success": False, "stdout": "", "stderr": "", "error": "JUnit timeout (30s)"}
+    return {
+        "success": r.returncode == 0,
+        "stdout": (r.stdout or "")[:5000],
+        "stderr": (r.stderr or "")[:2000],
+        "error": None if r.returncode == 0 else f"JUnit exit {r.returncode}",
+    }
+
+
+def _run_cpp_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
+    gxx = str(GCC_BIN / "g++.exe")
+    test_file = src_name.replace('.cpp', '_test.cpp')
+    test_path = os.path.join(tmpdir, test_file)
+    exe_path = os.path.join(tmpdir, "test.exe")
+
+    try:
+        r = subprocess.run(
+            [gxx, "-std=c++20", "-DEXERCISM_RUN_ALL_TESTS", "-DEXERCISM_TEST_SUITE", "-DCATCH_CONFIG_MAIN",
+             "-o", exe_path, test_path],
+            cwd=tmpdir, capture_output=True, text=True, timeout=60,
+        )
+        if r.returncode != 0:
+            return {"success": False, "stdout": r.stdout, "stderr": r.stderr, "error": f"g++ compile failed: {r.stderr[:500]}"}
+    except subprocess.TimeoutExpired:
+        return {"success": False, "stdout": "", "stderr": "", "error": "g++ compile timeout (60s)"}
+    except Exception as e:
+        return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
+
+    try:
+        r = subprocess.run([exe_path], cwd=tmpdir, capture_output=True, text=True, timeout=30)
+        return {
+            "success": r.returncode == 0,
+            "stdout": (r.stdout or "")[:5000],
+            "stderr": (r.stderr or "")[:2000],
+            "error": None if r.returncode == 0 else f"Test exit {r.returncode}",
+        }
+    except subprocess.TimeoutExpired:
+        return {"success": False, "stdout": "", "stderr": "", "error": "C++ test timeout (30s)"}
+    except Exception as e:
+        return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
+
+
+class AiderPolyglotBenchmark(BaseBenchmark):
+    def __init__(self, db, client, quick_test=False):
         super().__init__(db, client, quick_test)
-        self._docker_executors = {}
 
     @staticmethod
     def _activate_all_tests(language: str, test_code: str) -> str:
@@ -212,20 +275,32 @@ class AiderPolyglotBenchmark(BaseBenchmark):
 
         return tmpdir
 
-    def _get_executor(self, image_tag):
-        if image_tag not in self._docker_executors:
-            from backend.sandbox.docker_executor import DockerExecutor
-            self._docker_executors[image_tag] = DockerExecutor()
-        return self._docker_executors[image_tag]
+    def _run_test(self, tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
+        lang = sample["language"]
+        config = LANGUAGE_CONFIGS.get(lang)
+        if not config:
+            return {"success": False, "stdout": "", "stderr": "",
+                    "error": f"Unknown language: {lang}"}
 
-    def _run_local_test(self, tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
-        config = LANGUAGE_CONFIGS[sample["language"]]
+        if "run_test" in config:
+            return config["run_test"](sample["source_path"], tmpdir)
+
         test_name = sample["test_path"]
         cmd = config["test_cmd"](test_name, tmpdir)
-        logger.info("Running local test: %s", " ".join(cmd))
+        env = config.get("env", {})
+        full_env = os.environ.copy()
+        full_env.update(env)
+        if lang == "rust":
+            full_env["PATH"] = str(RUSTC_BIN) + os.pathsep + str(CARGO_BIN) + os.pathsep + full_env.get("PATH", "")
+        if lang == "go":
+            full_env["PATH"] = str(GO_BIN.parent) + os.pathsep + full_env.get("PATH", "")
+        if lang == "cpp":
+            full_env["PATH"] = str(GCC_BIN) + os.pathsep + full_env.get("PATH", "")
+
+        logger.info("Running %s test: %s", lang, " ".join(str(c) for c in cmd))
         try:
             result = subprocess.run(
-                cmd, cwd=tmpdir, capture_output=True, text=True, timeout=30,
+                cmd, cwd=tmpdir, capture_output=True, text=True, timeout=120, env=full_env,
             )
             return {
                 "success": result.returncode == 0,
@@ -234,52 +309,14 @@ class AiderPolyglotBenchmark(BaseBenchmark):
                 "error": None,
             }
         except subprocess.TimeoutExpired:
-            return {"success": False, "stdout": "", "stderr": "", "error": "Test timed out (30s)"}
+            return {"success": False, "stdout": "", "stderr": "", "error": "Test timed out (120s)"}
         except Exception as e:
             return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
-
-    def _run_docker_test(self, tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
-        lang = sample["language"]
-        config = LANGUAGE_CONFIGS[lang]
-        image_tag = config["image"]
-        src_name = sample["source_path"]
-        test_cmd = config["test_cmd"](src_name, tmpdir)
-
-        executor = self._get_executor(image_tag)
-        if not isinstance(test_cmd, list):
-            test_cmd = ["bash", "-c", test_cmd]
-
-        logger.info("Running Docker test for %s on %s...", sample["task_id"], image_tag)
-        kwargs = {}
-        if "benchmax-node" in image_tag:
-            kwargs["env"] = {"NODE_PATH": "/usr/local/lib/node_modules"}
-        return executor.execute_command(
-            command=test_cmd,
-            image_tag=image_tag,
-            workspace_dir=tmpdir,
-            timeout=120,
-            **kwargs,
-        )
-
-    def _run_tests(self, tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
-        lang = sample["language"]
-        config = LANGUAGE_CONFIGS.get(lang)
-        if not config:
-            return {"success": False, "stdout": "", "stderr": "",
-                    "error": f"Unknown language: {lang}"}
-
-        if config["runner"] == "local":
-            return self._run_local_test(tmpdir, sample)
-        elif config["runner"] == "docker":
-            return self._run_docker_test(tmpdir, sample)
-        return {"success": False, "stdout": "", "stderr": "",
-                "error": f"Unknown runner: {config['runner']}"}
 
     async def evaluate_sample(self, sample: Dict[str, Any],
                               params: Dict[str, Any],
                               model_name: str) -> Dict[str, Any]:
         prompt = self._build_prompt(sample)
-        task_id = sample["task_id"]
 
         gen = await self.client.generate_completion(
             prompt=prompt,
@@ -316,7 +353,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
 
         tmpdir = self._write_temp_workspace(sample, edited_code)
         try:
-            tr = self._run_tests(tmpdir, sample)
+            tr = self._run_test(tmpdir, sample)
             if tr["success"]:
                 return {
                     "prompt": prompt, "raw_response": raw_response,
@@ -355,7 +392,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
 
             shutil.rmtree(tmpdir, ignore_errors=True)
             tmpdir = self._write_temp_workspace(sample, edited_code2)
-            tr2 = self._run_tests(tmpdir, sample)
+            tr2 = self._run_test(tmpdir, sample)
 
             return {
                 "prompt": prompt, "raw_response": raw_response,
@@ -378,8 +415,3 @@ class AiderPolyglotBenchmark(BaseBenchmark):
             }
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
-
-    def cleanup(self) -> None:
-        for image_tag, executor in self._docker_executors.items():
-            executor.cleanup()
-        self._docker_executors.clear()

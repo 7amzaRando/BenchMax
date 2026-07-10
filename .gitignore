@@ -83,6 +83,9 @@ frontend/node_modules/
 .tmp_*
 Testing-*/
 
+# Portable runtimes (reinstallable via setup scripts)
+.runtimes/
+
 # Ad-hoc debugging scripts
 test_*.py
 !test_benchmark.py
