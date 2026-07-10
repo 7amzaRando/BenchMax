@@ -19,6 +19,9 @@ records/*.db-wal
 # Export artifacts
 records/export_*
 
+# Personal history CSV exports
+records/*.csv
+
 # Runtime state files
 records/.launches.json
 records/.hf_token
@@ -54,6 +57,9 @@ CODE_OF_CONDUCT.md
 
 # Changelog (version tracking, internal)
 CHANGELOG.md
+
+# Release notes (internal)
+RELEASE_NOTES_*
 
 Archive/
 
