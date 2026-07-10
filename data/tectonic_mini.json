@@ -1,0 +1,37 @@
+[
+  {
+    "task_id": "tectonic_coding_01",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Hopcroft-Karp algorithm for maximum bipartite matching. Write a function `hopcroft_karp` that takes an adjacency list (graph as dict of lists) and returns the size of the maximum matching. Example: graph={0:[1,2],1:[0,2],2:[0,1]} -> 2. Only the function definition.",
+    "answer": "hopcroft_karp"
+  },
+  {
+    "task_id": "tectonic_coding_02",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Dinic's max flow algorithm. Write a function `dinic_max_flow` that takes a graph with capacities (dict of dicts), source, and sink, and returns the maximum flow value. Example: graph={0:{1:10,2:10},1:{2:5,3:10},2:{3:10},3:{}}, source=0, sink=3 -> 15. Only the function definition.",
+    "answer": "dinic_max_flow"
+  },
+  {
+    "task_id": "tectonic_coding_03",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Bellman-Ford algorithm for shortest paths with negative weights. Write a function `bellman_ford` that takes an edge list (list of (u,v,w)) and returns shortest distances from source, or detects negative cycles. Example: edges=[(0,1,5),(1,2,-2)], source=0 -> {0:0,1:5,2:3}. Only the function definition.",
+    "answer": "bellman_ford"
+  },
+  {
+    "task_id": "tectonic_coding_04",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Floyd-Warshall all-pairs shortest path. Write a function `floyd_warshall` that takes an adjacency matrix and returns the shortest path distance matrix. Example: graph=[[0,3,inf],[3,0,1],[inf,1,0]] -> [[0,3,4],[3,0,1],[4,1,0]]. Only the function definition.",
+    "answer": "floyd_warshall"
+  },
+  {
+    "task_id": "tectonic_coding_05",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Kruskal's minimum spanning tree algorithm with union-find. Write a function `kruskal_mst` that takes a list of edges (u,v,weight) and number of vertices, returns total weight of MST. Example: edges=[(0,1,1),(1,2,2),(0,2,3)], n=3 -> 3. Only the function definition.",
+    "answer": "kruskal_mst"
+  }
+]

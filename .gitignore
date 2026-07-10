@@ -1,0 +1,84 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Databases
+records/*.db
+records/*.db-journal
+records/*.db-shm
+records/*.db-wal
+
+# Export artifacts
+records/export_*
+
+# Runtime state files
+records/.launches.json
+records/.hf_token
+records/.lb_settings
+data/.hf_token
+data/.lb_settings
+
+# AI agent configuration (local)
+.opencode/
+opencode.json
+
+# Leaderboard API (superseded by direct Supabase calls)
+leaderboard-api/
+
+# Logs
+*.log
+
+# Tokens / secrets
+Token-Stuff.md
+
+# Large / regeneratable datasets (fetch scripts recreate them)
+data/longbench_v2_full.json
+data/mmmu_pro_images/
+data/mmmu_pro_full.json
+
+# Personal AI prompts (not part of the project)
+prompts/
+
+# Agent documentation (internal, not for GitHub)
+PROJECT_STATE.md
+SESSION_CONTEXT.md
+CODE_OF_CONDUCT.md
+
+# Changelog (version tracking, internal)
+CHANGELOG.md
+
+Archive/
+
+# Tickets (internal issue tracking)
+tickets/
+
+# PyInstaller build artifacts
+build/
+dist/
+
+# Agent & AI configuration (internal)
+.opencode/
+
+# Research notes (internal)
+research/
+
+# Node.js dependencies
+frontend/node_modules/
+
+# Temporary / scratch files
+.tmp_*
+Testing-*/
+
+# Ad-hoc debugging scripts
+test_*.py
+!test_benchmark.py
+!test_client.py
+!test_bfcl_quick.py

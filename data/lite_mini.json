@@ -1,0 +1,37 @@
+[
+  {
+    "task_id": "lite_code_01",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `heavy_light_decompose` that takes a tree represented by `n` nodes (0-indexed), a list of undirected `edges` (length n-1), a list `values` of node weights, and a list `queries` where each query is either (\"path_max\", u, v) to query the maximum node weight on the path from u to v, or (\"update\", u, val) to set node u's weight to val. Implement Heavy-Light Decomposition with a segment tree over the base array and return a list of results for each path_max query.",
+    "answer": "def heavy_light_decompose(n, edges, values, queries)"
+  },
+  {
+    "task_id": "lite_code_02",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `distinct_substrings` that takes a string `s` consisting of lowercase English letters and returns the number of distinct substrings of `s`. Build a suffix automaton (SAM) where each state has a `link`, `length`, and `next` dict. Process characters one by one, extending the automaton and counting distinct substrings as the sum over all states of (state.length - state.link.length).",
+    "answer": "def distinct_substrings(s)"
+  },
+  {
+    "task_id": "lite_code_03",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `schedule_stages` that takes an integer `stages`, an integer `resources`, a list `costs` of length stages (resource cost per stage), a list `profits` of length stages (profit per stage), and an integer `capacity` (total resources available). Each stage requires `costs[i]` resources and yields `profits[i]` profit, but stages must be scheduled in order and each stage can be run at most once. Use multi-stage DP with a rolling array (O(stages × capacity)) to return the maximum total profit achievable.",
+    "answer": "def schedule_stages(stages, resources, costs, profits, capacity)"
+  },
+  {
+    "task_id": "lite_code_04",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `lazy_segment_tree` that takes an integer `n` (initial array length, all zeros), and a list `operations`. Each operation is either (\"range_add\", l, r, val) to add val to all elements in [l, r), or (\"range_sum\", l, r) to return the sum of elements in [l, r). Implement a segment tree with lazy propagation using two arrays (`tree` and `lazy`), supporting point updates from range_add and range queries in O(log n) each. Return a list of results for each range_sum operation.",
+    "answer": "def lazy_segment_tree(n, operations)"
+  },
+  {
+    "task_id": "lite_code_05",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `dinic_max_flow` that takes an integer `n` (number of nodes), a list `edges` where each edge is (u, v, cap), an integer `source`, and an integer `sink`. Implement Dinic's algorithm: build adjacency with reverse edges, run BFS to compute level graph, then DFS (using iterators to avoid re-traversal) to send blocking flow. Return the maximum flow value as an integer.",
+    "answer": "def dinic_max_flow(n, edges, source, sink)"
+  }
+]

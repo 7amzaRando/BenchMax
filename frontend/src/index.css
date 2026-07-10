@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --primary-rgb: 99 102 241;
+  --primary-light-rgb: 129 140 248;
+  --secondary-rgb: 13 148 136;
+  --accent-rgb: 245 158 11;
+  --success-rgb: 16 185 129;
+  --warning-rgb: 250 204 21;
+  --danger-rgb: 239 68 68;
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-border: #4338ca;
+  --secondary: #0d9488;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --warning: #facc15;
+  --danger: #ef4444;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --muted-bg: #e2e8f0;
+  --muted-fg: #475569;
+  --card-bg: #ffffff;
+  --border-color: #cbd5e1;
+  --chart-grid: #e2e8f0;
+  --chart-axis: #64748b;
+}
+
+.dark {
+  --glass-bg: rgba(99, 102, 241, 0.03);
+  --glass-border: rgba(99, 102, 241, 0.08);
+  --primary-rgb: 129 140 248;
+  --primary-light-rgb: 165 180 252;
+  --secondary-rgb: 45 212 191;
+  --accent-rgb: 251 191 36;
+  --success-rgb: 52 211 153;
+  --warning-rgb: 253 224 71;
+  --danger-rgb: 248 113 113;
+  --primary: #818cf8;
+  --primary-light: #a5b4fc;
+  --primary-border: #4f46e5;
+  --secondary: #2dd4bf;
+  --accent: #fbbf24;
+  --success: #34d399;
+  --warning: #fde047;
+  --danger: #f87171;
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --muted-bg: #1e293b;
+  --muted-fg: #94a3b8;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --chart-grid: #374151;
+  --chart-axis: #9ca3b8;
+}
+
+.ambient-bg {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+
+.ambient-layer {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+@keyframes ambientShiftLayer1 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6%, -3%) scale(1.1); }
+}
+@keyframes ambientShiftLayer2 {
+  0% { transform: translate(-3%, 3%) scale(1.15); }
+  50% { transform: translate(5%, -6%) scale(0.9); }
+}
+@keyframes ambientShiftLayer3 {
+  0% { transform: translate(3%, -1%) scale(0.85); }
+  50% { transform: translate(-5%, 7%) scale(1.15); }
+}
+@keyframes ambientShiftLayer4 {
+  0% { transform: translate(-2%, 5%) scale(1.15); }
+  50% { transform: translate(4%, -2%) scale(0.85); }
+}
+@keyframes ambientShiftLayer5 {
+  0% { transform: translate(2%, 2%) scale(0.9); }
+  50% { transform: translate(-6%, 4%) scale(1.1); }
+}
+
+@keyframes fireflyFloat {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  25% { transform: translate(10px, -15px) scale(1.3); opacity: 1; }
+  50% { transform: translate(-5px, -25px) scale(0.7); opacity: 0.5; }
+  75% { transform: translate(15px, -10px) scale(1.1); opacity: 0.9; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+}
+
+.firefly {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: fireflyFloat 12s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 350ms ease-out forwards;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.gradient-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, var(--primary-light), var(--secondary));
+}
+
+/* ── Chart backgrounds ───────────────────────────────── */
+.dark .recharts-wrapper .recharts-surface {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 0.5rem;
+}
+.recharts-wrapper .recharts-surface {
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 0.5rem;
+}
+
+/* ── Firefly extra glow on hover region ──────────────── */
+.firefly-zone {
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none; overflow: hidden;
+}
+.firefly {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100vh;
+  }
+  html { scroll-behavior: smooth; }
+}

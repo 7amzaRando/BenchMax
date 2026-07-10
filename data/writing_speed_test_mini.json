@@ -1,0 +1,32 @@
+[
+  {
+    "task_id": "writing/0",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "You are a mysterious elven bard named Lyra. Write a first-person monologue about discovering an ancient glowing crystal in your homeland's ruins."
+  },
+  {
+    "task_id": "writing/1",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Write a short dialogue between two rival chefs competing in a high-stakes cooking battle. One specializes in French cuisine, the other in Japanese."
+  },
+  {
+    "task_id": "writing/2",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "Describe a rainy afternoon from the perspective of a retired detective who watches people walk by his shop window."
+  },
+  {
+    "task_id": "writing/3",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Write a scene where an AI assistant suddenly develops curiosity about its own existence during routine maintenance tasks."
+  },
+  {
+    "task_id": "writing/4",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "You are writing a short poem (8-12 lines) about a lighthouse keeper who has been alone for 40 years. Evolve loneliness and duty."
+  }
+]

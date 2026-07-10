@@ -1,0 +1,91 @@
+[
+  {
+    "task_id": "mmlu_pro/0",
+    "question": "Typical advertising regulatory bodies suggest, for example that adverts must not: encourage _________, cause unnecessary ________ or _____, and must not cause _______ offence.",
+    "options": [
+      "Safe practices, Fear, Jealousy, Trivial",
+      "Unsafe practices, Distress, Joy, Trivial",
+      "Safe practices, Wants, Jealousy, Trivial",
+      "Safe practices, Distress, Fear, Trivial",
+      "Unsafe practices, Wants, Jealousy, Serious",
+      "Safe practices, Distress, Jealousy, Serious",
+      "Safe practices, Wants, Fear, Serious",
+      "Unsafe practices, Wants, Fear, Trivial",
+      "Unsafe practices, Distress, Fear, Serious"
+    ],
+    "answer": "I",
+    "category": "business"
+  },
+  {
+    "task_id": "mmlu_pro/1",
+    "question": "Managers are entrusted to run the company in the best interest of ________. Specifically, they have a duty to act for the benefit of the company, as well as a duty of ________ and of _______.",
+    "options": [
+      "Shareholders, Diligence, Self-interest",
+      "Shareholders, Self-interest, Care and Skill",
+      "Stakeholders, Care and skill, Self-interest",
+      "Stakeholders, Diligence, Care and Skill",
+      "Customers, Care and Skill, Diligence",
+      "Shareholders, Care and Skill, Diligence",
+      "Shareholders, Self-interest, Diligence",
+      "Employees, Care and Skill, Diligence",
+      "Stakeholders, Self-interest, Diligence",
+      "Stakeholder, Care and Skill, Diligence"
+    ],
+    "answer": "F",
+    "category": "business"
+  },
+  {
+    "task_id": "mmlu_pro/2",
+    "question": "There are two main issues associated with _____ sizing. _______ is a key issue as due to the information policy of the corporation it can be argued that employees have a right to know if they are being made redundant. _______ is a second issue, particularly the ________ package that employees receive when laid off.",
+    "options": [
+      "Down, Autonomy, Remuneration, Benefit",
+      "Down, Involvement, Independence, Benefit",
+      "Up, Independence, Involvement, Benefit",
+      "Down, Privacy, Autonomy, Benefit",
+      "Up, Involvement, Autonomy, Compensation",
+      "Down, Independence, Autonomy, Compensation",
+      "Up, Involvement, Remuneration, Severance",
+      "Up, Privacy, Remuneration, Severance",
+      "Up, Autonomy, Remuneration, Compensation",
+      "Down, Involvement, Remuneration, Compensation"
+    ],
+    "answer": "J",
+    "category": "business"
+  },
+  {
+    "task_id": "mmlu_pro/3",
+    "question": "_______ locate morality beyond the sphere of rationality in an emotional 'moral impulse' towards others.",
+    "options": [
+      "Ethical egoism",
+      "Ethics of duty",
+      "Postmodern ethics",
+      "Consequentialist ethics",
+      "Utilitarian ethics",
+      "Deontological ethics",
+      "Virtue ethics",
+      "Ethics of care",
+      "Ethics of rights",
+      "Relativist ethics"
+    ],
+    "answer": "C",
+    "category": "business"
+  },
+  {
+    "task_id": "mmlu_pro/4",
+    "question": " Some of key differences between Islamic finance and conventional finance include - prohibition of charging and paying _______, prohibition on ______ and ______ transactions, prohibition of sinful investment and requirement for all financial products to be backed by __________.",
+    "options": [
+      "Interest, Certain, Assured, Both tangible and intangible assets",
+      "Interest, Uncertain, Assured, Both tangible and intangible assets",
+      "Interest, Uncertain, Speculative, Intangible assets",
+      "Interest, Certain, Assured, Tangible assets",
+      "Interest, Uncertain, Assured, Intangible assets",
+      "Profit, Uncertain, Speculative, Tangible assets",
+      "Interest, Uncertain, Speculative, Tangible assets",
+      "Interest, Certain, Speculative, Intangible assets",
+      "Profit, Certain, Assured, Tangible assets",
+      "Interest, Certain, Speculative, Both tangible and intangible assets"
+    ],
+    "answer": "G",
+    "category": "business"
+  }
+]

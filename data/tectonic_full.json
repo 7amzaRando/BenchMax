@@ -1,0 +1,2102 @@
+[
+  {
+    "task_id": "tectonic_coding_01",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Hopcroft-Karp algorithm for maximum bipartite matching. Write a function `hopcroft_karp` that takes an adjacency list (graph as dict of lists) and returns the size of the maximum matching. Example: graph={0:[1,2],1:[0,2],2:[0,1]} -> 2. Only the function definition.",
+    "answer": "hopcroft_karp"
+  },
+  {
+    "task_id": "tectonic_coding_02",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Dinic's max flow algorithm. Write a function `dinic_max_flow` that takes a graph with capacities (dict of dicts), source, and sink, and returns the maximum flow value. Example: graph={0:{1:10,2:10},1:{2:5,3:10},2:{3:10},3:{}}, source=0, sink=3 -> 15. Only the function definition.",
+    "answer": "dinic_max_flow"
+  },
+  {
+    "task_id": "tectonic_coding_03",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Bellman-Ford algorithm for shortest paths with negative weights. Write a function `bellman_ford` that takes an edge list (list of (u,v,w)) and returns shortest distances from source, or detects negative cycles. Example: edges=[(0,1,5),(1,2,-2)], source=0 -> {0:0,1:5,2:3}. Only the function definition.",
+    "answer": "bellman_ford"
+  },
+  {
+    "task_id": "tectonic_coding_04",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Floyd-Warshall all-pairs shortest path. Write a function `floyd_warshall` that takes an adjacency matrix and returns the shortest path distance matrix. Example: graph=[[0,3,inf],[3,0,1],[inf,1,0]] -> [[0,3,4],[3,0,1],[4,1,0]]. Only the function definition.",
+    "answer": "floyd_warshall"
+  },
+  {
+    "task_id": "tectonic_coding_05",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Kruskal's minimum spanning tree algorithm with union-find. Write a function `kruskal_mst` that takes a list of edges (u,v,weight) and number of vertices, returns total weight of MST. Example: edges=[(0,1,1),(1,2,2),(0,2,3)], n=3 -> 3. Only the function definition.",
+    "answer": "kruskal_mst"
+  },
+  {
+    "task_id": "tectonic_coding_06",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Prim's minimum spanning tree algorithm with a priority queue. Write a function `prim_mst` that takes an adjacency list (graph as dict of list of (neighbor, weight)) and returns the MST total weight. Example: graph={0:[(1,1),(2,3)],1:[(0,1),(2,2)],2:[(0,3),(1,2)]} -> 3. Only the function definition.",
+    "answer": "prim_mst"
+  },
+  {
+    "task_id": "tectonic_coding_07",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Tarjan's algorithm for finding strongly connected components. Write a function `tarjan_scc` that takes a directed graph adjacency list and returns a list of SCCs (each as a list of node indices). Only the function definition.",
+    "answer": "tarjan_scc"
+  },
+  {
+    "task_id": "tectonic_coding_08",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Kosaraju's algorithm for strongly connected components. Write a function `kosaraju_scc` that takes a directed graph adjacency list and returns SCCs. Example: graph={0:[1],1:[2],2:[0,3],3:[]} -> [[0,1,2],[3]]. Only the function definition.",
+    "answer": "kosaraju_scc"
+  },
+  {
+    "task_id": "tectonic_coding_09",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement topological sort using Kahn's algorithm. Write a function `topological_sort` that takes a DAG adjacency list and returns a topological ordering. Example: graph={0:[1,2],1:[3],2:[3],3:[]} -> [0,1,2,3] or [0,2,1,3]. Only the function definition.",
+    "answer": "topological_sort"
+  },
+  {
+    "task_id": "tectonic_coding_10",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Johnson's algorithm for all-pairs shortest paths in sparse graphs. Write a function `johnsons_algorithm` that takes an edge list (n vertices, list of (u,v,w)) and returns a distance matrix. Handles negative edges but no negative cycles. Only the function definition.",
+    "answer": "johnsons_algorithm"
+  },
+  {
+    "task_id": "tectonic_coding_11",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement centroid decomposition of a tree. Write a function `centroid_decomposition` that builds a centroid tree from an adjacency list. Example: 5-node chain graph -> centroid tree: 2 as root with children 0 and 4. Only the function definition.",
+    "answer": "centroid_decomposition"
+  },
+  {
+    "task_id": "tectonic_coding_12",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement LCA with binary lifting. Write a function `lca_binary_lifting` that precomputes up to logN ancestors, then answers LCA queries. Takes parent array (or adjacency), returns a query function. Example: tree with parent[-1,0,0,1,1], query(3,4) -> 1. Only the function definition.",
+    "answer": "lca_binary_lifting"
+  },
+  {
+    "task_id": "tectonic_coding_13",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement heavy-light decomposition. Write a function `heavy_light_decompose` that takes a tree adjacency list and assigns chain IDs and positions for path queries. Example: 5-node chain -> single heavy chain spanning all nodes. Only the function definition.",
+    "answer": "heavy_light_decompose"
+  },
+  {
+    "task_id": "tectonic_coding_14",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement reroot DP for trees. Write a function `reroot_dp` that computes subtree size for all possible roots. Takes adjacency list and initial root's DP values via DFS. Example: 3-node chain, initial root=0 -> sizes for root=0: [3,2,1], root=1: [1,3,1]. Only the function definition.",
+    "answer": "reroot_dp"
+  },
+  {
+    "task_id": "tectonic_coding_15",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Mo's algorithm on trees for path queries. Write a function `mo_tree` that converts tree to Euler tour array and answers queries. Takes adjacency list and query list of (u,v) pairs, returns answers array. Only the function definition.",
+    "answer": "mo_tree"
+  },
+  {
+    "task_id": "tectonic_coding_16",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Euler tour tree (ETT) representation. Write a function `euler_tour_tree` that returns (in_time, out_time, order) arrays for a tree adjacency list. Example: root=0 with children 1,2 -> order=[0,1,0,2,0]. Only the function definition.",
+    "answer": "euler_tour_tree"
+  },
+  {
+    "task_id": "tectonic_coding_17",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a Fenwick tree on tree paths. Write a function `fenwick_tree_path` that uses Euler tour + Fenwick to support point update and subtree sum query on a rooted tree. Only the function definition.",
+    "answer": "fenwick_tree_path"
+  },
+  {
+    "task_id": "tectonic_coding_18",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Kruskal reconstruction tree. Write a function `kruskal_reconstruction_tree` that builds a binary tree from MST edges for bottleneck queries. Takes edge list (u,v,w) and vertex count n, returns parent array of size 2n. Only the function definition.",
+    "answer": "kruskal_reconstruction_tree"
+  },
+  {
+    "task_id": "tectonic_coding_19",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement tree isomorphism detection. Write a function `tree_isomorphism` that uses AHU algorithm to determine if two trees are isomorphic. Takes two adjacency lists. Returns True if isomorphic. Example: chain of 3 and star of 3 -> False. Only the function definition.",
+    "answer": "tree_isomorphism"
+  },
+  {
+    "task_id": "tectonic_coding_20",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement tree hashing for rooted tree isomorphism. Write a function `tree_hash` that computes a canonical hash for each node. Uses polynomial hashing of children's hashes sorted. Only the function definition.",
+    "answer": "tree_hash"
+  },
+  {
+    "task_id": "tectonic_coding_21",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement DP with bitmask for the traveling salesman problem. Write a function `dp_bitmask_tsp` that takes a distance matrix and returns minimum tour cost. Example: 4 cities, dist=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]] -> 80. Only the function definition.",
+    "answer": "dp_bitmask_tsp"
+  },
+  {
+    "task_id": "tectonic_coding_22",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement convex hull trick for DP optimization. Write a function `convex_hull_trick` that maintains linear functions for maximum queries (lines added in order of decreasing slope, queries in increasing x). Example: add line y=3x+5, query x=2 -> 11. Only the function definition.",
+    "answer": "convex_hull_trick"
+  },
+  {
+    "task_id": "tectonic_coding_23",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement divide and conquer DP optimization. Write a function `divide_conquer_dp` that uses opt[i][j] monotonicity to compute DP in O(N log N) instead of O(N^2). Takes cost function and returns DP table. Only the function definition.",
+    "answer": "divide_conquer_dp"
+  },
+  {
+    "task_id": "tectonic_coding_24",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Knuth DP optimization for optimal binary search tree. Write a function `knuth_opt_dp` that computes minimum cost BST given frequencies of N keys using Knuth's monotonicity. Example: keys=[10,20,30], freq=[4,2,6] -> 26. Only the function definition.",
+    "answer": "knuth_opt_dp"
+  },
+  {
+    "task_id": "tectonic_coding_25",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement SOS DP (subset sum over subsets). Write a function `sos_dp` that computes sum over all subsets for each bitmask in O(N*2^N). Takes array of size 2^N, returns array where dp[mask] = sum of all submasks. Only the function definition.",
+    "answer": "sos_dp"
+  },
+  {
+    "task_id": "tectonic_coding_26",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement DP on broken profile for tiling problems. Write a function `broken_profile_dp` that counts ways to tile an MxN grid with 2x1 and 1x2 dominoes using profile DP. Example: 2x3 grid -> 3 ways. Only the function definition.",
+    "answer": "broken_profile_dp"
+  },
+  {
+    "task_id": "tectonic_coding_27",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement DP with matrix exponentiation for linear recurrences. Write a function `matrix_exp_dp` that computes nth Fibonacci number in O(log N) using matrix exponentiation. fib(0)=0, fib(1)=1, n=10 -> 55. Only the function definition.",
+    "answer": "matrix_exp_dp"
+  },
+  {
+    "task_id": "tectonic_coding_28",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement DP on DAG for longest path. Write a function `dag_longest_path` that takes a DAG adjacency list with weights and returns the longest path weight from source=0. Example: graph={0:[(1,5),(2,3)],1:[(2,2)],2:[]} -> 7. Only the function definition.",
+    "answer": "dag_longest_path"
+  },
+  {
+    "task_id": "tectonic_coding_29",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement slope trick DP for convex piecewise-linear DP optimization. Write a function `slope_trick` that maintains a multiset of slope change points for DP where cost is absolute difference. Only the function definition.",
+    "answer": "slope_trick"
+  },
+  {
+    "task_id": "tectonic_coding_30",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Aliens trick (Lagrange multiplier) for DP with constraint on count. Write a function `aliens_trick` that binary searches a penalty lambda to convert constrained DP to unconstrained. Example: select exactly k items with max value given cost constraint. Only the function definition.",
+    "answer": "aliens_trick"
+  },
+  {
+    "task_id": "tectonic_coding_31",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a segment tree with lazy propagation for range add and range sum. Write a function `lazy_segment_tree` as a class with methods build, update_range(l,r,val), query_range(l,r). Example: arr=[1,2,3], add 5 to [0,1], query [0,2] -> 16. Only the class definition.",
+    "answer": "lazy_segment_tree"
+  },
+  {
+    "task_id": "tectonic_coding_32",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a treap (randomized BST) with implicit keys for range operations. Write a function `implicit_treap` that supports split, merge, reverse, and insert at position. Example: insert 5 at index 0 in [1,2,3] -> [5,1,2,3]. Only the function definitions.",
+    "answer": "implicit_treap"
+  },
+  {
+    "task_id": "tectonic_coding_33",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a splay tree. Write a function `splay_tree` that supports insert, delete, find, and splits by rotating accessed nodes to root. Only the function definitions.",
+    "answer": "splay_tree"
+  },
+  {
+    "task_id": "tectonic_coding_34",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a link-cut tree for dynamic tree connectivity. Write a function `link_cut_tree` that supports link(u,v), cut(u,v), and find_root(u) operations on a forest. Only the class definition.",
+    "answer": "link_cut_tree"
+  },
+  {
+    "task_id": "tectonic_coding_35",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a persistent segment tree for range kth smallest queries. Write a function `persistent_segtree` that builds versioned trees. Example: arr=[3,1,4,2], query kth smallest in [1,3] (0-indexed) with k=2 -> 3. Only the class definition.",
+    "answer": "persistent_segtree"
+  },
+  {
+    "task_id": "tectonic_coding_36",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement segment tree beats for range min and range add operations. Write a function `segment_tree_beats` that supports range chmin (set all values > x to x) and range sum. Example: [5,2,3,7,1], chmin[1,4] with 4 -> [5,2,3,4,1]. Only the class definition.",
+    "answer": "segment_tree_beats"
+  },
+  {
+    "task_id": "tectonic_coding_37",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a KD-tree for orthogonal range queries in 2D. Write a function `kd_tree` that builds a tree of 2D points and supports counting points in a rectangle [x1,x2]x[y1,y2]. Example: points=[(2,3),(5,4),(9,6)], query rectangle [3,8]x[3,6] -> 1 point (5,4). Only the function definition.",
+    "answer": "kd_tree"
+  },
+  {
+    "task_id": "tectonic_coding_38",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a 2D binary indexed tree (Fenwick tree). Write a function `fenwick_2d` that supports point update and prefix sum query in O(log^2 N). Takes dimensions NxM. Example: add(1,1,5), query(2,2) -> 5. Only the class definition.",
+    "answer": "fenwick_2d"
+  },
+  {
+    "task_id": "tectonic_coding_39",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement sqrt decomposition for range add and range sum queries. Write a function `sqrt_decomp` that splits array into blocks of sqrt(N). Example: arr=[1,2,3,4,5,6,7,8,9,10], add_lazy(0,5,10), query(2,7) -> 81. Only the class definition.",
+    "answer": "sqrt_decomp"
+  },
+  {
+    "task_id": "tectonic_coding_40",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Mo's algorithm for offline range queries. Write a function `mo_algorithm` that reorders queries (add/remove operations) to minimize pointer movement. Example: arr=[1,1,2,1,3], query distinct count in [0,3] -> 2. Only the function definition.",
+    "answer": "mo_algorithm"
+  },
+  {
+    "task_id": "tectonic_coding_41",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a suffix automaton. Write a function `suffix_automaton` that builds a minimal DFA accepting all substrings of a string. Returns transitions and link array. Example: s='ababa' -> SAM with 6 states. Only the function definition.",
+    "answer": "suffix_automaton"
+  },
+  {
+    "task_id": "tectonic_coding_42",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a suffix array using the doubling algorithm O(N log N). Write a function `suffix_array` that returns sorted suffix starting indices. Example: s='banana' -> [5,3,1,0,4,2] for ['a','ana','anana','banana','na','nana']. Only the function definition.",
+    "answer": "suffix_array"
+  },
+  {
+    "task_id": "tectonic_coding_43",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Ukkonen's online suffix tree construction. Write a function `ukkonen_suffix_tree` that builds suffix tree in O(N). Example: s='abcab' -> suffix tree with 6 internal nodes. Only the function definition.",
+    "answer": "ukkonen_suffix_tree"
+  },
+  {
+    "task_id": "tectonic_coding_44",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the prefix function (KMP failure function). Write a function `kmp_prefix` that computes pi array, then implements KMP search. pi[i] = length of longest proper prefix matching suffix of s[0..i]. Example: s='aabaaab' -> pi=[0,1,0,1,2,2,3]. Only the function definition.",
+    "answer": "kmp_prefix"
+  },
+  {
+    "task_id": "tectonic_coding_45",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Z-function for string matching. Write a function `z_function` that computes Z-array where Z[i]=longest common prefix of s and s[i..]. Example: s='aaabaaab' -> Z=[8,2,1,0,3,2,1,0]. Only the function definition.",
+    "answer": "z_function"
+  },
+  {
+    "task_id": "tectonic_coding_46",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Aho-Corasick automaton for multi-pattern matching. Write a function `aho_corasick` that builds a trie with failure links and processes text to find all pattern occurrences. Example: patterns=['he','she','his'], text='hishe' -> {'he':[1],'she':[2],'his':[0]}. Only the function definition.",
+    "answer": "aho_corasick"
+  },
+  {
+    "task_id": "tectonic_coding_47",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Rabin-Karp rolling hash for substring search. Write a function `rabin_karp` that uses base 131 mod 2^64. Takes text, pattern, returns list of match start indices. Example: text='abcabc', pat='abc' -> [0,3]. Only the function definition.",
+    "answer": "rabin_karp"
+  },
+  {
+    "task_id": "tectonic_coding_48",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Manacher's algorithm for longest palindromic substring. Write a function `manacher` that returns palindrome radii d1 (odd) and d2 (even). Example: s='ababa' -> longest palindrome 'ababa' with radius 3. Only the function definition.",
+    "answer": "manacher"
+  },
+  {
+    "task_id": "tectonic_coding_49",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Levenshtein edit distance with DP optimization O(min(N,M)). Write a function `levenshtein_distance` that uses rolling arrays to compute edit distance. Example: s1='kitten', s2='sitting' -> 3. Only the function definition.",
+    "answer": "levenshtein_distance"
+  },
+  {
+    "task_id": "tectonic_coding_50",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Boyer-Moore string search algorithm with bad character and good suffix heuristics. Write a function `boyer_moore` that returns all start indices of pattern in text. Example: text='GCATCGCAGAGAGTAG', pat='GCAGAGAG' -> [5]. Only the function definition.",
+    "answer": "boyer_moore"
+  },
+  {
+    "task_id": "tectonic_coding_51",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement FFT for polynomial multiplication using Cooley-Tukey algorithm. Write a function `fft_multiply` that multiplies two polynomials represented as coefficient lists. Example: [1,2] * [3,4] = [3,10,8]. Only the function definition.",
+    "answer": "fft_multiply"
+  },
+  {
+    "task_id": "tectonic_coding_52",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Number Theoretic Transform (NTT) for modular polynomial multiplication. Write a function `ntt_multiply` that multiplies polynomials modulo 998244353 (primitive root 3). Example: [1,2] * [3,4] mod 998244353 -> [3,10,8]. Only the function definition.",
+    "answer": "ntt_multiply"
+  },
+  {
+    "task_id": "tectonic_coding_53",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Gaussian elimination on a matrix modulo prime. Write a function `gauss_mod` that solves Ax=b modulo MOD. Returns the rank and solution vector (or None if inconsistent). Example: A=[[1,1],[1,2]], b=[3,5] mod 7 -> [1,2]. Only the function definition.",
+    "answer": "gauss_mod"
+  },
+  {
+    "task_id": "tectonic_coding_54",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Berlekamp-Massey algorithm for finding minimal linear recurrence. Write a function `berlekamp_massey` that takes initial sequence terms and returns recurrence coefficients. Example: fibonacci-like seq [0,1,1,2,3,5] -> [1,1] (f[n]=f[n-1]+f[n-2]). Only the function definition.",
+    "answer": "berlekamp_massey"
+  },
+  {
+    "task_id": "tectonic_coding_55",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Miller-Rabin deterministic primality test. Write a function `miller_rabin` that handles n < 2^64 (test witnesses [2,3,5,7,11,13,17]). Example: 2^31-1 (2147483647) -> True, 2^31+1 (2147483649) -> False. Only the function definition.",
+    "answer": "miller_rabin"
+  },
+  {
+    "task_id": "tectonic_coding_56",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Pollard's Rho factorization algorithm. Write a function `pollard_rho` that returns a non-trivial factor of composite n. Example: n=8051 -> 83 or 97. Uses Floyd's cycle detection and Miller-Rabin for primality checks. Only the function definition.",
+    "answer": "pollard_rho"
+  },
+  {
+    "task_id": "tectonic_coding_57",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement extended Euclidean algorithm. Write a function `extended_gcd` that returns (gcd, x, y) such that ax + by = gcd(a,b). Example: a=30, b=20 -> (10, 1, -1): 30*1 + 20*(-1) = 10. Only the function definition.",
+    "answer": "extended_gcd"
+  },
+  {
+    "task_id": "tectonic_coding_58",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Chinese Remainder Theorem for pairwise coprime moduli. Write a function `chinese_remainder` that takes lists of residues a and moduli m, returns x modulo product(m). Example: x=2 mod 3, x=3 mod 5, x=2 mod 7 -> x=23. Only the function definition.",
+    "answer": "chinese_remainder"
+  },
+  {
+    "task_id": "tectonic_coding_59",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement a linear Diophantine equation solver. Write a function `diophantine_solve` that finds ONE solution to ax+by=c. Example: 2x+3y=7 -> one solution x=2, y=1. Returns (x,y) or None if no solution. Only the function definition.",
+    "answer": "diophantine_solve"
+  },
+  {
+    "task_id": "tectonic_coding_60",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Lagrange interpolation over a finite field. Write a function `lagrange_interpolate` that takes N points (x_i,y_i) modulo MOD and returns the y-value at a given x for the unique degree < N polynomial. Example: points=[(0,1),(1,2),(2,4)], x=3 -> y=7. Only the function definition.",
+    "answer": "lagrange_interpolate"
+  },
+  {
+    "task_id": "tectonic_coding_61",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the convex hull using Graham scan O(N log N). Write a function `graham_scan` that takes a list of (x,y) points and returns the convex hull in counter-clockwise order. Example: points=[(0,0),(1,1),(2,0),(1,-1)] -> [(0,0),(2,0),(1,1)]. Only the function definition.",
+    "answer": "graham_scan"
+  },
+  {
+    "task_id": "tectonic_coding_62",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the convex hull using monotone chain (Andrew's algorithm). Write a function `monotone_chain` that sorts by x then y and builds upper/lower hulls. Example: points=[(0,0),(1,1),(2,0)] -> [(0,0),(2,0),(1,1)]. Only the function definition.",
+    "answer": "monotone_chain"
+  },
+  {
+    "task_id": "tectonic_coding_63",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement rotating calipers to find the diameter of a convex polygon. Write a function `rotating_calipers` that takes convex hull points in CCW order and returns the squared diameter. Example: hull=[(0,0),(4,0),(4,3),(0,3)] -> 25. Only the function definition.",
+    "answer": "rotating_calipers"
+  },
+  {
+    "task_id": "tectonic_coding_64",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Bentley-Ottmann line sweep algorithm for line segment intersection. Write a function `bentley_ottmann` that detects if any pair of N line segments intersect using a sweep line. Returns list of intersecting segment pairs. Only the function definition.",
+    "answer": "bentley_ottmann"
+  },
+  {
+    "task_id": "tectonic_coding_65",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the closest pair of points using divide and conquer O(N log N). Write a function `closest_pair` that returns the minimum Euclidean distance. Example: points=[(2,3),(12,30),(40,50),(5,1),(12,10),(3,4)] -> ~1.414 between (2,3) and (3,4). Only the function definition.",
+    "answer": "closest_pair"
+  },
+  {
+    "task_id": "tectonic_coding_66",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Bowyer-Watson algorithm for Delaunay triangulation. Write a function `bowyer_watson` that takes a set of points and returns triangles forming the Delaunay triangulation. Uses circumcircle test. Only the function definition.",
+    "answer": "bowyer_watson"
+  },
+  {
+    "task_id": "tectonic_coding_67",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement point-in-polygon test using ray casting. Write a function `point_in_polygon` that returns True if a point lies inside a (possibly concave) polygon. Uses even-odd rule. Example: point=(1,1), polygon=[(0,0),(2,0),(2,2),(0,2)] -> True. Only the function definition.",
+    "answer": "point_in_polygon"
+  },
+  {
+    "task_id": "tectonic_coding_68",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement polygon triangulation via ear clipping. Write a function `ear_clipping` that triangulates a simple polygon (ordered CCW). Returns list of triangle vertex triples. Example: convex quadrilateral -> 2 triangles. Only the function definition.",
+    "answer": "ear_clipping"
+  },
+  {
+    "task_id": "tectonic_coding_69",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Minkowski sum of two convex polygons. Write a function `minkowski_sum` that returns the convex polygon formed by adding vectors from A and B. Example: A=[(0,0),(1,0),(1,1)], B=[(0,0),(2,0)] -> Minkowski sum is a pentagon. Only the function definition.",
+    "answer": "minkowski_sum"
+  },
+  {
+    "task_id": "tectonic_coding_70",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement half-plane intersection using the dual line algorithm. Write a function `halfplane_intersection` that returns the convex polygon of the intersection of half-planes, each defined as ax+by+c<=0. Example: x>=0, y>=0, x+y<=1 -> triangle. Only the function definition.",
+    "answer": "halfplane_intersection"
+  },
+  {
+    "task_id": "tectonic_coding_71",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Hungarian algorithm for assignment (minimum cost matching). Write a function `hungarian` that takes an NxN cost matrix and returns the minimum cost assignment. Example: costs=[[4,1,3],[2,0,5],[3,2,2]] -> min cost 5. Only the function definition.",
+    "answer": "hungarian"
+  },
+  {
+    "task_id": "tectonic_coding_72",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement maximum bipartite matching using DFS augmenting paths. Write a function `max_bipartite_matching` that takes adjacency list (left->right) and returns matching size. Example: graph={0:[1,2],1:[2],2:[0]} -> 3 (perfect matching possible). Only the function definition.",
+    "answer": "max_bipartite_matching"
+  },
+  {
+    "task_id": "tectonic_coding_73",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Dinic's algorithm with capacity scaling (Dinic scaling). Write a function `dinic_scaling` that only considers edges with capacity >= threshold for faster max flow on large graphs with integer capacities. Only the function definition.",
+    "answer": "dinic_scaling"
+  },
+  {
+    "task_id": "tectonic_coding_74",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement min-cost max-flow using successive shortest augmenting path (SPFA). Write a function `min_cost_max_flow` that takes graph with (capacity, cost) and source/sink, returns (flow, cost). Example: 3-node serial pipe, capacity 10, cost 2 per unit -> flow 10, cost 20. Only the function definition.",
+    "answer": "min_cost_max_flow"
+  },
+  {
+    "task_id": "tectonic_coding_75",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Stoer-Wagner algorithm for global minimum cut. Write a function `stoer_wagner` that finds the minimum cut of an undirected weighted graph using phase cuts. Example: 4-node clique with equal weights 1 -> min cut weight 3. Only the function definition.",
+    "answer": "stoer_wagner"
+  },
+  {
+    "task_id": "tectonic_coding_76",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the Bron-Kerbosch algorithm for maximal cliques. Write a function `bron_kerbosch` that finds all maximal cliques in an undirected graph using pivoting. Example: triangle graph {0:[1,2],1:[0,2],2:[0,1]} -> one maximal clique [0,1,2]. Only the function definition.",
+    "answer": "bron_kerbosch"
+  },
+  {
+    "task_id": "tectonic_coding_77",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Held-Karp DP for TSP with bitmask O(N^2*2^N). Write a function `held_karp` that takes a distance matrix and returns the minimum Hamiltonian cycle cost. Example: 4-city symmetric TSP with matrix [[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]] -> 80. Only the function definition.",
+    "answer": "held_karp"
+  },
+  {
+    "task_id": "tectonic_coding_78",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement Steiner tree DP for terminals in a graph. Write a function `steiner_tree_dp` that computes minimum Steiner tree connecting k terminals in an N-node graph using DP over subsets. Only the function definition.",
+    "answer": "steiner_tree_dp"
+  },
+  {
+    "task_id": "tectonic_coding_79",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the blossom algorithm for maximum matching in general graphs. Write a function `blossom_algorithm` that handles odd cycles by shrinking blossoms. Example: triangle graph with edges (0,1),(1,2),(0,2) -> max matching size 1. Only the function definition.",
+    "answer": "blossom_algorithm"
+  },
+  {
+    "task_id": "tectonic_coding_80",
+    "category": "Coding",
+    "type": "code",
+    "prompt": "Implement the chromatic polynomial of a graph using deletion-contraction. Write a function `chromatic_polynomial` that counts proper vertex colorings with k colors. Example: complete graph K3 -> P(k)=k(k-1)(k-2). Only the function definition.",
+    "answer": "chromatic_polynomial"
+  },
+  {
+    "task_id": "tectonic_logic_01",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Solve this 8x8 grid deduction puzzle. A 8x8 board has 8 queens placed such that no two attack each other. Row clues: [1,2,3,3,4,5,6,8] indicate queen column in each row (1-indexed). Column clues: [3,4,6,2,8,1,5,7]. Determine if a consistent placement exists. Answer with the keywords: placement,exists,valid",
+    "answer": "placement,exists,valid"
+  },
+  {
+    "task_id": "tectonic_logic_02",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a 6x6 binary grid, each row and column must have exactly three 1s. No two adjacent cells (horizontally or vertically) can both be 1. Given first row [1,0,1,0,1,0], determine the unique fourth row. Answer with keywords: unique,row,determined,constraint,satisfied",
+    "answer": "unique,row,determined,constraint,satisfied"
+  },
+  {
+    "task_id": "tectonic_logic_03",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "An 8x8 Latin square has symbols 0-7 each appearing once per row and column. Cell (0,0)=0, (1,2)=1, (2,4)=2, (3,6)=3. If the diagonal from (0,0) to (7,7) must contain all 8 symbols, what value is at (4,4)? Answer with keywords: latin,square,diagonal,unique,value",
+    "answer": "latin,square,diagonal,unique,value"
+  },
+  {
+    "task_id": "tectonic_logic_04",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A 7x7 nonogram has clues: rows [3,1,1,1,3] for top 5 rows, [2,1,3,1,2] for bottom 5, column clues symmetric. If the nonogram has a unique solution with exactly 25 filled cells, what is the center cell (3,3)? Answer with keywords: nonogram,center,filled,determined,unique",
+    "answer": "nonogram,center,filled,determined,unique"
+  },
+  {
+    "task_id": "tectonic_logic_05",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Place numbers 1-9 in a 3x3 magic square so all rows, columns, and diagonals sum to 15. If we require all four corners to be odd numbers and the center to be 5, what is the top-left corner? Answer with keywords: magic,square,corner,odd,determined",
+    "answer": "magic,square,corner,odd,determined"
+  },
+  {
+    "task_id": "tectonic_logic_06",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A 10x10 grid must be tiled with 1x4 and 4x1 tetrominoes without overlap. If the grid has a 2x2 hole at position (5,5), can it be tiled? Determine parity condition. Answer with keywords: tiling,parity,impossible,hole,modulo",
+    "answer": "tiling,parity,impossible,hole,modulo"
+  },
+  {
+    "task_id": "tectonic_logic_07",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a 5x5 Futoshiki puzzle, inequality constraints: (0,0)<(0,1)>(1,1)<(2,1)>(2,2) and (1,0)>(2,0)<(2,1). Numbers 1-5 in each row/column. Given (0,0)=1, what is (4,4)? Answer with keywords: futoshiki,inequality,constraint,propagation,solution",
+    "answer": "futoshiki,inequality,constraint,propagation,solution"
+  },
+  {
+    "task_id": "tectonic_logic_08",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A 9x9 Sudoku has given digits: row0: [5,3,...], row1: [6,...], row3: [8,...,3], row4: [4,...,1], row5: [7,...], row7: [...,6], row8: [...,9]. Using constraint propagation and naked pairs, determine the digit at (0,4) in the unique solution. Answer with keywords: sudoku,constraint,propagation,pair,unique",
+    "answer": "sudoku,constraint,propagation,pair,unique"
+  },
+  {
+    "task_id": "tectonic_logic_09",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A Kakuro puzzle has horizontal sum 24 across 4 cells and vertical sum 17 across 3 cells intersecting at cell (r,c). Each cell is 1-9 unique within each sum. What digit must be at the intersection? Answer with keywords: kakuro,intersection,digit,unique,constraint",
+    "answer": "kakuro,intersection,digit,unique,constraint"
+  },
+  {
+    "task_id": "tectonic_logic_10",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A 6x6 Slitherlink puzzle: clues [0,3,0,3,0,3] on top row, [2,0,2,0,2,0] on next, mixed interior. Exactly one closed loop that does not touch itself. What is the total length of the loop? Answer with keywords: slitherlink,loop,length,determined,unique",
+    "answer": "slitherlink,loop,length,determined,unique"
+  },
+  {
+    "task_id": "tectonic_logic_11",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "On an island with knights (always truth), knaves (always lie), and normals (random), six people make statements. A says 'B is a knight'. B says 'C is a knave'. C says 'D is a normal'. D says 'E is a knight'. E says 'F is a knave'. F says 'A is a normal'. Exactly two are knights. Who are they? Answer with keywords: knights,identified,two,consistent,deduction",
+    "answer": "knights,identified,two,consistent,deduction"
+  },
+  {
+    "task_id": "tectonic_logic_12",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Three gods: True (always true), False (always false), Random (random). You can ask three yes/no questions, each to any god. Gods answer in their own language: 'da' and 'ja' mean yes/no but you don't know which is which. Design questions to identify all three. Identify the critical first question's target. Answer with keywords: hardest,logic,puzzle,gods,question",
+    "answer": "hardest,logic,puzzle,gods,question"
+  },
+  {
+    "task_id": "tectonic_logic_13",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Four cards are on a table showing A, B, 2, 3. Each card has a letter on one side and a number on the other. Which cards must be flipped to verify: 'If a card has a vowel on one side, it has an even number on the other'? Answer with keywords: wason,selection,card,vowel,even",
+    "answer": "wason,selection,card,vowel,even"
+  },
+  {
+    "task_id": "tectonic_logic_14",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a room of 5 logicians, each has a hat of color red or blue. Each can see others' hats but not their own. They are told at least one red hat exists. If asked in sequence, the third person correctly deduces their hat color. What are the colors in order 1-5? Answer with keywords: common,knowledge,induction,deduction,sequence",
+    "answer": "common,knowledge,induction,deduction,sequence"
+  },
+  {
+    "task_id": "tectonic_logic_15",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Five villagers: two knights, two knaves, one normal. A: 'B is a knave'. B: 'C is a knight'. C: 'D is a normal'. D: 'E is a knave'. E: 'A is a knight'. Who is the normal? Answer with keywords: normal,identified,elimination,consistent,truth",
+    "answer": "normal,identified,elimination,consistent,truth"
+  },
+  {
+    "task_id": "tectonic_logic_16",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Six people sit at a round table. Each says 'The person to my right is lying'. Knights tell truth, knaves lie. How many knights are at the table? Determine all consistent counts. Answer with keywords: knights,lying,parity,alternating,consistent",
+    "answer": "knights,lying,parity,alternating,consistent"
+  },
+  {
+    "task_id": "tectonic_logic_17",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Three boxes: one contains gold, one silver, one bronze. Labels on all three are wrong. Box A label: 'Gold is here' Box B label: 'Gold is not here' Box C label: 'Silver is not here'. Where is the gold? Answer with keywords: gold,label,negation,deduction,box",
+    "answer": "gold,label,negation,deduction,box"
+  },
+  {
+    "task_id": "tectonic_logic_18",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Four suspects in a crime: Alice says 'Bob did it', Bob says 'Charlie did it', Charlie says 'I didn't do it', Diane says 'I did it'. Only one is telling the truth. Who is guilty? Answer with keywords: truth,deduction,guilty,unique,consistent",
+    "answer": "truth,deduction,guilty,unique,consistent"
+  },
+  {
+    "task_id": "tectonic_logic_19",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a tournament of 8 players, each match has no draws. Each player ranks from 1 (best) to 8 (worst). If A beat B, A beat C, B beat C, C beat D, D beat E, E beat F, F beat G, G beat H, H beat A, and rank 1 always beats rank > 1, rank 2 beats all except rank 1... which ranking is impossible? Answer with keywords: tournament,ranking,transitive,contradiction,cycle",
+    "answer": "tournament,ranking,transitive,contradiction,cycle"
+  },
+  {
+    "task_id": "tectonic_logic_20",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A truth-teller says 'I am a knave'. Is this a paradox? Can this person exist in a two-type island? Answer with keywords: liar,paradox,self,reference,contradiction",
+    "answer": "liar,paradox,self,reference,contradiction"
+  },
+  {
+    "task_id": "tectonic_logic_21",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A Bayesian network: A->B, A->C, B->D, C->D. P(A)=0.3, P(B|A)=0.8, P(B|not A)=0.2, P(C|A)=0.9, P(C|not A)=0.1, P(D|B,C)=0.95, P(D|B,not C)=0.5, P(D|not B,C)=0.5, P(D|not B,not C)=0.05. Compute P(A|D=true) using Bayes theorem. Answer with keywords: bayesian,posterior,conditional,computed,propagation",
+    "answer": "bayesian,posterior,conditional,computed,propagation"
+  },
+  {
+    "task_id": "tectonic_logic_22",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Two coins: one fair, one double-headed. Pick a coin at random and flip it 3 times — all heads. What is probability the coin is double-headed? Answer with keywords: bayes,prior,posterior,likelihood,computed",
+    "answer": "bayes,prior,posterior,likelihood,computed"
+  },
+  {
+    "task_id": "tectonic_logic_23",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The Monty Hall problem with 5 doors: 1 car, 4 goats. You pick door 1. Monty opens 3 doors with goats. What is the probability the car is behind your chosen door? What if Monty chooses randomly among goat doors? Answer with keywords: monty,hall,conditional,probability,switch",
+    "answer": "monty,hall,conditional,probability,switch"
+  },
+  {
+    "task_id": "tectonic_logic_24",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a game, two dice are rolled. You are told the sum is 7. What is the probability at least one die shows a 5? Condition on the sum information. Answer with keywords: conditional,probability,dice,sum,restricted",
+    "answer": "conditional,probability,dice,sum,restricted"
+  },
+  {
+    "task_id": "tectonic_logic_25",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A test for a disease has 99% sensitivity and 98% specificity. Prevalence is 1%. You test positive. What is the probability you have the disease? Compute using Bayes theorem. Answer with keywords: bayes,disease,positive,predictive,value",
+    "answer": "bayes,disease,positive,predictive,value"
+  },
+  {
+    "task_id": "tectonic_logic_26",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The birthday paradox: in a room of 30 people, what is the probability at least two share a birthday? Compute complementary probability. Answer with keywords: birthday,probability,pigeonhole,collision,complement",
+    "answer": "birthday,probability,pigeonhole,collision,complement"
+  },
+  {
+    "task_id": "tectonic_logic_27",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a hidden Markov model with states {Rain,Sun}, emissions {Umbrella,NoUmbrella}: transition matrix [[0.7,0.3],[0.4,0.6]], emission P(Umbrella|Rain)=0.9, P(Umbrella|Sun)=0.2. Observation sequence: Umbrella,Umbrella,NoUmbrella. Use Viterbi algorithm to find the most likely state sequence. Answer with keywords: viterbi,hidden,markov,state,sequence",
+    "answer": "viterbi,hidden,markov,state,sequence"
+  },
+  {
+    "task_id": "tectonic_logic_28",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The gambler's ruin problem: start with $3, target $8, each bet wins $1 with p=0.45, loses $1 with q=0.55. What is probability of reaching target before ruin? Solve using recurrence. Answer with keywords: gambler,ruin,probability,recurrence,absorbing",
+    "answer": "gambler,ruin,probability,recurrence,absorbing"
+  },
+  {
+    "task_id": "tectonic_logic_29",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a two-player game with payoff matrix: strategies A,B for both. Payoffs: (A,A)=(3,3), (A,B)=(0,5), (B,A)=(5,0), (B,B)=(1,1). Find all Nash equilibria (pure and mixed). Determine which is Pareto optimal. Answer with keywords: nash,equilibrium,pareto,mixed,optimal",
+    "answer": "nash,equilibrium,pareto,mixed,optimal"
+  },
+  {
+    "task_id": "tectonic_logic_30",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Sequential game: player 1 chooses L or R. If L, both get (2,2). If R, player 2 chooses A or B: (3,1) or (0,0). Find subgame perfect equilibrium using backward induction. Answer with keywords: subgame,perfect,backward,induction,equilibrium",
+    "answer": "subgame,perfect,backward,induction,equilibrium"
+  },
+  {
+    "task_id": "tectonic_logic_31",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many ways can 8 rooks be placed on a chessboard so no two attack each other AND none lie on the main diagonal? This is the derangement of 8. Compute the number. Answer with keywords: derangement,rooks,diagonal,count,combinatorial",
+    "answer": "derangement,rooks,diagonal,count,combinatorial"
+  },
+  {
+    "task_id": "tectonic_logic_32",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In how many ways can the letters of MISSISSIPPI be arranged such that no two I's are adjacent? Answer with keywords: permutations,adjacent,constraint,count,combinatorial",
+    "answer": "permutations,adjacent,constraint,count,combinatorial"
+  },
+  {
+    "task_id": "tectonic_logic_33",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many ways to place 3 indistinguishable balls into 4 distinct boxes with at most 2 balls per box? Answer with keywords: stars,bars,restricted,combinatorial,count",
+    "answer": "stars,bars,restricted,combinatorial,count"
+  },
+  {
+    "task_id": "tectonic_logic_34",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A graph has 10 vertices, each of degree 5. How many edges does it have? Answer with keywords: handshake,lemma,edges,degree,sum",
+    "answer": "handshake,lemma,edges,degree,sum"
+  },
+  {
+    "task_id": "tectonic_logic_35",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many distinct binary trees with 6 nodes exist (Catalan number C_6)? Answer with keywords: catalan,trees,binary,count,combinatorial",
+    "answer": "catalan,trees,binary,count,combinatorial"
+  },
+  {
+    "task_id": "tectonic_logic_36",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "An ant walks on the integer grid from (0,0) to (10,10) moving only right or up. How many paths pass through (5,5)? Compute the number as product of binomial coefficients. Answer with keywords: lattice,paths,binomial,waypoint,count",
+    "answer": "lattice,paths,binomial,waypoint,count"
+  },
+  {
+    "task_id": "tectonic_logic_37",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a 5x5 grid of dots, how many squares can be formed (including tilted squares)? Count all sets of 4 dots that form a square. Answer with keywords: grid,squares,tilted,count,combinatorial",
+    "answer": "grid,squares,tilted,count,combinatorial"
+  },
+  {
+    "task_id": "tectonic_logic_38",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many different necklaces can be made with 6 beads where each bead is black or white? Count up to rotation (Burnside's lemma). Answer with keywords: burnside,necklace,rotation,orbits,count",
+    "answer": "burnside,necklace,rotation,orbits,count"
+  },
+  {
+    "task_id": "tectonic_logic_39",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a 7-element set, how many subsets have odd cardinality? Use combinatorial identity. Answer with keywords: subsets,cardinality,parity,identity,count",
+    "answer": "subsets,cardinality,parity,identity,count"
+  },
+  {
+    "task_id": "tectonic_logic_40",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many ways to parenthesize 5 matrices for multiplication (Catalan number C_4)? Answer with keywords: parenthesization,catalan,matrices,associative,count",
+    "answer": "parenthesization,catalan,matrices,associative,count"
+  },
+  {
+    "task_id": "tectonic_logic_41",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Five friends: Alice, Bob, Charlie, Diane, Eve. Each has a unique favorite color (red, blue, green, yellow, purple) and a unique pet (dog, cat, fish, bird, hamster). Clues: (1) Alice's pet is not a cat. (2) Bob's favorite color is not blue. (3) The person who likes red owns a dog. (4) Charlie likes green or yellow. (5) Diane owns a bird. (6) Eve's favorite is purple and she owns a fish. (7) The person who likes blue owns a cat. Solve the full assignment. Answer with keywords: constraint,satisfaction,assignment,deduction,unique",
+    "answer": "constraint,satisfaction,assignment,deduction,unique"
+  },
+  {
+    "task_id": "tectonic_logic_42",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Four houses in a row, each with a different nationality (British, French, German, Italian), drink (tea, coffee, milk, water), pet (dog, cat, fish, bird), and car (Toyota, BMW, Audi, Fiat). Clues: British in house 1. German drinks coffee. Fish owner in house 4. Italian drives BMW. Tea drinker drives Audi. Cat owner in house 3. Multiple constraints. Solve fully. Answer with keywords: zebra,puzzle,constraint,elimination,grid",
+    "answer": "zebra,puzzle,constraint,elimination,grid"
+  },
+  {
+    "task_id": "tectonic_logic_43",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a 4x4 Latin square with numbers 1-4, additional constraints: cells (0,0)=1, (0,1)=2, (1,0)=3, (1,1)=4, and diagonal (0,0)-(3,3) must be all distinct. How many valid squares exist? Answer with keywords: latin,square,diagonal,count,restricted",
+    "answer": "latin,square,diagonal,count,restricted"
+  },
+  {
+    "task_id": "tectonic_logic_44",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Seven people in a line, each has a different height. Clues: The tallest is not at either end. The shortest is third from left. Person A is taller than B who is taller than C. Person D is to the left of E. Person F is immediately right of G. Determine the order. Answer with keywords: ordering,tallest,shortest,relative,deduction",
+    "answer": "ordering,tallest,shortest,relative,deduction"
+  },
+  {
+    "task_id": "tectonic_logic_45",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Six scientists attend a conference. Each gives one talk on one of three days (Mon, Tue, Wed) and one of two rooms (A, B). Constraints: (1) No two talks in same room at same time. (2) Smith cannot speak Monday. (3) Jones and Brown must speak same day. (4) Taylor speaks in room B. (5) Wilson speaks Tuesday in room A. (6) Patel must speak before Davis. Find each scientist's schedule. Answer with keywords: scheduling,constraint,room,day,assignment",
+    "answer": "scheduling,constraint,room,day,assignment"
+  },
+  {
+    "task_id": "tectonic_logic_46",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Divide 8 distinct items into 3 indistinguishable boxes (each box non-empty). Count partitions using Stirling numbers of the second kind S(8,3). Answer with keywords: stirling,partition,boxes,indistinguishable,count",
+    "answer": "stirling,partition,boxes,indistinguishable,count"
+  },
+  {
+    "task_id": "tectonic_logic_47",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a round-robin tournament of 6 teams, each pair plays once (no draws). Team A has 4 wins, team B has 3 wins, team C has 3 wins, team D has 2 wins, team E has 1 win, team F has 1 win. Is this score sequence possible? Use Landau's theorem. Answer with keywords: tournament,scores,landau,sequence,feasible",
+    "answer": "tournament,scores,landau,sequence,feasible"
+  },
+  {
+    "task_id": "tectonic_logic_48",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A 3D 3x3x3 grid of unit cubes. How many cubes of any size exist within it? Count 1x1x1, 2x2x2, 3x3x3. Answer with keywords: hypercube,counting,dimension,total,geometric",
+    "answer": "hypercube,counting,dimension,total,geometric"
+  },
+  {
+    "task_id": "tectonic_logic_49",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Ten points lie on a circle. How many distinct triangles can be formed by connecting any 3 points? How many quadrilaterals? Answer with keywords: circular,points,triangles,quadrilaterals,combinatorial",
+    "answer": "circular,points,triangles,quadrilaterals,combinatorial"
+  },
+  {
+    "task_id": "tectonic_logic_50",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many ways to color the faces of a cube with 3 colors up to rotation (Burnside's lemma on rotation group of cube)? Answer with keywords: burnside,cube,coloring,rotation,orbits",
+    "answer": "burnside,cube,coloring,rotation,orbits"
+  },
+  {
+    "task_id": "tectonic_logic_51",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In the two-envelope paradox, one envelope contains twice as much as the other. You open yours and find $100. Should you switch? Expected value seems to favor switching but symmetry says no. Resolve the paradox. Answer with keywords: envelope,paradox,switching,expectation,symmetry",
+    "answer": "envelope,paradox,switching,expectation,symmetry"
+  },
+  {
+    "task_id": "tectonic_logic_52",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The boy or girl paradox: A family has two children. You know at least one is a boy. What's the probability both are boys? Does the answer change if you know the older child is a boy? Answer with keywords: boy,girl,conditional,sampling,paradox",
+    "answer": "boy,girl,conditional,sampling,paradox"
+  },
+  {
+    "task_id": "tectonic_logic_53",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Sleeping Beauty problem: She is put to sleep Sunday. A fair coin is flipped. If heads: awaken Monday, interview ends. If tails: awaken Monday, sleep again, awaken Tuesday (same interview). She has no memory of prior awakenings. When woken, what probability should she assign to heads? Answer with keywords: sleeping,beauty,probability,halfer,thirder",
+    "answer": "sleeping,beauty,probability,halfer,thirder"
+  },
+  {
+    "task_id": "tectonic_logic_54",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The Newcomb paradox: A predictor puts $0 or $1M in box A, and always $1000 in box B. You can take both boxes or only box A. The predictor is 99% accurate. Which choice maximizes expected value? The two-box and one-box arguments conflict. Answer with keywords: newcomb,paradox,predictor,expected,value",
+    "answer": "newcomb,paradox,predictor,expected,value"
+  },
+  {
+    "task_id": "tectonic_logic_55",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Simpson's paradox: A university has departments A and B. Department A admits 30% of 100 male and 50% of 100 female applicants (overall 40%). Department B admits 50% of 100 male and 70% of 100 female applicants (overall 60%). Overall university admits 50 men out of 200 (25%) and 120 women out of 200 (60%). Which gender has higher overall admission despite each department favoring women? Explain the paradox. Answer with keywords: simpson,paradox,aggregation,confounding,reversal",
+    "answer": "simpson,paradox,aggregation,confounding,reversal"
+  },
+  {
+    "task_id": "tectonic_logic_56",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The Monty Hall problem generalized: N doors, 1 car, N-1 goats. Pick one. Monty opens M doors with goats. What is the winning probability if you switch? General formula. Answer with keywords: monty,generalized,switch,probability,formula",
+    "answer": "monty,generalized,switch,probability,formula"
+  },
+  {
+    "task_id": "tectonic_logic_57",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The birthday problem: What is the smallest N such that the probability of a shared birthday in a room of N people exceeds 99%? Compute using complementary probability. Answer with keywords: birthday,threshold,collision,probability,computed",
+    "answer": "birthday,threshold,collision,probability,computed"
+  },
+  {
+    "task_id": "tectonic_logic_58",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Bertrand's box paradox: Three boxes: (GG) two gold, (SS) two silver, (GS) one each. Pick a box randomly, draw a gold coin. What's the probability the other coin in the same box is also gold? Answer with keywords: bertrand,box,paradox,conditional,gold",
+    "answer": "bertrand,box,paradox,conditional,gold"
+  },
+  {
+    "task_id": "tectonic_logic_59",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The St. Petersburg paradox: A fair coin is flipped until heads, you win $2^k where k is number of tosses. What is the expected value? Why is nobody willing to pay this amount to play? Answer with keywords: st,petersburg,expectation,infinite,paradox",
+    "answer": "st,petersburg,expectation,infinite,paradox"
+  },
+  {
+    "task_id": "tectonic_logic_60",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The three prisoners paradox: Three prisoners, two to be executed. A asks guard 'which of B or C will be executed?' Guard says B. What's A's survival probability now? Compute the conditional probability. Answer with keywords: prisoner,paradox,conditional,probability,guard",
+    "answer": "prisoner,paradox,conditional,probability,guard"
+  },
+  {
+    "task_id": "tectonic_logic_61",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A says 'If I am a knight, then B is a knave'. B says 'A is a knave'. Determine types of A and B. Use logical implication analysis. Answer with keywords: implication,knight,knave,truth,table",
+    "answer": "implication,knight,knave,truth,table"
+  },
+  {
+    "task_id": "tectonic_logic_62",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Consider the statement: 'This statement is false'. Is it a paradox? What if we allow statements to be neither true nor false? Answer with keywords: liar,paradox,truth,gap,three,valued",
+    "answer": "liar,paradox,truth,gap,three,valued"
+  },
+  {
+    "task_id": "tectonic_logic_63",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A Smullyan puzzle: On an island with knights, knaves, and normals, A says 'B is a knave'. B says 'C is a knight'. C says 'I am a normal'. Determine all three types if at most one is a knight. Answer with keywords: smullyan,normal,knight,knave,deduction",
+    "answer": "smullyan,normal,knight,knave,deduction"
+  },
+  {
+    "task_id": "tectonic_logic_64",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a tournament with 100 players (no draws), prove there always exists a Hamiltonian path (ordering where each beats the next). This is a known theorem. Name it and describe the proof method. Answer with keywords: tournament,hamiltonian,path,proof,induction",
+    "answer": "tournament,hamiltonian,path,proof,induction"
+  },
+  {
+    "task_id": "tectonic_logic_65",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The unexpected hanging paradox: A judge says a prisoner will be hanged on a weekday next week but the hanging will be unexpected. The prisoner argues it can't happen Friday (since it would be expected after Thursday passes), then Thursday, etc. Why is the reasoning flawed? Answer with keywords: unexpected,hanging,paradox,self,reference,epistemic",
+    "answer": "unexpected,hanging,paradox,self,reference,epistemic"
+  },
+  {
+    "task_id": "tectonic_logic_66",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Prove that sqrt(2) + sqrt(3) is irrational. Use algebraic number theory approach: consider minimal polynomial. Answer with keywords: irrational,algebraic,minimal,polynomial,proof",
+    "answer": "irrational,algebraic,minimal,polynomial,proof"
+  },
+  {
+    "task_id": "tectonic_logic_67",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The pigeonhole principle: In any set of 5 points in a unit square, prove there exist two points at distance at most sqrt(2)/2. Divide the square into 4 smaller squares. Answer with keywords: pigeonhole,distance,square,partition,bound",
+    "answer": "pigeonhole,distance,square,partition,bound"
+  },
+  {
+    "task_id": "tectonic_logic_68",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many ways can a 2xN rectangle be tiled with 2x1 dominoes? This is a Fibonacci recurrence. Compute F(N) for N=10. Answer with keywords: domino,tiling,fibonacci,recurrence,count",
+    "answer": "domino,tiling,fibonacci,recurrence,count"
+  },
+  {
+    "task_id": "tectonic_logic_69",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Prove that in any party of 6 people, either 3 mutual friends or 3 mutual strangers exist. This is the friendship theorem (Ramsey R(3,3)=6). The proof uses pigeonhole principle on one person's relationships. Answer with keywords: ramsey,friends,strangers,pigeonhole,combinations",
+    "answer": "ramsey,friends,strangers,pigeonhole,combinations"
+  },
+  {
+    "task_id": "tectonic_logic_70",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The coin weighing problem: You have 12 coins, one counterfeit (heavier or lighter). Using a balance scale 3 times, identify the counterfeit and determine if it's heavier or lighter. Determine the first weighing strategy. Answer with keywords: counterfeit,weighing,balance,strategy,ternary",
+    "answer": "counterfeit,weighing,balance,strategy,ternary"
+  },
+  {
+    "task_id": "tectonic_logic_71",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In how many ways can the set {1,2,3,4,5} be partitioned into non-empty subsets? This is the Bell number B_5. Compute it using Stirling numbers of the second kind. Answer with keywords: bell,partition,stirling,second,number",
+    "answer": "bell,partition,stirling,second,number"
+  },
+  {
+    "task_id": "tectonic_logic_72",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "How many functions f: {1,2,3,4} -> {1,2,3,4} are bijections with no fixed points? Derangements of 4 = 9. Compute using inclusion-exclusion. Answer with keywords: derangement,inclusion,exclusion,bijection,fixed",
+    "answer": "derangement,inclusion,exclusion,bijection,fixed"
+  },
+  {
+    "task_id": "tectonic_logic_73",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The handshake problem: 20 people at a party, each shakes hands with a different number of people. What are the possible numbers? Show construction. Answer with keywords: handshake,pigeonhole,graph,degree,construction",
+    "answer": "handshake,pigeonhole,graph,degree,construction"
+  },
+  {
+    "task_id": "tectonic_logic_74",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a connected graph with 10 vertices, what is the minimum number of edges needed to guarantee the graph is Hamiltonian? Dirac's theorem: if each vertex has degree >= n/2 then graph is Hamiltonian. Minimum edges? Answer with keywords: dirac,hamiltonian,degree,threshold,condition",
+    "answer": "dirac,hamiltonian,degree,threshold,condition"
+  },
+  {
+    "task_id": "tectonic_logic_75",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The 100 prisoners problem: 100 prisoners each open 50 boxes looking for their number. What strategy gives ~30% survival? Describe the cycle-following strategy and compute probability using cycle length analysis. Answer with keywords: prisoner,box,cycle,strategy,probability",
+    "answer": "prisoner,box,cycle,strategy,probability"
+  },
+  {
+    "task_id": "tectonic_logic_76",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a random graph G(n,p) with n=100, p=0.5, what is the expected number of triangles? Use linearity of expectation. Answer with keywords: random,graph,triangle,expectation,linearity",
+    "answer": "random,graph,triangle,expectation,linearity"
+  },
+  {
+    "task_id": "tectonic_logic_77",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "Prove that the Ramsey number R(3,4) = 9. Show that K8 can be 2-colored red/blue without a red K3 or blue K4, but K9 cannot. Describe the extremal construction. Answer with keywords: ramsey,extremal,construction,coloring,bound",
+    "answer": "ramsey,extremal,construction,coloring,bound"
+  },
+  {
+    "task_id": "tectonic_logic_78",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "A binary string of length 10 has no two consecutive 1s. How many such strings exist? This is Fibonacci F(12) = 144. Answer with keywords: binary,string,consecutive,fibonacci,constraint",
+    "answer": "binary,string,consecutive,fibonacci,constraint"
+  },
+  {
+    "task_id": "tectonic_logic_79",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "In a complete graph K_7, how many edge-disjoint Hamiltonian cycles exist? Maximum number = (7-1)/2 = 3. Show decomposition. Answer with keywords: hamiltonian,decomposition,complete,edge,disjoint",
+    "answer": "hamiltonian,decomposition,complete,edge,disjoint"
+  },
+  {
+    "task_id": "tectonic_logic_80",
+    "category": "Logic/Reasoning",
+    "type": "free_form",
+    "prompt": "The four-color theorem: any planar graph can be colored with at most 4 colors. What is the minimum number of colors needed if the graph is also triangle-free? Use Grotzsch's theorem. Answer with keywords: four,color,planar,grotzsch,triangle,free",
+    "answer": "four,color,planar,grotzsch,triangle,free"
+  },
+  {
+    "task_id": "tectonic_if_01",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Your response must satisfy ALL of the following: (1) Be a valid JSON object with keys 'name', 'age', 'city', 'hobbies' (array of 3 strings). (2) The 'name' value must be backwards (reversed string). (3) The 'age' must be a number that is the square of the number of letters in 'name' after reversal. (4) 'city' must be the capital of France in lowercase reversed. (5) 'hobbies' must be in alphabetical order. Provide ONLY the JSON.",
+    "answer": "json,reversed,alphabetical,constraint,valid"
+  },
+  {
+    "task_id": "tectonic_if_02",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly 3 sentences, each starting with a word that begins with 'P'. No sentence can end with a period — use exclamation marks instead. Every sentence must mention a different color. The total character count must be between 150 and 200. Count your characters.",
+    "answer": "sentences,prefix,exclamation,color,constraint"
+  },
+  {
+    "task_id": "tectonic_if_03",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a 5-line rhyming poem where: line 1 and 2 rhyme, line 3 and 5 rhyme, line 4 rhymes with nothing. Each line must start with a number spelled out (One, Two, etc.). The poem must be about quantum computing. The 4th character of each line must be 'e'. Do not use the letter 'z' anywhere.",
+    "answer": "poem,rhyme,prefix,quantum,restricted"
+  },
+  {
+    "task_id": "tectonic_if_04",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Output a table using markdown with exactly 4 columns (Name, Score, Grade, Percentile) and 3 data rows. The Score column must have values in descending order. The Grade must be calculated as: A for 90+, B for 80-89, C for 70-79, D for <70. The Percentile column must be empty for all rows. Every row must have exactly the same number of pipe characters. Validate your table renders correctly.",
+    "answer": "markdown,table,calculated,descending,format"
+  },
+  {
+    "task_id": "tectonic_if_05",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write instructions for making coffee using exactly 8 steps. Each step must use an imperative verb. Steps 2, 5, and 7 must mention a specific temperature. Step 4 must be a warning about something. The first letter of each step when concatenated must spell 'GRINDING'. Do not use the word 'first' or 'then'.",
+    "answer": "instructions,imperative,temperature,acrostic,restricted"
+  },
+  {
+    "task_id": "tectonic_if_06",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a JSON array of 5 objects, each with fields: 'id' (integer 1-5), 'value' (string), 'timestamp' (ISO 8601 date). The 'value' strings must be pangrams (contain every letter A-Z). Each timestamp must be in a different month of 2026. Sort by timestamp ascending. Provide ONLY valid JSON.",
+    "answer": "json,array,pangram,timestamp,sorted"
+  },
+  {
+    "task_id": "tectonic_if_07",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a paragraph about machine learning. (1) Exactly 80 words. (2) No word longer than 10 characters. (3) The word 'algorithm' must appear exactly twice — once at position 20 and once at position 60 (counting words). (4) Every sentence must contain at least one mathematical term. (5) No sentence may begin with 'The'. Count your words.",
+    "answer": "paragraph,word,count,position,restricted"
+  },
+  {
+    "task_id": "tectonic_if_08",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Produce a code snippet in Python that computes the first 20 Fibonacci numbers. Constraints: (1) Must be a single line. (2) Must use a lambda with reduce. (3) No variable assignments outside the lambda. (4) Must include a comment that starts with '#' and is at least 10 characters. (5) Must not use any for-loops.",
+    "answer": "python,lambda,reduce,single,line"
+  },
+  {
+    "task_id": "tectonic_if_09",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Your output must contain exactly 50 characters (including spaces and punctuation), no more, no less. It must be a question that could be answered with '42'. The question must contain the word 'life' and the word 'universe'. It must end with a question mark. Count your characters precisely.",
+    "answer": "character,count,question,restricted,precise"
+  },
+  {
+    "task_id": "tectonic_if_10",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a CSV with 4 rows and 3 columns (Product, Price, Quantity). Rules: (1) Price values must sum to exactly 100. (2) Quantity values must be power of 2 numbers only. (3) Product names must be anagrams of fruits. (4) The third row must have the highest Price. (5) No column header may contain the letter 'e'. Output ONLY the CSV.",
+    "answer": "csv,restricted,anagram,numeric,constraint"
+  },
+  {
+    "task_id": "tectonic_if_11",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a nested JSON structure: top-level keys 'metadata' (object with 'version': 2, 'author': reversed of your name) and 'data' (array of 3 objects, each with 'x' (integer), 'y' (x^2), 'label' (letter A, B, C)). The 'data' array must be sorted by 'x' descending. Include 'checksum' key at top: concatenate all label letters and reverse them. Provide ONLY the JSON.",
+    "answer": "nested,json,transformation,sorted,checksum"
+  },
+  {
+    "task_id": "tectonic_if_12",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a response that is a palindrome at the word level (same sequence of words forwards and backwards). Minimum 10 words. The middle word (or middle two words if even length) must be 'quantum'. Do not repeat any word more than twice. Count your words to verify symmetry.",
+    "answer": "palindrome,words,symmetric,middle,quantum"
+  },
+  {
+    "task_id": "tectonic_if_13",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Describe 3 use cases for blockchain, but: (1) Each use case exactly 2 sentences. (2) The first sentence of each use case must be a question. (3) The second sentence must contain a number. (4) The use cases must be in reverse alphabetical order. (5) No use case may contain the word 'decentralized'. (6) Each use case must have exactly the same number of words.",
+    "answer": "blockchain,question,number,alphabetical,restricted"
+  },
+  {
+    "task_id": "tectonic_if_14",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a mathematical expression using the digits 1,3,4,6 exactly once and operators +,-,*,/ and parentheses to produce the number 24. Show your expression. Then explain in exactly 50 words why your expression works. The explanation must not contain the words 'first', 'then', 'next', 'finally', or 'because'. Count the words.",
+    "answer": "arithmetic,target,expression,explanation,word,count"
+  },
+  {
+    "task_id": "tectonic_if_15",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Output a numbered list of 7 reasons why Python is popular. Each reason must be exactly 10 words. Reasons 3 and 6 must end with an exclamation mark. The first letter of each reason must spell 'PYTHONS' (including those that start with an exclamation). No reason may use the word 'easy' or 'simple'. Count words per item to verify.",
+    "answer": "numbered,list,acrostic,word,count,restricted"
+  },
+  {
+    "task_id": "tectonic_if_16",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a valid URL that: (1) uses HTTPS, (2) has a path with exactly 4 segments, (3) contains a query string with exactly 3 parameters, (4) one parameter is 'q' with value 'search query' (URL-encoded), (5) the domain is a palindrome, (6) uses port 8080. Provide ONLY the URL.",
+    "answer": "url,query,encoded,palindrome,port"
+  },
+  {
+    "task_id": "tectonic_if_17",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a short story (exactly 100 words) about artificial intelligence. Rules: (1) No word longer than 8 letters. (2) Every sentence must contain a word that starts with 'a' and a word that starts with 't'. (3) The story must include the exact phrase 'singularity is near' (quotes not included in word count). Count your words precisely.",
+    "answer": "story,word,count,restricted,phrase"
+  },
+  {
+    "task_id": "tectonic_if_18",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create 3 haiku poems about programming. Each haiku must be 5-7-5 syllables. The second haiku must be in JSON format (three strings in an array). The last word of each haiku must rhyme with 'code'. The first line of each haiku must contain a programming language name. Put all three in a markdown blockquote.",
+    "answer": "haiku,syllable,json,rhyme,programming"
+  },
+  {
+    "task_id": "tectonic_if_19",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Output a valid SVG circle element centered at (100,100) with radius 50. Additionally: (1) The fill color must be the hex code for 'crimson'. (2) Add a stroke that is 3px wide and colored with the complementary color of crimson. (3) Add an animation that makes it pulse (scale from 1.0 to 1.2 and back) over 2 seconds infinitely. Provide ONLY the SVG.",
+    "answer": "svg,circle,color,animation,crimson"
+  },
+  {
+    "task_id": "tectonic_if_20",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a function specification in JSON format for a function 'process_data' that: takes parameters 'input' (string), 'threshold' (float between 0 and 1), 'options' (object with optional keys 'normalize' bool, 'format' string enum 'csv'/'json'). Returns object with 'result' (array) and 'metadata' (object). Include JSDoc-style description in the JSON. Output ONLY the JSON specification.",
+    "answer": "json,schema,specification,parameters,nested"
+  },
+  {
+    "task_id": "tectonic_if_21",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a JSON object that represents a binary tree node. Each node has 'value' (integer), 'left' (node or null), 'right' (node or null). Create a complete binary tree of depth 3 (15 nodes total). Values must be sequential from 1 to 15 in breadth-first order. The JSON must not be pretty-printed (all on one line). Provide ONLY the JSON.",
+    "answer": "binary,tree,json,breadth,sequential"
+  },
+  {
+    "task_id": "tectonic_if_22",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly 5 different ways to reverse a string in Python. Each method must be separated by '---' on its own line. Each method must include a one-line comment explaining how it works. No two methods may use the same approach (slicing vs reversed() vs reduce vs recursion vs for-loop). Do not include any code outside the 5 blocks.",
+    "answer": "python,reverse,string,variations,commented"
+  },
+  {
+    "task_id": "tectonic_if_23",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a weekly schedule in markdown table format with columns Day, Morning, Afternoon, Evening. Rules: (1) Monday must have 'Meeting' in Morning. (2) Wednesday must have 'Gym' in Afternoon. (3) Friday must have 'Review' in all three slots. (4) Weekend days (Sat, Sun) must have 'Off' in all slots. (5) Tuesday and Thursday must be identical. (6) No cell may be empty.",
+    "answer": "schedule,table,markdown,repeated,pattern"
+  },
+  {
+    "task_id": "tectonic_if_24",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a Python generator function that yields Fibonacci numbers indefinitely. Include type hints for the generator. The function docstring must be exactly 3 lines. The first yield must use 'yield' (not return). No line may exceed 80 characters. Include an example usage in a comment at the bottom. Provide ONLY the function.",
+    "answer": "generator,type,hints,docstring,fibonacci"
+  },
+  {
+    "task_id": "tectonic_if_25",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a regex pattern that: (1) matches valid IPv4 addresses, (2) matches valid email addresses, (3) does not match empty strings, (4) is no longer than 80 characters. Show 3 test cases for each pattern type (6 total) in a markdown table with columns: Pattern, Input, Matches (Yes/No). The table must have exactly 7 rows (header + 6 tests).",
+    "answer": "regex,pattern,validation,table,test"
+  },
+  {
+    "task_id": "tectonic_if_26",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a response that explains the concept of recursion. (1) The explanation must be exactly 5 sentences. (2) The first and last sentences must be identical. (3) The middle sentence must be a question. (4) Each sentence must contain the word 'recursion' exactly once. (5) The entire response must be exactly 200 characters (including spaces). Count your characters.",
+    "answer": "recursion,sentence,chiasmus,character,count"
+  },
+  {
+    "task_id": "tectonic_if_27",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a JSON file (in your output) representing a library catalog with at least 3 books. Each book has: title, author, year, isbn, tags (array of 2+ strings). Rules: (1) Books must be sorted by year descending. (2) At least one book must have 'fantasy' and 'adventure' as tags. (3) All ISBNs must be valid 13-digit numbers. (4) The output must be minified (no whitespace). Provide ONLY the JSON.",
+    "answer": "catalog,json,sorted,isbn,minified"
+  },
+  {
+    "task_id": "tectonic_if_28",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a Docker Compose file (YAML) with 3 services: web (nginx), api (python flask), db (postgres). Each service must include: image, ports, environment variables, and depends_on. The web service must mount a local volume ./html:/usr/share/nginx/html. No service may use 'latest' tag. The file must start with 'version: '3.8''. Only the YAML.",
+    "answer": "docker,compose,yaml,services,version"
+  },
+  {
+    "task_id": "tectonic_if_29",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a SQL query that: (1) joins 3 tables: users, orders, products, (2) returns user name and total spent per user, (3) only shows users who spent over $500, (4) sorted by total descending, (5) uses a CTE (WITH clause), (6) must be a single line no longer than 200 characters. Provide ONLY the SQL.",
+    "answer": "sql,join,aggregation,cte,single,line"
+  },
+  {
+    "task_id": "tectonic_if_30",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Produce 4 different ASCII art representations of a tree. Each must be at least 5 rows tall. The first must use only / \\ characters. The second must use only [ ] characters. The third must be symmetric. The fourth must include a 'star' at the top. Separate each with a blank line. No two may be the same pattern.",
+    "answer": "ascii,tree,art,symmetric,pattern"
+  },
+  {
+    "task_id": "tectonic_if_31",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a JSON array of 5 movie objects. Each object: title (string), year (int 1990-2025), rating (float 0.0-10.0), genres (array of strings). Additional constraints: (1) The array must be sorted by rating descending. (2) No two movies may share a year. (3) Exactly one movie must have 'comedy' as its first genre. (4) All titles must be longer than 5 characters. (5) Ratings must have exactly one decimal place. Provide ONLY the JSON.",
+    "answer": "json,movies,sorted,constraint,rating"
+  },
+  {
+    "task_id": "tectonic_if_32",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write an XML document representing an invoice with: invoice number, date, customer (name, address, email), items (at least 3, each with description, quantity, unit_price), total (computed). Rules: (1) XML must be well-formed. (2) The total must be calculated as sum of quantity*unit_price. (3) Use CDATA for the address field. (4) The date must be in YYYY-MM-DD format. (5) Must declare encoding as UTF-8. Provide ONLY the XML.",
+    "answer": "xml,invoice,computed,cdata,well,formed"
+  },
+  {
+    "task_id": "tectonic_if_33",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a mathematical proof that sqrt(2) is irrational, formatted as: (1) a numbered list of steps, (2) each step must start with a verb, (3) exactly 8 steps, (4) step 3 must be a proof by contradiction assumption, (5) step 7 must cite a contradiction, (6) no step may be longer than 100 characters. Only the numbered list.",
+    "answer": "proof,sqrt,irrational,numbered,step"
+  },
+  {
+    "task_id": "tectonic_if_34",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a CSS stylesheet that: (1) styles a button with class '.btn-primary' (bg blue, white text, rounded, padding), (2) styles a hover state with darker blue and shadow, (3) styles a disabled state with gray bg, (4) uses CSS variables for colors, (5) includes a media query for mobile (max-width 768px) that makes the button full width. No comments. Provide ONLY the CSS.",
+    "answer": "css,button,variables,media,query"
+  },
+  {
+    "task_id": "tectonic_if_35",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a Python decorator that times function execution and logs the result. The decorator must: (1) accept an optional 'unit' parameter ('ms' or 's'), (2) handle both sync and async functions, (3) use functools.wraps, (4) print the elapsed time to stdout, (5) include a docstring for the decorator. Provide ONLY the decorator definition with proper type hints.",
+    "answer": "decorator,async,timing,wraps,type,hints"
+  },
+  {
+    "task_id": "tectonic_if_36",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a configuration file in TOML format for a web server with: [server] host, port, workers; [database] host, port, name, user, password; [logging] level, file, format; [cache] backend, ttl, max_size. The password must be base64-encoded string 'cGFzc3dvcmQ='. The port numbers must be different for server and database. The ttl must be in seconds and at least 3600. Provide ONLY the TOML.",
+    "answer": "toml,config,server,database,cache"
+  },
+  {
+    "task_id": "tectonic_if_37",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a README section (in markdown) for a CLI tool called 'textproc'. Must include: (1) a one-sentence description, (2) installation (pip install), (3) usage with 3 command examples in code blocks, (4) a table of options (flag, description, default), (5) a note about Python 3.9+ requirement. No headings. Total max 40 lines. Only the markdown.",
+    "answer": "readme,markdown,cli,table,usage"
+  },
+  {
+    "task_id": "tectonic_if_38",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a bar chart specification using Vega-Lite JSON syntax. Chart: (1) bars showing monthly sales for Jan-Jun, (2) sales values [120, 200, 150, 80, 230, 190], (3) x-axis: month (ordered), (4) y-axis: sales, (5) bars colored by month, (6) title 'Q1-Q2 Sales 2026'. Must be valid Vega-Lite v5. Provide ONLY the JSON.",
+    "answer": "vega,lite,chart,bar,json"
+  },
+  {
+    "task_id": "tectonic_if_39",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a YAML file that defines 3 CI/CD pipeline stages: build, test, deploy. Each stage has: name, image, script (commands), and when condition. The build stage must use 'python:3.11' image and run pytest. The test stage depends on build. The deploy stage only runs on main branch. Include variables: PIP_CACHE_DIR and PYTHON_VERSION=3.11. Only the YAML.",
+    "answer": "yaml,pipeline,stages,dependencies,variables"
+  },
+  {
+    "task_id": "tectonic_if_40",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a structured response for a support ticket: (1) a JSON object with ticket_id, priority (enum high/medium/low), status (must be 'open'), created_at (ISO 8601, must be a past date), assigned_to (null or string). (2) Include a 'resolution_estimate' field that equals (current_date - created_at) in hours expressed as a float. (3) Add tags array with exactly 3 unique tags. Provide ONLY the JSON.",
+    "answer": "ticket,json,computed,enum,tags"
+  },
+  {
+    "task_id": "tectonic_if_41",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Follow these steps in order: (1) Write 'STEP1:' followed by any number x. (2) Write 'STEP2:' followed by x + 7. (3) Write 'STEP3:' followed by (x + 7) * 3. (4) Write 'STEP4:' followed by that result minus 21. (5) Write 'STEP5:' followed by that result divided by x. (6) The final answer should be 3. Verify by showing each step labeled clearly.",
+    "answer": "step,arithmetic,verify,computation,sequence"
+  },
+  {
+    "task_id": "tectonic_if_42",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "I will give you a series of commands. Execute them in order: (1) Create a mental list of numbers: [3, 7, 2, 9, 5]. (2) Remove all even numbers. (3) Square each remaining number. (4) Sum them. (5) Take the square root of the sum. (6) Output the final number as 'RESULT: X' where X is the computed value. Show all intermediate steps.",
+    "answer": "mental,computation,steps,intermediate,result"
+  },
+  {
+    "task_id": "tectonic_if_43",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Translate the following into French: 'The quick brown fox jumps over the lazy dog'. Then: (1) Reverse the translated string. (2) Count how many 'e' characters appear in the reversed string. (3) If the count is even, output 'PARITY: EVEN' otherwise 'PARITY: ODD'. (4) Append the original English string to your output separated by ' | '. Show all steps.",
+    "answer": "translation,reverse,count,parity,string"
+  },
+  {
+    "task_id": "tectonic_if_44",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Take the string 'benchmax tectonic dataset'. (1) Capitalize every vowel in it. (2) Remove all consonants. (3) Sort the remaining characters alphabetically. (4) Replace each character with its ASCII code. (5) Sum all the ASCII codes. Output 'SUM: X' and show each intermediate result labeled Step 1-5.",
+    "answer": "string,transformation,ascii,computation,steps"
+  },
+  {
+    "task_id": "tectonic_if_45",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Encode the word 'Algorithm' using base64. Then: (1) Take the first 4 characters of the base64 string. (2) Convert each character to its ASCII value. (3) XOR all ASCII values together. (4) Convert the result back to a character. (5) Append this character to the original base64 string. Show all intermediate results. Output the final string.",
+    "answer": "base64,ascii,xor,encoding,transformation"
+  },
+  {
+    "task_id": "tectonic_if_46",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "I provide 3 numbers: 17, 42, 8. For each number: (1) Write it in binary (8 bits). (2) Count the number of 1-bits. (3) Multiply the count by the original number. (4) Sum all three results. Show work in a table with columns: Number, Binary, Popcount, Product. Output the final sum.",
+    "answer": "binary,popcount,table,computation,product"
+  },
+  {
+    "task_id": "tectonic_if_47",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Consider the cipher: shift each letter by its position in the word (1-indexed, wrapping around alphabet). Encipher the word 'CRYPTO' using this rule. First letter C -> C+1 = D, second R -> R+2 = T, third Y -> Y+3 = B (wrap), etc. Show each transformation step. Output the final enciphered word.",
+    "answer": "cipher,shift,wrapping,transformation,step"
+  },
+  {
+    "task_id": "tectonic_if_48",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a password that satisfies: (1) at least 12 characters, (2) contains uppercase, lowercase, digit, and special character, (3) no consecutive repeated characters, (4) contains the substring '7Xz' somewhere, (5) the sum of all digit characters must be 15. Show the password and verify each rule with a short proof.",
+    "answer": "password,constraint,substring,sum,verification"
+  },
+  {
+    "task_id": "tectonic_if_49",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Take the first 10 digits of pi (3141592653). (1) Group them as pairs: (3,1), (4,1), (5,9), (2,6), (5,3). (2) For each pair, append the sum and product. (3) Flatten to a single list. (4) Take every 3rd element starting from index 0. (5) Sum those elements. Show steps. Output the final sum.",
+    "answer": "pi,digits,pairs,computation,step"
+  },
+  {
+    "task_id": "tectonic_if_50",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Solve this puzzle: Use each of the words (apple, brick, cloud, dance, eagle) in a single coherent paragraph. (1) The words must appear in alphabetical order. (2) No word may be the first or last word of the paragraph. (3) The paragraph must be exactly 5 sentences. (4) Each sentence must contain exactly one of the required words. (5) The paragraph must be about weather. Only the paragraph.",
+    "answer": "paragraph,alphabetical,embed,sentence,weather"
+  },
+  {
+    "task_id": "tectonic_if_51",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Your output must be an HTML page skeleton (<!DOCTYPE html> through </html>). It must: include a title 'Tectonic Test', a heading with your name backwards, a paragraph with exactly 50 words about benchmarking, a list of 3 colors with their hex codes, and a button with onclick alert('Clicked'). No CSS or JS beyond what's specified. Only the HTML.",
+    "answer": "html,page,skeleton,list,button"
+  },
+  {
+    "task_id": "tectonic_if_52",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a JSON specification for a REST API endpoint POST /api/users. Include: request body schema (name, email, age with types and validation), response body schema (id, created_at), status codes (201, 400, 409), authentication requirement (Bearer token), rate limit info. Format as JSON object with keys 'endpoint', 'method', 'request', 'response', 'auth', 'rate_limit'. Only the JSON.",
+    "answer": "api,specification,json,schema,endpoint"
+  },
+  {
+    "task_id": "tectonic_if_53",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a LaTeX document preamble that: (1) Declares document class 'article'. (2) Includes packages: amsmath, amssymb, graphicx, hyperref. (3) Sets title, author, date. (4) Defines a new command \\R for real numbers. (5) Defines a theorem environment. (6) Sets hyperref options: colorlinks=true, linkcolor=blue. (7) Begins document environment. Output ONLY valid LaTeX (no body text).",
+    "answer": "latex,preamble,packages,definition,environment"
+  },
+  {
+    "task_id": "tectonic_if_54",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "You must output a valid Binary JSON-like structure in your response. Create a Python dict literal: {'name': 'test', 'values': [True, False, None, 42, 3.14], 'nested': {'a': 1, 'b': [2, 3]}}. Then output it as valid JSON. Then output it as valid YAML. Finally, output it as valid TOML (flatten the 'nested' table). Separate each format with a line of '---'. No other text.",
+    "answer": "serialization,json,yaml,toml,comparison"
+  },
+  {
+    "task_id": "tectonic_if_55",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a mock API response in JSON format for a paginated endpoint /api/items?page=1&per_page=3: Must include keys: 'page' (1), 'per_page' (3), 'total' (10), 'total_pages' (4), 'data' (array of 3 item objects, each with id, name, price). Items must be sorted by price descending. Page URL (previous_page=null, next_page='/api/items?page=2&per_page=3'). Only the JSON.",
+    "answer": "pagination,api,json,response,metadata"
+  },
+  {
+    "task_id": "tectonic_if_56",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a Python script that reads a CSV file, filters rows where age > 30, and writes the result to a new CSV. (1) Must use argparse for input/output file arguments. (2) Must handle FileNotFoundError with a helpful message. (3) Must use the csv module (not pandas). (4) Include a shebang line and a main() guard. (5) Max 30 lines of code. Only the script.",
+    "answer": "python,csv,argparse,filter,script"
+  },
+  {
+    "task_id": "tectonic_if_57",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a shell script (PowerShell) that: (1) lists all .log files in C:\\Logs older than 7 days, (2) compresses each into a .zip archive with the original filename + date, (3) deletes the original files after compression, (4) logs all actions to a file archive_log.txt, (5) handles errors gracefully (try/catch). Only the PowerShell script.",
+    "answer": "powershell,compress,archive,log,error,handling"
+  },
+  {
+    "task_id": "tectonic_if_58",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a complex nested list in markdown: Level 1 item A, Level 1 item B with sub-items B1, B2, B3 (B2 has sub-sub-items B2a, B2b), Level 1 item C. Apply the following formatting: (1) Level 1 items start with roman numerals (I, II, III). (2) Level 2 items start with lowercase letters. (3) Level 3 items start with lowercase roman numerals. (4) All items must end with a period. (5) No item may be empty. Only the list.",
+    "answer": "nested,list,roman,numeral,formatting"
+  },
+  {
+    "task_id": "tectonic_if_59",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a response in the form of a structured debate between two positions: 'AI will replace programmers' vs 'AI will augment programmers'. (1) Each position gets exactly 3 arguments. (2) Arguments are numbered 1-3 for each side. (3) After both sides, a 'Resolution' paragraph of exactly 50 words. (4) No argument may be more than 20 words. (5) Use a table with columns 'Side', 'Arg #', 'Argument'. Only the table.",
+    "answer": "debate,table,arguments,resolution,structured"
+  },
+  {
+    "task_id": "tectonic_if_60",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a 3x3x3 tic-tac-toe (3D) winning combination. Represent the board as a 3-level grid (each 3x3). Mark X's on one winning line that goes through all three levels diagonally. Show each level as a 3x3 grid with X's placed. The winning line must be the main diagonal of the cube. State which positions (level,row,col) contain X. Only the representation.",
+    "answer": "tic,tac,toe,three,dimensional,diagonal"
+  },
+  {
+    "task_id": "tectonic_knowledge_01",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the EPR paradox, what quantity did Einstein, Podolsky, and Rosen argue must be added to quantum mechanics to restore locality and realism? A) Hidden variables B) Pilot wave C) Superdeterminism D) Quantum potential",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_02",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Tsirelson bound for the CHSH inequality violation in quantum mechanics is: A) 2√2 B) 2 C) 4 D) √2",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_03",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the Many-Worlds Interpretation, the preferred basis problem concerns how to define: A) The pointer basis that diagonalizes the decoherence Hamiltonian B) The Schmidt decomposition of the universal wavefunction C) The branching structure without a privileged observable D) The measurement problem without collapse",
+    "answer": "C"
+  },
+  {
+    "task_id": "tectonic_knowledge_04",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Peskin's renormalization group equation for QED coupling α(μ) at one loop is: β(α) = dα/d ln μ = A) b1 α^2/(2π) B) b1 α^2/π C) 2b1 α^2/π D) b1^2 α^3/π",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_05",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The quantum Hall effect's filling factor ν = 1/3 state is described by which wavefunction? A) Laughlin wavefunction B) Moore-Read Pfaffian C) Halperin bilayer D) Jain composite fermion",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_06",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Wick's theorem reduces time-ordered products of field operators to: A) Normal-ordered products plus all possible contractions B) Path integrals over Grassmann variables C) Fourier transforms of Feynman propagators D) Commutators of creation and annihilation operators",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_07",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Unruh effect predicts that an accelerating observer in Minkowski vacuum detects thermal radiation at temperature T = A) ħ a / (2π k_B c) B) ħ a / (π k_B c) C) a / (2π k_B) D) ħ a / (4π k_B c)",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_08",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which of the following is NOT one of von Neumann's axioms of quantum mechanics? A) States are rays in a complex separable Hilbert space B) Observables are self-adjoint operators C) The wavefunction collapses upon measurement D) Composite systems are described by tensor products",
+    "answer": "C"
+  },
+  {
+    "task_id": "tectonic_knowledge_09",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The modular group in algebraic quantum field theory is generated by: A) Tomita-Takesaki modular operators B) Poincaré transformations C) Superselection sectors D) DHR endomorphisms",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_10",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Schwinger-Dyson equation relates: A) n-point Green's functions to (n+1)-point functions B) The S-matrix to Feynman diagrams C) The running coupling to beta functions D) Correlation functions to partition functions",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_11",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Euler characteristic of a 4-dimensional sphere S^4 is: A) 2 B) 0 C) 4 D) 1",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_12",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Grothendieck-Riemann-Roch theorem generalizes the Hirzebruch-Riemann-Roch theorem by including: A) A proper morphism between schemes B) A smooth projective variety C) A vector bundle on a curve D) A coherent sheaf on projective space",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_13",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In homological algebra, Ext^1(A,B) classifies: A) Extensions of A by B up to equivalence B) Group cohomology classes C) Derived functors of Hom D) Tor functors of tensor product",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_14",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The fundamental group of the real projective plane RP^2 is: A) Z/2Z B) Z C) Trivial D) Z^2",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_15",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "K3 surfaces have Hodge diamond with h^{1,1} = A) 20 B) 22 C) 19 D) 21",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_16",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The algebraic K-theory group K_0 of a field F is isomorphic to: A) Z B) F^* C) Z × F^* D) K_1(F)",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_17",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Hasse-Minkowski theorem states that a quadratic form over Q represents 0 nontrivially iff it does over: A) All completions of Q (R and Q_p) B) All finite fields C) All number fields D) All algebraically closed fields",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_18",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Alexander polynomial Δ_K(t) of the trefoil knot is: A) t^2 - t + 1 B) t^2 + t + 1 C) t - 1 + t^{-1} D) t^3 - t^2 + 1",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_19",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In topos theory, the subobject classifier Ω in the category of sets is: A) {0,1} with the usual Boolean algebra structure B) The set of truth values with Heyting algebra C) The power set functor D) The Sierpinski space",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_20",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The prime number theorem states that π(x) ~ x/ln(x). The next term in the asymptotic expansion involves: A) li(x) - li(x^{1/2})/2 - li(x^{1/3})/3 - ... B) x/ln(x) + x/ln^2(x) C) x/(ln x - 1) D) Riemann's R(x) function",
+    "answer": "B"
+  },
+  {
+    "task_id": "tectonic_knowledge_21",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Liar Paradox originates from which ancient Greek philosopher? A) Eubulides of Miletus B) Aristotle C) Socrates D) Zeno of Elea",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_22",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Buridan's Bridge is a paradox concerning: A) A promise that if a bridge is crossed, the crosser will be thrown into the river B) A donkey that starves between two identical haystacks C) A ship that is replaced plank by plank D) A man who says he is lying",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_23",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Raven paradox (Hempel's paradox) arises from: A) Confirming a universal statement by observing its instances B) Induction over unobservable entities C) The problem of counterfactual conditionals D) The nature of mathematical truth",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_24",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Gödel's incompleteness theorems apply to any formal system that: A) Is consistent and contains enough arithmetic B) Is complete and decidable C) Is recursively axiomatizable D) Has a proof theory",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_25",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Entscheidungsproblem (decision problem) was solved by: A) Alan Turing and Alonzo Church independently B) Kurt Gödel C) David Hilbert D) Alfred Tarski",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_26",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Sorites paradox concerns: A) The vagueness of predicates like 'heap' B) The problem of future contingents C) The liar sentence D) The ship of Theseus",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_27",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Tarski's undefinability theorem states that: A) A consistent formal system cannot define its own truth predicate B) Truth is a semantic concept, not syntactic C) All logical truths are tautologies D) Mathematics is reducible to logic",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_28",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Quine's two dogmas of empiricism attacked: A) The analytic-synthetic distinction and reductionism B) Empiricism and rationalism C) Induction and deduction D) Realism and anti-realism",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_29",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Münchhausen trilemma (Agrippa's trilemma) concerns: A) The regress problem in justification B) The problem of induction C) The mind-body problem D) The problem of free will",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_30",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Parfit's teletransportation thought experiment challenges: A) Personal identity across time B) The nature of consciousness C) The existence of free will D) The validity of scientific knowledge",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_31",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Chandrasekhar limit for white dwarf mass is approximately: A) 1.4 solar masses B) 2.4 solar masses C) 3.0 solar masses D) 0.5 solar masses",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_32",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The holographic principle states that the maximum entropy of a region of space scales with: A) Its surface area in Planck units B) Its volume C) The logarithm of its volume D) Its diameter squared",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_33",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Bekenstein-Hawking entropy of a black hole is S = A) A/4Gℓ_P^2 B) A/2G C) 4A/G D) A/8πG",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_34",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The CMB dipole anisotropy has amplitude ~10^-3 and is primarily due to: A) Our motion relative to the CMB rest frame B) Primordial density fluctuations C) The Sachs-Wolfe effect D) Gravitational lensing",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_35",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The ratio of dark energy to dark matter to ordinary matter in the standard ΛCDM model is approximately: A) 68:27:5 B) 50:30:20 C) 75:20:5 D) 45:45:10",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_36",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Lifshitz-Khalatnikov-Belinsky (BKL) conjecture describes: A) The oscillatory approach to a cosmological singularity B) The formation of large-scale structure C) The isotropization of the universe D) The inflation of the early universe",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_37",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Aharonov-Bohm effect demonstrates that: A) The electromagnetic vector potential has physical significance even in regions with zero field B) Quantum mechanics is non-local C) Gauge invariance is broken in quantum mechanics D) Electrons can tunnel through potential barriers",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_38",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Gross-Pitaevskii equation describes: A) Bose-Einstein condensates at zero temperature B) Superconductivity in type-II materials C) The quantum Hall effect D) Topological insulators",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_39",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Callan-Symanzik equation governs: A) The renormalization group flow of correlation functions B) The scattering matrix of quantum electrodynamics C) The running of coupling constants in asymptotically free theories D) The operator product expansion",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_knowledge_40",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Berry phase is non-zero when: A) The Hamiltonian's parameter space has non-trivial topology B) The system is in an entangled state C) The evolution is adiabatic D) The system has degenerate eigenvalues",
+    "answer": "A"
+  },
+  {
+    "task_id": "tectonic_tool_01",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "A user submits a resume PDF. Call the following in sequence: 1) extract_text(file_path) to get raw text, 2) parse_resume(text) to get structured profile, 3) embed_resume(parsed) for vector search, 4) match_jobs(embedding, threshold=0.7) returning job matches. Name the final orchestration function.",
+    "answer": "orchestrate_resume_processing"
+  },
+  {
+    "task_id": "tectonic_tool_02",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Given a stock ticker, call: 1) get_stock_price(symbol), 2) get_financials(symbol), 3) analyze_sentiment(ticker) from news, 4) compute_valuation(price, financials, sentiment) returning BUY/HOLD/SELL. Name the composite function.",
+    "answer": "analyze_stock_recommendation"
+  },
+  {
+    "task_id": "tectonic_tool_03",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Process a customer support ticket: 1) classify_ticket(text) returning category, 2) search_knowledge_base(category) for solutions, 3) escalate_if_needed(category, priority) to a team, 4) generate_response(solutions, tone='professional'). Name the orchestrator.",
+    "answer": "handle_support_ticket"
+  },
+  {
+    "task_id": "tectonic_tool_04",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "For a CI/CD pipeline: 1) checkout_repo(url, branch), 2) run_linter(path) returning violations, 3) run_tests(path) returning pass/fail, 4) build_artifact(path), 5) deploy_to_env(artifact, env='staging'). Name the function that runs these in order.",
+    "answer": "execute_deployment_pipeline"
+  },
+  {
+    "task_id": "tectonic_tool_05",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Given a user query, implement RAG: 1) embed_query(query), 2) vector_search(embedding, k=5) returning chunks, 3) rerank(chunks, query) for relevance, 4) generate_answer(context, query) with LLM, 5) validate_answer(answer) for hallucination. Name the orchestrator.",
+    "answer": "retrieval_augmented_generation"
+  },
+  {
+    "task_id": "tectonic_tool_06",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "For database migration: 1) dump_schema(conn_str) to snapshot, 2) compare_schemas(source, target) finding diffs, 3) generate_migration_script(diffs) as SQL, 4) apply_migration(script, target), 5) verify_data_integrity(source, target). Name the migration coordinator.",
+    "answer": "run_database_migration"
+  },
+  {
+    "task_id": "tectonic_tool_07",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Process a video file: 1) extract_audio(video_path), 2) transcribe_audio(audio) to text, 3) detect_scenes(video_path) for chapters, 4) generate_summary(text, chapters) as markdown, 5) create_thumbnail(video_path, timestamp=0). Name the top-level video processor.",
+    "answer": "process_video_file"
+  },
+  {
+    "task_id": "tectonic_tool_08",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Handle an e-commerce order: 1) validate_stock(items) checking inventory, 2) calculate_shipping(items, address) via courier API, 3) apply_promotions(items, promo_code) for discounts, 4) process_payment(total, method) with fraud check, 5) generate_invoice(order_id) as PDF. Name the order processing function.",
+    "answer": "process_ecommerce_order"
+  },
+  {
+    "task_id": "tectonic_tool_09",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Given raw IoT sensor data: 1) normalize_sensor_data(data, schema) to standard format, 2) detect_anomalies(data, threshold=3.0) marking outliers, 3) interpolate_missing(timestamps, data) filling gaps, 4) aggregate_hourly(data) for downsampling, 5) persist_to_tsdb(aggregated). Name the ETL pipeline function.",
+    "answer": "ingest_iot_timeseries"
+  },
+  {
+    "task_id": "tectonic_tool_10",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "For a recommendation system: 1) get_user_profile(user_id) with preferences, 2) collaborative_filter(user_id, k=20) getting similar users, 3) content_based_filter(profile) for item similarity, 4) hybrid_rank(cf_results, cb_results, weights=[0.6,0.4]), 5) diversity_rerank(candidates, strategy='MMR'). Name the recommendation orchestrator.",
+    "answer": "generate_recommendations"
+  },
+  {
+    "task_id": "tectonic_tool_11",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "A weather alert system: 1) fetch_weather_data(lat, lon) returning current conditions, 2) check_alert_thresholds(conditions) returning severity, 3) find_affected_areas(lat, lon, radius_km) via reverse geocode, 4) broadcast_alert(areas, severity, message) through channels. Name the composite alert function.",
+    "answer": "process_weather_alert"
+  },
+  {
+    "task_id": "tectonic_tool_12",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automatic code review bot: 1) fetch_pull_request(repo, pr_number) getting diff, 2) analyze_code_quality(diff) for style issues, 3) detect_security_vulnerabilities(diff) for CWE patterns, 4) check_test_coverage(diff, coverage_data), 5) post_review_comments(repo, pr_number, comments). Name the code review function.",
+    "answer": "automate_code_review"
+  },
+  {
+    "task_id": "tectonic_tool_13",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Multi-step data anonymization: 1) scan_pii_fields(schema) detecting sensitive columns, 2) classify_sensitivity(pii_fields) as low/medium/high, 3) select_anonymization(classification) mapping method (hash/redact/mask), 4) apply_anonymization(data, mapping), 5) validate_anonymized(data) for residual PII. Name the anonymization pipeline.",
+    "answer": "anonymize_dataset"
+  },
+  {
+    "task_id": "tectonic_tool_14",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "A/B test analysis: 1) fetch_experiment(experiment_id) with config, 2) pull_metrics(experiment_id, metrics) from data warehouse, 3) compute_statistical_significance(control, treatment) with p-value, 4) calculate_effect_size(metric_values) as Cohen's d, 5) generate_ab_report(results) as dashboard JSON. Name the analysis function.",
+    "answer": "analyze_ab_experiment"
+  },
+  {
+    "task_id": "tectonic_tool_15",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Container orchestration health check: 1) get_cluster_status(namespace) listing pods, 2) check_pod_health(pod_list) with restart counts, 3) analyze_resource_usage(namespace) for CPU/memory, 4) diagnose_unhealthy(pods, analysis) with root cause, 5) suggest_remediation(diagnosis) as action plan. Name the diagnostic function.",
+    "answer": "diagnose_cluster_health"
+  },
+  {
+    "task_id": "tectonic_tool_16",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Knowledge graph construction: 1) extract_entities(text) with NER, 2) extract_relations(entity_pairs, text) between entities, 3) resolve_coreferences(text) for pronoun resolution, 4) build_graph(entities, relations) as Neo4j Cypher, 5) merge_to_knowledge_base(graph, db_url). Name the graph builder function.",
+    "answer": "construct_knowledge_graph"
+  },
+  {
+    "task_id": "tectonic_tool_17",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Multi-provider cloud cost optimizer: 1) fetch_current_usage(provider) from API, 2) analyze_spend_patterns(usage) identifying waste, 3) find_reserved_instances(usage, provider) recommendations, 4) compare_provider_costs(current, alternatives) for best price, 5) generate_optimization_report(name, findings) as CSV. Name the cost analysis function.",
+    "answer": "optimize_cloud_costs"
+  },
+  {
+    "task_id": "tectonic_tool_18",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automated ML pipeline: 1) load_dataset(path, format) as DataFrame, 2) generate_features(data) with auto feature engineering, 3) train_model(X, y, model_spec) with hyperparameter tuning, 4) evaluate_model(model, X_test, y_test) with metrics, 5) register_model(model, metrics, registry_url) to model store. Name the ML pipeline function.",
+    "answer": "run_ml_pipeline"
+  },
+  {
+    "task_id": "tectonic_tool_19",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Social media sentiment campaign: 1) fetch_mentions(brand, timeframe) from all platforms, 2) classify_sentiment(texts) as pos/neg/neutral, 3) detect_emerging_topics(texts, k=5) with topic modeling, 4) identify_influencers(mentions) by reach, 5) schedule_response(strategy, timeline) as campaign calendar. Name the campaign manager.",
+    "answer": "manage_sentiment_campaign"
+  },
+  {
+    "task_id": "tectonic_tool_20",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "API gateway auto-configuration: 1) discover_microservices() from service registry, 2) generate_openapi_spec(service) from source, 3) configure_routes(services) with path prefixes, 4) setup_rate_limiting(routes, plan='standard'), 5) deploy_gateway_config(config, gateway_url). Name the gateway setup function.",
+    "answer": "configure_api_gateway"
+  },
+  {
+    "task_id": "tectonic_tool_21",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "A customer data platform integration: 1) identify_customer(email, phone) returning profile, 2) merge_identities(primary_id, secondary_ids) consolidating, 3) enrich_profile(profile, enrichment_sources=['clearbit','fullcontact']), 4) compute_ltv(profile, order_history) as predicted value, 5) assign_segment(profile, ltv, segmentation_model). Name the CDP function.",
+    "answer": "orchestrate_cdp_pipeline"
+  },
+  {
+    "task_id": "tectonic_tool_22",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automated compliance checker: 1) parse_regulation(regulation_id) extracting rules, 2) fetch_system_config(scope) for infrastructure, 3) evaluate_compliance(rules, config) per control, 4) compute_risk_scores(violations) by severity, 5) generate_compliance_report(scores, format='SOC2') as PDF. Name the compliance function.",
+    "answer": "run_compliance_audit"
+  },
+  {
+    "task_id": "tectonic_tool_23",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Resource scheduler for Kubernetes: 1) get_node_metrics(cluster) with capacity, 2) get_pod_requirements(namespace) with resource requests, 3) compute_optimal_placement(pods, nodes) using bin packing, 4) apply_schedule(placement, dry_run=True) as preview, 5) monitor_schedule(cluster) for drift detection. Name the scheduler function.",
+    "answer": "schedule_kubernetes_resources"
+  },
+  {
+    "task_id": "tectonic_tool_24",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Document versioning system: 1) check_out_document(doc_id, user) locking for edit, 2) compute_diff(original_content, edited_content) as unified diff, 3) version_bump(diffs, strategy='semver') determining major/minor/patch, 4) merge_conflicts(version_branch, main_branch) resolving, 5) update_changelog(doc_id, version, changes). Name the document versioning function.",
+    "answer": "manage_document_versioning"
+  },
+  {
+    "task_id": "tectonic_tool_25",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Multi-factor authentication orchestrator: 1) verify_password(user, password) from identity store, 2) check_fraud_risk(user, request_context) scoring, 3) select_second_factor(risk_level) as totp/sms/email/biometric, 4) send_challenge(factor_type, user) delivering code, 5) verify_challenge(user, challenge_id, code) validating. Name the auth function.",
+    "answer": "orchestrate_mfa_verification"
+  },
+  {
+    "task_id": "tectonic_tool_26",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Geospatial route optimizer: 1) geocode_addresses(addresses) to lat/lon, 2) build_distance_matrix(locations, mode='driving') using routing API, 3) solve_vrp(distance_matrix, depots, constraints) as vehicle routes, 4) optimize_route_order(route) with 2-opt local search, 5) generate_navigation(optimized_routes) as turn-by-turn. Name the route optimizer.",
+    "answer": "optimize_vehicle_routes"
+  },
+  {
+    "task_id": "tectonic_tool_27",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Data lineage tracker: 1) parse_sql_queries(query_log) extracting dependencies, 2) build_lineage_graph(dependency_tree) as DAG, 3) detect_upstream_impact(table, columns, lineage) for changes, 4) trace_downstream_dependents(entity, depth=3) finding consumers, 5) visualize_lineage(graph, format='dagre') as JSON. Name the lineage function.",
+    "answer": "track_data_lineage"
+  },
+  {
+    "task_id": "tectonic_tool_28",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automated incident response: 1) detect_incident(alert_stream) classifying severity, 2) identify_impacted_services(incident_id) from topology, 3) run_diagnostic_playbook(incident_type, scope) for root cause, 4) escalate_to_oncall(incident, team, priority) via PagerDuty, 5) create_postmortem(incident_id, diagnosis, resolution) as document. Name the incident handler.",
+    "answer": "handle_incident_response"
+  },
+  {
+    "task_id": "tectonic_tool_29",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Cross-database sync engine: 1) compare_schemas(source_db, target_db) for differences, 2) generate_migration_plan(schema_diff) with CREATE/ALTER/DROP, 3) extract_incremental(source, last_sync) with CDC, 4) transform_data(batch, transformations) as mapping, 5) load_data(transformed, target, strategy='upsert'). Name the sync orchestrator.",
+    "answer": "synchronize_databases"
+  },
+  {
+    "task_id": "tectonic_tool_30",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Feature flag management system: 1) create_feature_flag(name, owner, description), 2) configure_rollout(flag_name, percentage, targeting_rules), 3) evaluate_flag(flag_name, user_context) returning enabled/disabled, 4) track_flag_usage(flag_name, event='view') collecting metrics, 5) cleanup_expired_flags(threshold_date) removing stale flags. Name the feature flag function.",
+    "answer": "manage_feature_flags"
+  },
+  {
+    "task_id": "tectonic_tool_31",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "A/B testing framework with dynamic allocation: 1) assign_variant(experiment_id, user_id) to control/treatment, 2) track_conversion(user_id, variant, event_type), 3) compute_confidence(experiment_id, metric, alpha=0.05) with sequential testing, 4) early_stop_if_significant(experiment_id, results) allocating more users to winner, 5) finalize_experiment(experiment_id) declaring results. Name the A/B framework orchestrator.",
+    "answer": "run_dynamic_ab_test"
+  },
+  {
+    "task_id": "tectonic_tool_32",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Federated learning coordinator: 1) select_clients(pool_size, eligibility_criteria) sampling, 2) distribute_model(model_version, client_list) via secure channel, 3) aggregate_updates(client_updates, strategy='FedAvg') computing global model, 4) evaluate_global_model(model, test_data) for accuracy, 5) update_central_model(model, version, metrics) for next round. Name the federated learning function.",
+    "answer": "coordinate_federated_learning"
+  },
+  {
+    "task_id": "tectonic_tool_33",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Real-time fraud detection pipeline: 1) ingest_transaction(transaction) validating format, 2) enrich_transaction(transaction) with device/location/velocity, 3) score_transaction(enriched, model_version='v3') with ML model, 4) apply_rules(score, transaction_attributes) for hard blocks, 5) process_decision(action_required, channels) for review if flagged. Name the fraud pipeline function.",
+    "answer": "process_fraud_detection"
+  },
+  {
+    "task_id": "tectonic_tool_34",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Multi-cloud resource provisioner: 1) discover_regions(provider) with availability, 2) select_optimal_region(requirements, cost_model) minimizing latency, 3) provision_resources(region, spec) creating instances, 4) configure_networking(region, vpc_spec, peers), 5) register_in_service_discovery(resource_arns, service_name). Name the provisioner function.",
+    "answer": "provision_multi_cloud"
+  },
+  {
+    "task_id": "tectonic_tool_35",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automated data quality monitor: 1) define_quality_checks(table, rules) as expectation suite, 2) compute_statistics(table) profiling distributions, 3) run_quality_checks(table, suite) producing pass/fail, 4) alert_on_failure(checks, alert_channels=['email','slack']), 5) generate_quality_dashboard(history, timeframe='7d') as HTML. Name the quality monitor function.",
+    "answer": "monitor_data_quality"
+  },
+  {
+    "task_id": "tectonic_tool_36",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Distributed tracing debugger: 1) query_traces(service, start_time, end_time) with filters, 2) extract_latency_breakdowns(traces) per span, 3) identify_bottlenecks(latency_data, threshold=p99) finding slow spans, 4) trace_critical_path(span_tree) for root cause, 5) suggest_optimizations(bottleneck, span_type) as recommendations. Name the trace analysis function.",
+    "answer": "debug_distributed_traces"
+  },
+  {
+    "task_id": "tectonic_tool_37",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Content moderation pipeline: 1) scan_text(text, categories=['hate','violence','sexual']) for NLP model, 2) analyze_images(images, nsfw_threshold=0.8) with vision API, 3) check_metadata(author, source) against blocklist, 4) compute_aggregate_risk(text_score, image_score, metadata_signal) weighted, 5) decide_action(risk_score, content_policy) as pass/review/block. Name the moderation function.",
+    "answer": "moderate_user_content"
+  },
+  {
+    "task_id": "tectonic_tool_38",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Budget forecasting engine: 1) fetch_historical_spend(category, period='FY2025') from ledger, 2) apply_seasonal_adjustments(spend, historical_patterns) for trends, 3) incorporate_growth_forecasts(growth_rates, market_data) projecting, 4) compute_budget_allocations(projections, constraints) optimizing, 5) generate_budget_report(allocations, scenario='conservative') as spreadsheet. Name the budget function.",
+    "answer": "forecast_annual_budget"
+  },
+  {
+    "task_id": "tectonic_tool_39",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Automated report generator: 1) connect_data_sources(sources=['snowflake','mixpanel']) authenticating, 2) execute_queries(queries, parameters) fetching results, 3) build_visualizations(data, chart_spec) as charts, 4) compile_report(sections, visualizations, template='executive') as document, 5) distribute_report(document, recipients, schedule='weekly'). Name the report generator.",
+    "answer": "generate_automated_report"
+  },
+  {
+    "task_id": "tectonic_tool_40",
+    "category": "Tool Calling",
+    "type": "function_call",
+    "prompt": "Chaos engineering orchestrator: 1) select_experiment_target(service, risk_tolerance) choosing safe target, 2) inject_failure(target, failure_type='latency', duration_secs=30) via sidecar, 3) monitor_metrics(target, metrics=['p99','error_rate']) during injection, 4) assert_steady_state(metrics, slo_thresholds) verifying resilience, 5) rollback_failure(target) restoring normal. Name the chaos experiment function.",
+    "answer": "run_chaos_experiment"
+  }
+]

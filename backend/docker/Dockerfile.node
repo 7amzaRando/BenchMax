@@ -1,0 +1,9 @@
+# BenchMax Node.js sandbox — for Aider Polyglot (JavaScript)
+# Test deps pre-installed for offline operation (no network at test time)
+FROM node:20-slim
+
+RUN npm install -g jest @babel/core @babel/preset-env babel-jest 2>&1 | tail -3
+
+WORKDIR /workspace
+
+CMD ["node", "--version"]

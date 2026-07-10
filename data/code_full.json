@@ -1,0 +1,702 @@
+[
+  {
+    "task_id": "code_algorithms_01",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `a_star_search` that takes a 2D grid (list of list of ints, 0=open, 1=wall), a start tuple (r,c), and an end tuple, and returns the shortest path as a list of (r,c) tuples using A* with Manhattan distance heuristic and a min-heap (priority queue). If no path exists, return None. Example: grid=[[0,0,0,0],[0,1,1,0],[0,0,0,0],[0,0,1,0]], start=(0,0), end=(3,3) returns [(0,0),(0,1),(0,2),(0,3),(1,3),(2,3),(3,3)].",
+    "answer": "a_star_search"
+  },
+  {
+    "task_id": "code_algorithms_02",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `dinic_max_flow` that takes a directed graph as an adjacency list (dict[int, list[tuple[int,int]]] where each tuple is (neighbor, capacity)), a source node, and a sink node, and returns the maximum flow value using Dinic's algorithm (build level graph via BFS, send blocking flow via DFS). Example: graph={0:[(1,16),(2,13)],1:[(2,10),(3,12)],2:[(1,4),(4,14)],3:[(2,9),(5,20)],4:[(3,7),(5,4)],5:[]}, source=0, sink=5 returns 23.",
+    "answer": "dinic_max_flow"
+  },
+  {
+    "task_id": "code_algorithms_03",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `hopcroft_karp` that takes a bipartite graph as a dict mapping left vertices to lists of right vertex neighbors (all ints), and returns the size of the maximum matching using the Hopcroft-Karp algorithm (BFS to build layer graph, DFS to find augmenting paths, runs in O(E sqrt(V))). Example: graph={0:[1,3],1:[0,2],2:[1,3],3:[0,2]} (4 left, 4 right nodes) returns 4.",
+    "answer": "hopcroft_karp"
+  },
+  {
+    "task_id": "code_algorithms_04",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `strassen_multiply` that takes two n x n matrices (list of lists of ints, n is a power of 2) and returns their product using Strassen's divide-and-conquer algorithm (7 multiplications instead of 8, O(n^2.807)). For non-power-of-2, pad with zeros internally. Example: A=[[1,2],[3,4]], B=[[5,6],[7,8]] returns [[19,22],[43,50]].",
+    "answer": "strassen_multiply"
+  },
+  {
+    "task_id": "code_algorithms_05",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `simplex_method` that takes a 2D list `A` (constraint coefficients), a list `b` (right-hand sides), and a list `c` (objective coefficients), and returns the maximum value of c^T x subject to Ax <= b, x >= 0 using the simplex method with the standard tableau (Bland's rule for pivot selection to avoid cycling). Example: A=[[2,1],[-4,5],[1,-2]], b=[10,3,3], c=[1,1] returns 6.0.",
+    "answer": "simplex_method"
+  },
+  {
+    "task_id": "code_algorithms_06",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `stoer_wagner_min_cut` that takes an undirected weighted graph (adjacency matrix n x n, symmetric, with 0 on diagonal and weight or 0 for no edge) and returns the weight of the global minimum cut using the Stoer-Wagner algorithm (repeatedly contract most-tightly-connected vertex, track min cut phase weight). Example: graph=[[0,2,3,0],[2,0,4,1],[3,4,0,5],[0,1,5,0]] returns 4.",
+    "answer": "stoer_wagner_min_cut"
+  },
+  {
+    "task_id": "code_algorithms_07",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `min_cost_max_flow` that takes a directed graph (adjacency list dict[int, list[tuple[int,int,int]]] where tuples are (neighbor, capacity, cost per unit flow)), a source, and a sink, and returns a tuple (max_flow, min_cost) using the successive shortest augmenting path algorithm (Bellman-Ford initially for negative edges, then Dijkstra with potentials for non-negative reduced costs). Example: graph={0:[(1,10,2),(2,5,8)],1:[(2,15,5)],2:[(3,20,1)],1:[(3,10,5)],3:[]}, source=0, sink=3 returns (20, 150).",
+    "answer": "min_cost_max_flow"
+  },
+  {
+    "task_id": "code_algorithms_08",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `hungarian_algorithm` that takes an n x n cost matrix (list of lists of ints) and returns the minimum total cost for assigning each row to a distinct column using the Hungarian algorithm (O(n^3), with labeling, equality graph, alternating paths). Example: cost=[[20,25,22,28],[15,18,23,20],[19,17,21,24],[25,24,22,26]] returns 78 (assignments: row0-col2, row1-col1, row2-col0, row3-col3).",
+    "answer": "hungarian_algorithm"
+  },
+  {
+    "task_id": "code_algorithms_09",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `boruvka_mst` that takes a number of nodes n and a list of edges as tuples (u, v, weight), and returns the total weight of the minimum spanning tree using Borůvka's algorithm (O(E log V), each iteration finds cheapest edge from each component and adds it). Example: n=6, edges=[(0,1,4),(0,2,3),(1,2,1),(1,3,2),(2,3,4),(3,4,2),(4,5,6)] returns 12.",
+    "answer": "boruvka_mst"
+  },
+  {
+    "task_id": "code_algorithms_10",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `johnsons_algorithm` that takes a weighted directed graph (adjacency list dict[int, list[tuple[int,int]]] with possible negative edges but no negative cycles) and returns a dict of dicts mapping each source node to a dict of shortest distances to all nodes, using Johnson's algorithm (add supersource with 0-weight edges, run Bellman-Ford for reweighting, then Dijkstra from each node with non-negative weights). Example: graph={0:[(1,-2)],1:[(2,-1)],2:[(0,4)]} returns {0:{0:0,1:-2,2:-3},1:{0:1,1:0,2:-1},2:{0:4,1:2,2:0}}.",
+    "answer": "johnsons_algorithm"
+  },
+  {
+    "task_id": "code_algorithms_11",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `christofides_tsp` that takes a complete undirected graph as an n x n distance matrix (satisfying triangle inequality) and returns the total distance of a Hamiltonian cycle that is at most 1.5 times the optimal, using Christofides algorithm: (1) compute MST, (2) find minimum-weight perfect matching on odd-degree vertices, (3) combine to get Eulerian graph, (4) find Eulerian circuit, (5) shortcut to Hamiltonian cycle. Example: dist=[[0,10,15,20],[10,0,35,25],[15,35,0,30],[20,25,30,0]] returns 80.",
+    "answer": "christofides_tsp"
+  },
+  {
+    "task_id": "code_algorithms_12",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `bidirectional_dijkstra` that takes a weighted undirected graph (adjacency list dict[int, list[tuple[int,int]]] of (neighbor, weight)), a start node, and an end node, and returns the shortest distance between them using bidirectional Dijkstra (run Dijkstra from both ends simultaneously, stop when the frontiers meet). Example: graph={0:[(1,4),(2,2)],1:[(0,4),(2,1),(3,5)],2:[(0,2),(1,1),(3,8)],3:[(1,5),(2,8)]}, start=0, end=3 returns 8.",
+    "answer": "bidirectional_dijkstra"
+  },
+  {
+    "task_id": "code_algorithms_13",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `mo_algorithm_queries` that takes a list of integers `arr`, a list of (l, r) query tuples (0-indexed, inclusive), and returns a list of answers for each query — the count of distinct numbers in arr[l..r] — using Mo's algorithm (sqrt decomposition, reorder queries by (block(l//sqrtN), r) with alternating sort). Example: arr=[1,2,1,3,2], queries=[(0,2),(1,4),(0,4)] returns [2,3,3].",
+    "answer": "mo_algorithm_queries"
+  },
+  {
+    "task_id": "code_algorithms_14",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python class called `LiChaoSegmentTree` with methods `add_line(m, b)` (adds y = m*x + b) and `query(x)` (returns the maximum y at given x among all added lines). Use the Li Chao segment tree (each node stores a line, recurses to child where the stored line is worse, O(log C) per operation). Example: tree=LiChaoSegmentTree(-100,100); tree.add_line(2,3); tree.add_line(-1,10); tree.query(5) returns 13 (from y=2*5+3).",
+    "answer": "LiChaoSegmentTree"
+  },
+  {
+    "task_id": "code_algorithms_15",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `divide_conquer_dp` that takes n (number of positions), k (number of groups), and a cost function `cost(l, r)` that returns the cost of grouping positions l..r (0-indexed), and returns the minimum total cost of splitting n positions into k contiguous groups using the divide-and-conquer DP optimization (requires quadrangle inequality and monotone opt). Example: n=7, k=3, and cost(l,r)=sum of absolute differences from median in arr[l:r+1] where arr=[1,3,7,10,15,20,30] returns 10.",
+    "answer": "divide_conquer_dp"
+  },
+  {
+    "task_id": "code_algorithms_16",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `cdq_partial_order` that takes a list of 3D points as tuples (x, y, z) and returns the count of pairs (i, j) such that point i dominates point j (x_i < x_j, y_i < y_j, z_i < z_j) using CDQ divide-and-conquer (sort by x, recursively process left/right, merge by y with BIT for z). Example: points=[(1,2,3),(2,3,1),(3,1,2),(4,4,4)] returns 3 (pairs: (0,1), (0,3), (1,3)).",
+    "answer": "cdq_partial_order"
+  },
+  {
+    "task_id": "code_algorithms_17",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `manacher_odd_even` that takes a string s and returns a tuple (odd_radii, even_radii) where odd_radii[i] is the radius of the longest odd-length palindrome centered at i, and even_radii[i] is the radius of the longest even-length palindrome centered between i-1 and i, both computed using Manacher's O(n) algorithm. Example: s='ababa' returns ([0,2,2,2,0], [0,0,0,0,0]); s='cbbd' returns ([0,0,1,0], [0,1,0,0]).",
+    "answer": "manacher_odd_even"
+  },
+  {
+    "task_id": "code_algorithms_18",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `z_function` that takes a string s and returns a list Z where Z[i] = the length of the longest common prefix between s and s[i:] using the Z-algorithm (linear time, maintain [l,r] interval). Example: s='aaaa' returns [4,3,2,1]; s='abcabcabc' returns [9,0,0,6,0,0,3,0,0]; s='aabxaabxcaabxaabxay' returns [18,1,0,0,4,1,0,0,0,8,1,0,0,4,1,0,0,0,0].",
+    "answer": "z_function"
+  },
+  {
+    "task_id": "code_algorithms_19",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `blossom_matching` that takes an undirected graph (adjacency list dict[int, list[int]]) and returns the size of the maximum matching using Edmonds' Blossom algorithm (O(V^3), handles odd-length cycles by contracting blossoms). Example: graph={0:[1,4],1:[0,2,4],2:[1,3,5,6],3:[2,5],4:[0,1,6],5:[2,3],6:[2,4]} returns 3.",
+    "answer": "blossom_matching"
+  },
+  {
+    "task_id": "code_algorithms_20",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `kosaraju_scc` that takes a directed graph (adjacency list dict[int, list[int]]) and returns a list of strongly connected components (each as a sorted list of node ints), ordered by decreasing finish time of the first DFS pass, using Kosaraju's algorithm (DFS order, transpose graph, DFS on transpose in reverse finish order). Example: graph={0:[1],1:[2],2:[0,3],3:[4],4:[3]} returns [[0,1,2],[3,4]].",
+    "answer": "kosaraju_scc"
+  },
+  {
+    "task_id": "code_algorithms_21",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `tarjan_cut_vertices` that takes an undirected graph (adjacency list dict[int, list[int]]) and returns a tuple (cut_vertices: list[int], bridges: list[tuple[int,int]]) where a cut vertex is a node whose removal disconnects the graph and a bridge is an edge whose removal disconnects it. Use Tarjan's DFS with discovery time and low-link values. Example: graph={0:[1,2],1:[0,2,3],2:[0,1],3:[1,4],4:[3]} returns ([1,3], [(1,3),(3,4)]).",
+    "answer": "tarjan_cut_vertices"
+  },
+  {
+    "task_id": "code_algorithms_22",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `hierholzer_eulerian` that takes a directed graph (adjacency list dict[int, list[int]]) and returns an Eulerian circuit as a list of nodes (starting and ending at the same node) using Hierholzer's algorithm (DFS, remove edges as traversed, splice cycles). If no Eulerian circuit exists (in-degree != out-degree for any node), return an empty list. Example: graph={0:[1,3],1:[2],2:[0,3],3:[0]} returns [0,1,2,0,3,0] or [0,3,0,1,2,0].",
+    "answer": "hierholzer_eulerian"
+  },
+  {
+    "task_id": "code_algorithms_23",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `de_bruijn_generate` that takes two integers k (alphabet size, 2 for binary) and n (order), and returns a De Bruijn sequence B(k,n) as a string of length k^n that contains every possible n-length string over alphabet of size k exactly once as a substring. Use the FKM algorithm (Eulerian circuit in De Bruijn graph of (n-1)-length strings). Example: de_bruijn_generate(2,3) returns '00010111' (contains 000,001,010,101,011,111,110,100).",
+    "answer": "de_bruijn_generate"
+  },
+  {
+    "task_id": "code_algorithms_24",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python class called `HeavyLightDecomposition` with methods `__init__(self, n, adj)` where adj is a tree adjacency list, `path_query(u, v)` that returns the maximum edge weight on the path between u and v, and `update_node(u, new_val)` that updates node u's value. HLD decomposes the tree into heavy paths (O(log n) per query) using a segment tree internally. Example: n=7, edges=[(0,1,5),(0,2,3),(1,3,2),(1,4,4),(2,5,1),(2,6,6)]; hld=HeavyLightDecomposition(n, adj); hld.path_query(3,6) returns 5 (max edge on path 3-1-0-2-6).",
+    "answer": "HeavyLightDecomposition"
+  },
+  {
+    "task_id": "code_algorithms_25",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python class called `CentroidDecomposition` with methods `__init__(self, n, adj)` and `decompose(self)` that builds the centroid tree (each centroid is the node whose removal splits tree into subtrees of size <= n/2). Also implement `distance_to_centroids(self, queries)` which returns for each query node a list of (centroid, distance) pairs up the centroid tree. Example: n=5, edges=[(0,1),(0,2),(1,3),(1,4)], centroid tree has root at node 0 or 1 depending on implementation.",
+    "answer": "CentroidDecomposition"
+  },
+  {
+    "task_id": "code_algorithms_26",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `matrix_fast_pow` that takes a square matrix (list of lists of ints, n x n), an integer exponent e, and an optional mod integer, and returns the matrix raised to power e using fast exponentiation (binary exponentiation, O(n^3 log e)). Multiply modulo `mod` if provided. Example: matrix=[[1,1],[1,0]], e=10 returns [[89,55],[55,34]] (Fibonacci matrix); matrix=[[1,1],[1,0]], e=10, mod=100 returns [[89,55],[55,34]].",
+    "answer": "matrix_fast_pow"
+  },
+  {
+    "task_id": "code_algorithms_27",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `karatsuba_multiply` that takes two integer strings (non-negative, up to 10^1000) and returns their product as a string using Karatsuba's divide-and-conquer algorithm (recursively split numbers into high/low halves, compute 3 multiplications instead of 4, O(n^1.585)). Do not convert to Python int. Example: '1234', '5678' returns '7006652'; '3141592653589793238462643383279502884197169399375105820974944592', '2718281828459045235360287471352662497757247093699959574966967627' returns the correct product.",
+    "answer": "karatsuba_multiply"
+  },
+  {
+    "task_id": "code_algorithms_28",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `fft_multiply` that takes two lists of integers representing polynomial coefficients (lowest degree first) and returns their convolution (product coefficients) using the Cooley-Tukey Fast Fourier Transform algorithm (O(n log n), complex numbers, iterative bit-reversal). Example: a=[1,2,3] (1 + 2x + 3x^2), b=[4,5,6] (4 + 5x + 6x^2) returns [4,13,28,27,18] (4 + 13x + 28x^2 + 27x^3 + 18x^4).",
+    "answer": "fft_multiply"
+  },
+  {
+    "task_id": "code_algorithms_29",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `berlekamp_massey` that takes a list of integers (first terms of a linear recurrence sequence, over a finite field mod prime) and returns the coefficients of the minimal linear recurrence (shortest list c such that s[i] = sum(c[j]*s[i-j-1] for j in range(len(c)))). Use the Berlekamp-Massey algorithm (O(n^2)). Example: s=[0,1,1,2,3,5,8,13] (Fibonacci) returns [1,1] (since fib[i]=fib[i-1]+fib[i-2]). s=[1,1,2,3,5,8,13,21] returns [1,1].",
+    "answer": "berlekamp_massey"
+  },
+  {
+    "task_id": "code_algorithms_30",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `gaussian_elimination_pivot` that takes a matrix A (list of list of floats, m x n) and a vector b (list of floats, length m), and returns a list of solutions x (length n) for the system Ax = b using Gaussian elimination with partial pivoting (row with max absolute value in current column selected as pivot, then forward elimination and back-substitution). If no unique solution exists, return None. Example: A=[[2,1,-1],[-3,-1,2],[-2,1,2]], b=[8,-11,-3] returns [2,3,-1].",
+    "answer": "gaussian_elimination_pivot"
+  },
+  {
+    "task_id": "code_algorithms_31",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `lagrange_interpolate` that takes a list of x-coordinates and y-coordinates (lists of floats, all x distinct) and a target x value, and returns the interpolated y value using Lagrange's polynomial interpolation formula (sum of y_i * L_i(x) where L_i(x) = product_{j!=i} (x - x_j)/(x_i - x_j), O(n^2)). Example: x=[1,2,3], y=[1,4,9], target=4 returns 16 (the quadratic is x^2).",
+    "answer": "lagrange_interpolate"
+  },
+  {
+    "task_id": "code_algorithms_32",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `extended_euclidean_crt` that takes a list of remainders r and a list of moduli m (all pairwise coprime), and returns the smallest non-negative integer x satisfying x = r[i] (mod m[i]) for all i, using the Chinese Remainder Theorem with extended Euclidean algorithm to compute modular inverses of combined moduli. Example: r=[2,3,2], m=[3,5,7] returns 23.",
+    "answer": "extended_euclidean_crt"
+  },
+  {
+    "task_id": "code_algorithms_33",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `pollard_rho_factor` that takes a positive composite integer n (up to 10^12) and returns a single non-trivial factor of n using Pollard's Rho algorithm with Floyd's cycle detection and a Miller-Rabin primality check to ensure n is composite. Example: pollard_rho_factor(8051) returns 83 or 97; pollard_rho_factor(999983*1000003) returns 999983 or 1000003.",
+    "answer": "pollard_rho_factor"
+  },
+  {
+    "task_id": "code_algorithms_34",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `miller_rabin_prime` that takes an integer n (positive, up to 2^32) and returns True if n is prime, False otherwise, using the deterministic Miller-Rabin test with bases [2,7,61] (sufficient for n < 2^32). For larger n up to 2^64, use bases [2,325,9375,28178,450775,9780504,1795265022]. Example: miller_rabin_prime(1000000007) returns True; miller_rabin_prime(1000000009) returns True; miller_rabin_prime(1000000011) returns False.",
+    "answer": "miller_rabin_prime"
+  },
+  {
+    "task_id": "code_algorithms_35",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `tonelli_shanks_sqrt` that takes an integer a and an odd prime p, and returns the smaller of the two modular square roots of a modulo p (an integer r such that r^2 = a mod p), or -1 if no square root exists. Use the Tonelli-Shanks algorithm (factor p-1 = Q * 2^S, find quadratic non-residue, reduce to subgroup). Example: tonelli_shanks_sqrt(5, 41) returns 13 (since 13^2 = 169 = 5 mod 41); tonelli_shanks_sqrt(2, 7) returns 3 or 4; tonelli_shanks_sqrt(3, 7) returns -1.",
+    "answer": "tonelli_shanks_sqrt"
+  },
+  {
+    "task_id": "code_algorithms_36",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `two_sat_solver` that takes a number of Boolean variables n and a list of clauses, where each clause is a tuple (a, b) meaning (a OR b) and a negative literal means NOT x (e.g., -1 means NOT x1). Returns a list of True/False assignments for variables x1..xn that satisfies all clauses, or None if unsatisfiable. Use Kosaraju SCC on the implication graph (2-SAT reduction: each variable x has nodes 2i (true) and 2i+1 (false)). Example: n=2, clauses=[(1,2),(-1,2),(1,-2)] returns [True,True] or [True,False].",
+    "answer": "two_sat_solver"
+  },
+  {
+    "task_id": "code_algorithms_37",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `bron_kerbosch_max_clique` that takes an undirected graph (adjacency list dict[int, set[int]]) and returns the size of the maximum clique (largest complete subgraph) using the Bron-Kerbosch algorithm with pivot (Tomita's variant: choose pivot to minimize branch count, use degeneracy ordering). Example: graph={0:{1,2,3},1:{0,2,3,4},2:{0,1,3,4,5},3:{0,1,2,5},4:{1,2,5},5:{2,3,4}} returns 5 (clique {0,1,2,3,4} or similar).",
+    "answer": "bron_kerbosch_max_clique"
+  },
+  {
+    "task_id": "code_algorithms_38",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `minimum_vertex_cover_bipartite` that takes a bipartite graph (left_size int, right_size int, edges list of tuples (u,v) where 0<=u<left_size, 0<=v<right_size) and returns the size of the minimum vertex cover using Konig's theorem (find maximum matching via Hopcroft-Karp, then find minimum vertex cover via alternating BFS from unmatched left vertices). Example: left_size=3, right_size=3, edges=[(0,0),(0,2),(1,1),(2,0),(2,1)] returns 2 (minimum vertex cover has 2 vertices).",
+    "answer": "minimum_vertex_cover_bipartite"
+  },
+  {
+    "task_id": "code_algorithms_39",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `spfa_negative_cycle` that takes a weighted directed graph (adjacency list dict[int, list[tuple[int,int]]] of (neighbor, weight)) and returns True if the graph contains a negative-weight cycle reachable from node 0, False otherwise, using the Shortest Path Faster Algorithm (queue-based Bellman-Ford optimization, track relaxation count per node, if any node relaxed n times then negative cycle exists). Example: graph={0:[(1,1)],1:[(2,-3)],2:[(0,1)]} returns True; graph={0:[(1,4),(2,2)],1:[(2,-1)],2:[]} returns False.",
+    "answer": "spfa_negative_cycle"
+  },
+  {
+    "task_id": "code_algorithms_40",
+    "category": "Algorithms",
+    "type": "code",
+    "prompt": "Write a Python function called `maximum_independent_set_tree` that takes a tree as an adjacency list (dict[int, list[int]], root=0) and returns the size of the maximum independent set (largest set of nodes with no adjacent pair) using DP with two states: dp[node][0] = max independent set excluding node, dp[node][1] = including node. For excluding: sum of max(dp[child][0], dp[child][1]). For including: 1 + sum of dp[child][0]. Example: n=7, edges=[(0,1),(0,2),(1,3),(1,4),(2,5),(2,6)] returns 4.",
+    "answer": "maximum_independent_set_tree"
+  },
+  {
+    "task_id": "code_data_structures_01",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `FibonacciHeap` with methods `insert(key)`, `extract_min()` (removes and returns minimum key), `decrease_key(node, new_key)`, `merge(other_heap)`, and `is_empty()`. Implement the Fibonacci heap with a circular doubly linked list for the root list, lazy consolidation on extract_min, and cascading cuts on decrease_key. Example: fh=FibonacciHeap(); fh.insert(5); fh.insert(3); fh.insert(7); fh.extract_min() returns 3; fh.extract_min() returns 5.",
+    "answer": "FibonacciHeap"
+  },
+  {
+    "task_id": "code_data_structures_02",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `PairingHeap` with methods `insert(key)`, `extract_min()`, `merge(other)`, and `is_empty()`. Implement the pairing heap using a simple left-child right-sibling linked structure. extract_min removes the root and merges its subtrees in a two-pass fashion (first pass: left-to-right pairing merge; second pass: right-to-left pairing merge). Example: ph=PairingHeap(); ph.insert(4); ph.insert(2); ph.insert(8); ph.extract_min() returns 2; ph.extract_min() returns 4.",
+    "answer": "PairingHeap"
+  },
+  {
+    "task_id": "code_data_structures_03",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `VanEmdeBoasTree` with methods `insert(x)`, `delete(x)`, `successor(x)` (returns smallest stored value > x or None), `predecessor(x)` (returns largest stored value < x or None), and `contains(x)`. Implement the van Emde Boas tree for universe size u = 2^k (k even). Split universe into sqrt(u) clusters each of size sqrt(u); use recursion with summary tree. All operations O(log log u). Example: veb=VanEmdeBoasTree(16); veb.insert(3); veb.insert(7); veb.insert(9); veb.successor(5) returns 7; veb.predecessor(8) returns 7; veb.contains(7) returns True.",
+    "answer": "VanEmdeBoasTree"
+  },
+  {
+    "task_id": "code_data_structures_04",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `PersistentSegmentTree` with methods `__init__(self, arr)` (builds initial tree from list), `set_version(self, idx, new_val)` returns a new root node for the new version (keeping old versions intact), and `query(self, root, l, r)` returns sum over [l, r] for a given version root. Each operation creates O(log n) new nodes. Implement persistent array using node objects with left/right children. Example: pst=PersistentSegmentTree([1,2,3,4]); r0 = pst.root; r1 = pst.set_version(1,10); pst.query(r0,0,2) returns 6; pst.query(r1,0,2) returns 14.",
+    "answer": "PersistentSegmentTree"
+  },
+  {
+    "task_id": "code_data_structures_05",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `TreapImplicit` that implements an implicit treap (randomized BST keyed by position, not value) with methods `insert(pos, val)` (insert val at position pos), `erase(pos)` (remove element at position pos), `get(pos)` (return value at pos), `size()` (number of elements), and `split(k)` / `merge(a, b)` helpers. Each node has a random priority; operations are O(log n) expected. Example: t=TreapImplicit(); t.insert(0,10); t.insert(1,20); t.insert(1,15); t.get(0)=10, t.get(1)=15, t.get(2)=20; t.erase(1); t.get(1)=20.",
+    "answer": "TreapImplicit"
+  },
+  {
+    "task_id": "code_data_structures_06",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `SplayTree` with methods `insert(key)`, `erase(key)` (return bool), `contains(key)` (return bool), and `find_min()` / `find_max()`. Implement the splay tree (self-adjusting BST) where every operation is followed by a splay operation that rotates the accessed node to the root using zig, zig-zig, and zig-zag rotations. Amortized O(log n). Example: st=SplayTree(); st.insert(5); st.insert(3); st.insert(7); st.contains(5) returns True; st.erase(5) returns True; st.contains(5) returns False; st.find_min() returns 3.",
+    "answer": "SplayTree"
+  },
+  {
+    "task_id": "code_data_structures_07",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `AVLTree` with methods `insert(key)`, `erase(key)` (return bool), `contains(key)`, `find_min()`, and `find_max()`. Implement the AVL tree (height-balanced BST) where each node stores its height, and insert/delete rebalance via left/right rotations to keep |balance factor| <= 1. Update heights on the way back up. Example: avl=AVLTree(); avl.insert(10); avl.insert(20); avl.insert(5); avl.insert(15); avl.contains(15) returns True; avl.erase(20) returns True; avl.find_max() returns 15.",
+    "answer": "AVLTree"
+  },
+  {
+    "task_id": "code_data_structures_08",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `RedBlackTree` with methods `insert(key)`, `erase(key)` (return bool), `contains(key)` (return bool), and `find_min()`. Implement the red-black tree (BST with color bit per node, 5 red-black properties). Insert uses iterative insertion + fixup (recolor and rotations for red-red violation). Use sentinel NIL nodes. Example: rbt=RedBlackTree(); rbt.insert(7); rbt.insert(3); rbt.insert(18); rbt.insert(10); rbt.insert(22); rbt.contains(10) returns True; rbt.erase(18) returns True; rbt.find_min() returns 3.",
+    "answer": "RedBlackTree"
+  },
+  {
+    "task_id": "code_data_structures_09",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `BPlusTree` with methods `insert(key, value)` and `search(key)` (returns value list or empty list) and `range_query(low, high)` (returns list of (key,value) pairs). Implement the B+ tree with branching factor M (M=4) where all keys live in leaves and internal nodes guide routing. Leaves form a linked list for efficient range queries. Example: bpt=BPlusTree(4); bpt.insert(10,'a'); bpt.insert(20,'b'); bpt.insert(5,'c'); bpt.insert(15,'d'); bpt.search(10) returns ['a']; bpt.range_query(10,20) returns [(10,'a'),(15,'d'),(20,'b')].",
+    "answer": "BPlusTree"
+  },
+  {
+    "task_id": "code_data_structures_10",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `SkipList` with methods `insert(key)`, `erase(key)` (return bool), `search(key)` (return bool), and `keys()` (return sorted list of all keys). Implement a skip list with probability p=0.5 and max level = max(16, ceil(log2(expected_size))) using random level generation. Each node stores key and forward pointers. Example: sl=SkipList(); sl.insert(3); sl.insert(7); sl.insert(1); sl.search(3) returns True; sl.erase(3) returns True; sl.search(3) returns False; sl.keys() returns [1,7].",
+    "answer": "SkipList"
+  },
+  {
+    "task_id": "code_data_structures_11",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `XorLinkedList` that implements a memory-efficient doubly linked list using XOR of addresses (node pointers). Each node stores `val` and `both` (the XOR of prev and next node ids). Methods: `append(val)`, `get(index)` (returns value at index), `insert(index, val)`, and `delete(index)`. Use Python's `id()` and store nodes in a dict. Traverse forward/backward by XORing current node's `both` with the previous node's id. Example: xl=XorLinkedList(); xl.append(1); xl.append(2); xl.append(3); xl.insert(1,5); xl.get(1) returns 5; xl.delete(1); xl.get(1) returns 2.",
+    "answer": "XorLinkedList"
+  },
+  {
+    "task_id": "code_data_structures_12",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `DSUWithRollbacks` (Disjoint Set Union with rollbacks) with methods `find(x)` (returns root without path compression, just parent chain walk), `union(x, y)` (union by size, stores stack of changes), `snapshot()` (returns current stack size), and `rollback(snapshot)` (reverts to given snapshot state by popping changes off the stack). Used in offline dynamic connectivity and divide-and-conquer graph problems. Example: dsu=DSUWithRollbacks(5); snap=dsu.snapshot(); dsu.union(0,1); dsu.union(2,3); dsu.find(0)==dsu.find(1) returns True; dsu.rollback(snap); dsu.find(0)==dsu.find(1) returns False.",
+    "answer": "DSUWithRollbacks"
+  },
+  {
+    "task_id": "code_data_structures_13",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `Fenwick2D` that implements a 2D Fenwick tree (Binary Indexed Tree) for point updates and prefix sum queries on an n x n matrix. Methods: `update(x, y, delta)` (adds delta at (x,y), 1-indexed), `query(x, y)` (sum of rectangle from (1,1) to (x,y)), and `range_query(x1,y1,x2,y2)` (inclusive). Use nested BIT where outer BIT indexes x and each node has an inner BIT for y. Example: ft=Fenwick2D(4); ft.update(1,1,5); ft.update(2,3,10); ft.range_query(1,1,2,3) returns 15.",
+    "answer": "Fenwick2D"
+  },
+  {
+    "task_id": "code_data_structures_14",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `FenwickRangeUpdate` that implements a Fenwick tree supporting range add and range sum queries using two BITs (B1 and B2). Methods: `range_add(l, r, delta)` (adds delta to arr[l..r], 1-indexed), `prefix_sum(i)` (sum of arr[1..i]), `range_sum(l, r)` (sum of arr[l..r]). All operations O(log n). Example: ft=FenwickRangeUpdate(6); ft.range_add(1,3,5); ft.range_add(2,4,3); ft.range_sum(2,3) returns 13; ft.prefix_sum(3) returns 18.",
+    "answer": "FenwickRangeUpdate"
+  },
+  {
+    "task_id": "code_data_structures_15",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `SparseTableRMQ` with methods `__init__(arr)` (builds sparse table for range minimum queries, O(n log n)) and `query(l, r)` (returns index of minimum element in arr[l..r], inclusive, O(1)). Use precomputed log table and K = floor(log2(len)). For each level k, store minima of intervals of length 2^k. Example: st=SparseTableRMQ([1,3,2,7,9,11,3,5,0,12]); st.query(1,5) returns 1 (index of arr[1]=3 in range [1..5]); st.query(0,9) returns 8 (index of arr[8]=0).",
+    "answer": "SparseTableRMQ"
+  },
+  {
+    "task_id": "code_data_structures_16",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `LazySegmentTree` with methods `__init__(arr)` (builds segment tree for range sum), `range_add(l, r, delta)` (add delta to all elements in [l, r], O(log n)), and `range_sum(l, r)` (returns sum of [l, r], O(log n)). Use lazy propagation: each node stores sum and lazy add value. Push lazy value to children before descending. Example: st=LazySegmentTree([1,2,3,4,5]); st.range_add(1,3,10); st.range_sum(1,4) returns 39 (2+10 + 3+10 + 4+10 + 5 = 12+13+14+5=44? Wait: range_add(1,3): indices 1,2,3 get +10 → [1,12,13,14,5]; range_sum(1,4)=12+13+14+5=44).",
+    "answer": "LazySegmentTree"
+  },
+  {
+    "task_id": "code_data_structures_17",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `IntervalTree` with methods `add_interval(l, r, data)` (adds interval [l, r] with associated data) and `stabbing_query(x)` (returns list of data for all intervals containing x), and `overlap_query(l, r)` (returns list of intervals overlapping [l, r]). Build a balanced BST keyed on l, where each node stores its interval, max_r in subtree, and a list of data. Query uses recursion to prune subtrees whose max_r < query l. Example: it=IntervalTree(); it.add_interval(1,5,'a'); it.add_interval(3,7,'b'); it.add_interval(6,9,'c'); it.stabbing_query(4) returns ['a','b']; it.overlap_query(5,8) returns intervals overlapping [5,8].",
+    "answer": "IntervalTree"
+  },
+  {
+    "task_id": "code_data_structures_18",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `QuadTree2D` with methods `__init__(x_min, y_min, x_max, y_max, capacity)` (defines bounding rectangle and max points per node), `insert(x, y, data)` (inserts point with data), `query_range(x1, y1, x2, y2)` (returns list of data for points in rectangle), and `__len__()`. If a node exceeds capacity, subdivide into 4 quadrants (NW, NE, SW, SE). Example: qt=QuadTree2D(0,0,100,100,4); qt.insert(10,20,'a'); qt.insert(30,40,'b'); qt.insert(60,70,'c'); qt.insert(80,10,'d'); qt.insert(90,90,'e'); qt.query_range(0,0,50,50) returns ['a','b'].",
+    "answer": "QuadTree2D"
+  },
+  {
+    "task_id": "code_data_structures_19",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `RadixTrie` (Patricia trie / compact prefix tree) with methods `insert(key, value)`, `search(key)` (returns value or None), `starts_with(prefix)` (returns list of values with given prefix), and `delete(key)` (returns bool). Each node stores a string label (shared prefix), children dict, and a value leaf. Merge single-child nodes into parent labels. Example: rt=RadixTrie(); rt.insert('apple',1); rt.insert('app',2); rt.insert('bat',3); rt.search('apple') returns 1; rt.search('app') returns 2; rt.starts_with('ap') returns [2,1]; rt.delete('app') returns True.",
+    "answer": "RadixTrie"
+  },
+  {
+    "task_id": "code_data_structures_20",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `MerkleTree` with methods `__init__(data_list)` (builds Merkle tree from list of data blocks), `root_hash()` (returns hex string of Merkle root), `get_proof(index)` (returns list of sibling hashes needed to prove data at index), and `verify_proof(data, proof, root)` (class method, returns True if data belongs to tree with given root). Use SHA-256 for hashing. Pad with copies of last block to make leaf count a power of 2. Example: mt=MerkleTree(['a','b','c','d']); root=mt.root_hash(); proof=mt.get_proof(1); MerkleTree.verify_proof('b',proof,root) returns True.",
+    "answer": "MerkleTree"
+  },
+  {
+    "task_id": "code_data_structures_21",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `CountingBloomFilter` with methods `add(item)` (increment counters for k hash positions) and `contains(item)` (return True if all counters > 0), and `remove(item)` (decrement counters for k hash positions). Use a bytearray of counters (m slots) and k independent hash functions (use hashlib with different seeds). Supports deletions but may have false negatives if counters wrap. Example: bf=CountingBloomFilter(1000,5); bf.add('hello'); bf.add('world'); bf.contains('hello') returns True; bf.remove('hello'); bf.contains('hello') returns False.",
+    "answer": "CountingBloomFilter"
+  },
+  {
+    "task_id": "code_data_structures_22",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `CuckooFilter` with methods `insert(item)` (return False if filter full), `contains(item)` (return bool), and `delete(item)` (return bool). Use a cuckoo hash table with buckets of size b=4, each storing fingerprints (1 byte each). On insert, if target bucket full, randomly kick out a fingerprint and relocate it to its alternate bucket (fingerprint XOR hash). Max kick attempts before declaring full. Example: cf=CuckooFilter(1000); cf.insert('apple'); cf.insert('banana'); cf.contains('apple') returns True; cf.delete('apple') returns True; cf.contains('apple') returns False.",
+    "answer": "CuckooFilter"
+  },
+  {
+    "task_id": "code_data_structures_23",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `MinMaxHeap` that implements a double-ended priority queue supporting `insert(key)`, `get_min()` (returns min without removing), `get_max()` (returns max without removing), `extract_min()` (removes and returns min), `extract_max()` (removes and returns max), and `size()`. Use a single array-based min-max heap where levels alternate between min and max levels. Operations O(log n). Example: mmh=MinMaxHeap(); mmh.insert(5); mmh.insert(3); mmh.insert(8); mmh.insert(1); mmh.get_min() returns 1; mmh.get_max() returns 8; mmh.extract_min() returns 1; mmh.extract_max() returns 8.",
+    "answer": "MinMaxHeap"
+  },
+  {
+    "task_id": "code_data_structures_24",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `BoundedPriorityQueue` that maintains the top-k largest elements (or smallest, configurable in __init__). Methods: `add(item)` (adds item, may evict smallest if over capacity), `get_top()` (returns list of top items sorted descending), and `__len__()`. Use a min-heap of size k (for tracking top-k largest). If new item > heap[0], pushpop. Example: bpq=BoundedPriorityQueue(3); bpq.add(5); bpq.add(10); bpq.add(3); bpq.add(8); bpq.get_top() returns [10,8,5]; bpq.add(1); bpq.get_top() returns [10,8,5] (1 too small to enter).",
+    "answer": "BoundedPriorityQueue"
+  },
+  {
+    "task_id": "code_data_structures_25",
+    "category": "Data Structures",
+    "type": "code",
+    "prompt": "Write a Python class called `SegmentTree2D` that supports point updates and range sum queries on a 2D grid. Methods: `__init__(n, m)` (n rows, m columns), `update(x, y, delta)` (add delta to cell (x,y)), and `query(x1,y1,x2,y2)` (sum of submatrix with inclusive corners). Build a segment tree over rows where each row node contains a segment tree over columns. O(log n * log m) per operation. Example: st=SegmentTree2D(4,4); st.update(0,0,5); st.update(1,2,10); st.update(3,3,7); st.query(0,0,1,2) returns 15; st.query(0,0,3,3) returns 22.",
+    "answer": "SegmentTree2D"
+  },
+  {
+    "task_id": "code_string_01",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `kmp_automaton_build` that takes a pattern string p and returns its KMP automaton as a list of dicts (DFA transition table), where automaton[i][c] = the next state after seeing character c at state i. State i means the length of the current matching prefix of p. Uses the failure function (LPS array) to compute transitions for all characters efficiently. Example: p='abab' returns automaton where automaton[0]['a']=1, automaton[1]['b']=2, automaton[2]['a']=3, automaton[3]['b']=4, automaton[2]['b']=0 (failure transition via LPS).",
+    "answer": "kmp_automaton_build"
+  },
+  {
+    "task_id": "code_string_02",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `aho_corasick_build` that takes a list of pattern strings and returns the Aho-Corasick automaton as a dict of dicts (trie + failure links + output links). Build a trie, compute failure links via BFS (follow parent's failure link's child for missing edges), and add output links (dictionary links) pointing to the nearest suffix that is a complete pattern. Example: patterns=['he','she','his','hers']; automaton has nodes for prefixes of patterns; output('she')=True, output('he')=True at end of 'she' via dictionary link.",
+    "answer": "aho_corasick_build"
+  },
+  {
+    "task_id": "code_string_03",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `suffix_array_doubling` that takes a string s and returns the suffix array as a list of integers (0-indexed starting positions of suffixes in lexicographic order) using the prefix-doubling algorithm (O(n log n)). Sort suffixes by rank pairs (rank[i], rank[i+k]) using counting sort (radix sort). Example: s='banana' returns [5,3,1,0,4,2] (suffixes: a$, ana$, anana$, banana$, na$, nana$); s='mississippi' returns [10,7,4,1,0,9,8,6,3,5,2].",
+    "answer": "suffix_array_doubling"
+  },
+  {
+    "task_id": "code_string_04",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `lcp_kasai` that takes a string s and its suffix array `sa`, and returns the Longest Common Prefix array (LCP) such that lcp[i] = longest common prefix between suffixes at sa[i] and sa[i-1] (with lcp[0]=0). Use Kasai's algorithm (O(n), compute inverse suffix array, then scan maintaining current lcp). Example: s='banana', sa=[5,3,1,0,4,2] returns [0,1,3,0,0,2] (lcp between 'a$' and 'ana$' = 1, 'ana$' and 'anana$' = 3, etc.).",
+    "answer": "lcp_kasai"
+  },
+  {
+    "task_id": "code_string_05",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `burrows_wheeler_transform` that takes a string s and returns the Burrows-Wheeler Transform (BWT) as a string and the index of the original string in the sorted rotations. Construct all rotations of s + sentinel '$', sort lexicographically, take last character of each rotation. Also implement `inverse_bwt(bwt, idx)` that reconstructs the original string using the LF-mapping (last-to-first mapping via rank/select). Example: s='banana' returns ('annb$aa', 4); inverse_bwt('annb$aa', 4) returns 'banana$'.",
+    "answer": "burrows_wheeler_transform"
+  },
+  {
+    "task_id": "code_string_06",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `fm_index_search` that implements FM-index exact pattern matching. It takes a BWT string `bwt` and the original text length `n`, and returns a class/function `count(pattern)` that returns the number of occurrences of pattern in the original text. Implement the C array (count of chars less than c) and Occ table (rank of c up to position i) for O(|pattern|) counting. Example: bwt='annb$aa', n=6; fm=fm_index_search(bwt,n); fm.count('ana') returns 1; fm.count('ban') returns 1; fm.count('xyz') returns 0.",
+    "answer": "fm_index_search"
+  },
+  {
+    "task_id": "code_string_07",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `damerau_levenshtein` that takes two strings a and b and returns their Damerau-Levenshtein distance (minimum operations: insert, delete, substitute, or transpose adjacent characters). Use DP with a 2D matrix where dp[i][j] = distance between a[:i] and b[:j], with an extra check for transpositions when a[i-1]==b[j-2] and a[i-2]==b[j-1]. Example: 'ca', 'abc' returns 2 (delete 'c' then transpose? Actually: 'ca'->'ac'->'abc' = 2); 'kitten', 'sitting' returns 3; 'ab', 'ba' returns 1 (transpose).",
+    "answer": "damerau_levenshtein"
+  },
+  {
+    "task_id": "code_string_08",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `needleman_wunsch_align` that takes two strings seq1, seq2 and match_score, mismatch_penalty, gap_penalty (all integers), and returns the optimal global alignment as a tuple (aligned_seq1, aligned_seq2, score) using the Needleman-Wunsch DP algorithm (O(n*m)). Fill DP matrix, then traceback from bottom-right. Gaps shown as '-'. Example: needleman_wunsch_align('GATTACA','GCATGCG',1,-1,-1) returns e.g. ('G-ATTACA','GCA-TGCG', 0) or similar optimal alignment.",
+    "answer": "needleman_wunsch_align"
+  },
+  {
+    "task_id": "code_string_09",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `smith_waterman_local` that takes two strings seq1, seq2 and match_score, mismatch_penalty, gap_penalty, and returns the optimal local alignment (aligned1, aligned2, score) using the Smith-Waterman algorithm. Fill DP matrix where negative cells are set to 0, traceback from the maximum cell (stop at 0). Example: smith_waterman_local('GGTTGACTA','TGTTACGG',1,-1,-1) returns e.g. ('GTTGAC','GTT-AC', 4) or optimal local alignment.",
+    "answer": "smith_waterman_local"
+  },
+  {
+    "task_id": "code_string_10",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `hirschberg_linear` that takes two strings a and b, and returns the optimal global alignment using Hirschberg's linear-space algorithm (divide-and-conquer, O(n*m) time but O(min(n,m)) space). Find the midpoint split point by computing forward DP for first half and reverse DP for second half, then recurse on left and right substrings. Example: hirschberg_linear('AGTACGCA','TATGC') returns a tuple of aligned strings with '-' for gaps, e.g. ('AGTACGCA','-TAT-GC-') or equivalent optimal alignment.",
+    "answer": "hirschberg_linear"
+  },
+  {
+    "task_id": "code_string_11",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `longest_repeated_substring` that takes a string s and returns the longest substring that appears at least twice (occurrences may overlap), using a suffix array and LCP array. The maximum LCP value corresponds to the longest repeated substring. Return the substring, or '' if none. Example: longest_repeated_substring('banana') returns 'ana'; longest_repeated_substring('abcabcabc') returns 'abcabc'; longest_repeated_substring('abcdef') returns ''.",
+    "answer": "longest_repeated_substring"
+  },
+  {
+    "task_id": "code_string_12",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `distinct_substrings_count` that takes a string s and returns the number of distinct non-empty substrings using a suffix array and LCP array. For each suffix, add (len(suffix) - lcp[i]) to the total (each suffix contributes its prefixes minus the ones already counted in the previous suffix). Example: distinct_substrings_count('banana') returns 15; distinct_substrings_count('aaaa') returns 4 ('a','aa','aaa','aaaa'); distinct_substrings_count('abc') returns 6.",
+    "answer": "distinct_substrings_count"
+  },
+  {
+    "task_id": "code_string_13",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `lyndon_factorization` that takes a string s and returns its Lyndon factorization as a list of substrings (each factor is a Lyndon word: strictly smaller than all its non-trivial rotations) using Duval's algorithm (O(n)). Scan with three pointers (i, j, k), when s[k] > s[j], new starting point; when s[k] == s[j], advance both. Example: lyndon_factorization('ababc') returns ['ab','abc']; lyndon_factorization('mississippi') returns ['mississi','ppi']; lyndon_factorization('abcab') returns ['abc','ab'].",
+    "answer": "lyndon_factorization"
+  },
+  {
+    "task_id": "code_string_14",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `min_string_rotation` that takes a string s and returns the lexicographically smallest rotation of s (0-indexed starting index of that rotation) using Booth's O(n) algorithm. Maintain two pointers i and j, and a skip counter k for known equal prefixes. Example: min_string_rotation('baab') returns 1 (rotation starting at index 1: 'abba' is smallest); min_string_rotation('cbbc') returns 1 ('bccb'); min_string_rotation('aaaa') returns 0.",
+    "answer": "min_string_rotation"
+  },
+  {
+    "task_id": "code_string_15",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `arithmetic_coding_compress` that takes an input string s (over a known alphabet of lowercase letters a-z) and returns the compressed representation as a tuple (low, high, total_count_dict) where low and high are Python Fraction objects from `fractions.Fraction` representing the interval [low, high) after encoding. Use arithmetic coding: maintain interval [low, high), shrink it proportionally for each symbol. Example: arithmetic_coding_compress('abac') returns fractions representing the final interval (e.g., low=Fraction(...), high=Fraction(...)).",
+    "answer": "arithmetic_coding_compress"
+  },
+  {
+    "task_id": "code_string_16",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `arithmetic_coding_decompress` that takes the output of arithmetic_coding_compress (low, high, total_count_dict, and original_length) and reconstructs the original string. Decode by determining which symbol's interval contains the scaled target (low+high)/2, then updating the interval. Returns the decoded string. Example: low, high, counts = arithmetic_coding_compress('abac'); arithmetic_coding_decompress(low, high, counts, 4) returns 'abac'.",
+    "answer": "arithmetic_coding_decompress"
+  },
+  {
+    "task_id": "code_string_17",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `lzw_compress_decompress` that takes a string `s` (optional for compress) or a list of ints `compressed` (optional for decompress) and returns either the compressed list of integer codes (compress mode) or the decompressed string (decompress mode). Use LZW: build dictionary of 256 single-byte codes, extend with new entries like previous + first_char_of_current. Handle the kwtf (Klootsky-Welch-Terry-Fenwick) corner case where next code is not yet in dictionary during decompress. Example: lzw_compress_decompress(s='TOBEORNOTTOBEORNOT') returns [84,79,66,69,79,82,78,79,84,256,258,260,265,259,261,263]; calling decompress on that list returns the original string.",
+    "answer": "lzw_compress_decompress"
+  },
+  {
+    "task_id": "code_string_18",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python class called `HuffmanCoding` with methods `compress(data)` (returns tuple (encoded_bitstring, tree_serialized)) and `decompress(encoded_data, tree)`. Build a Huffman tree from character frequencies (min-heap of nodes, combine two smallest). Encode each character with its path (0=left,1=right). Serialize the tree for decompression using preorder traversal (leaf=1+byte, internal=0). Example: hc=HuffmanCoding(); enc, tree = hc.compress('aaabbc'); len(enc) should be close to optimal ~10 bits; hc.decompress(enc, tree) returns 'aaabbc'.",
+    "answer": "HuffmanCoding"
+  },
+  {
+    "task_id": "code_string_19",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `run_length_encoding` that takes a string s and returns its run-length encoded representation as a list of (char, count) tuples. Also implement `run_length_decode(encoded)` that takes the tuple list and returns the original string. The encoding must handle cases where runs are short (count=1) in a compact form. Example: run_length_encoding('aaabbccccd') returns [('a',3),('b',2),('c',4),('d',1)]; run_length_decode([('a',3),('b',2),('c',4),('d',1)]) returns 'aaabbccccd'; encode('') returns []; decode([]) returns ''.",
+    "answer": "run_length_encoding"
+  },
+  {
+    "task_id": "code_string_20",
+    "category": "String Manipulation",
+    "type": "code",
+    "prompt": "Write a Python function called `optimal_string_alignment` that takes two strings a and b and returns the optimal string alignment (restricted edit distance) distance using DP with a 2D matrix. This is similar to Damerau-Levenshtein but does not allow multiple transpositions on the same substring: if a[i-1]==b[j-2] and a[i-2]==b[j-1], then dp[i][j] = min(dp[i][j], dp[i-2][j-2] + cost of transposition). Each substring can be transposed at most once. Example: 'ca', 'abc' returns 3 (delete/insert vs transpositions); 'ab', 'ba' returns 1 (transpose).",
+    "answer": "optimal_string_alignment"
+  },
+  {
+    "task_id": "code_math_01",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `pollard_rho_factorize` that takes a positive composite integer n (up to 10^15) and returns a list of its prime factors (with multiplicity) using Pollard's Rho algorithm combined with Miller-Rabin primality testing. Recurse on composite factors. Use f(x) = (x*x + c) % n with random c and Floyd's cycle detection. Example: pollard_rho_factorize(999999000001) returns [1009, 1009, 999983] or similar; pollard_rho_factorize(123456789) returns [3, 3, 3607, 3803]; pollard_rho_factorize(97) returns [97] (prime).",
+    "answer": "pollard_rho_factorize"
+  },
+  {
+    "task_id": "code_math_02",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `miller_rabin_is_prime` that takes an integer n (positive, up to 2^64) and returns True if n is prime, False otherwise, using the deterministic Miller-Rabin test with the optimal set of bases for 64-bit integers: [2, 325, 9375, 28178, 450775, 9780504, 1795265022]. Implement modular exponentiation with 128-bit intermediate multiplication (Python's pow with three args handles this). Handle n < 2 separately. Example: miller_rabin_is_prime(18446744073709551615) returns False (2^64-1 is composite); miller_rabin_is_prime(18446744073709551629) returns False; miller_rabin_is_prime(2**61-1) returns True.",
+    "answer": "miller_rabin_is_prime"
+  },
+  {
+    "task_id": "code_math_03",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `extended_euclidean_crt` that takes a list of tuples (r_i, m_i) where m_i are pairwise coprime moduli, and returns the unique solution x modulo M (product of all m_i) to the system x = r_i (mod m_i) for all i, using the Chinese Remainder Theorem. Use the extended Euclidean algorithm to compute modular inverses of (M/m_i) modulo m_i. Example: crt([(2,3),(3,5),(2,7)]) returns 23; crt([(0,4),(3,5)]) returns 8; crt([(1,2),(2,3),(3,5)]) returns 23.",
+    "answer": "extended_euclidean_crt"
+  },
+  {
+    "task_id": "code_math_04",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `lagrange_interpolate` that takes a list of (x_i, y_i) points (lists of floats, all x_i distinct) and a target x value, and returns the interpolated y value using Lagrange interpolation O(n^2). Compute L_i(x) = product_{j!=i} (x - x_j) / (x_i - x_j) for each i, then sum y_i * L_i(x). Example: points=[(1,1),(2,4),(3,9)], target=4 returns 16.0 (since y=x^2); points=[(0,1),(1,2),(2,4)], target=0.5 returns 1.5 (linear interpolation: y=x+1).",
+    "answer": "lagrange_interpolate"
+  },
+  {
+    "task_id": "code_math_05",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `gaussian_elimination_solve` that takes a matrix A (list of lists of floats, m x n) and a vector b (list of floats, length m), and returns the solution vector x (length n) for the system Ax = b using Gaussian elimination with scaled partial pivoting (choose pivot with max |a_ij| / s_i where s_i is max |row_i|). Perform forward elimination to reach row-echelon form, then back-substitution. If no unique solution, return None. Example: A=[[1,2,-1],[2,1,-2],[-3,1,1]], b=[3,3,-6] returns [1.0,-1.0,2.0].",
+    "answer": "gaussian_elimination_solve"
+  },
+  {
+    "task_id": "code_math_06",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `fft_multiply` that takes two lists of integers representing polynomial coefficients (lowest degree first) and returns their convolution using the Fast Fourier Transform (Cooley-Tukey iterative algorithm with bit-reversal permutation). Use Python's complex numbers. Pad to next power of 2, compute FFT of both, pointwise multiply, inverse FFT, round to nearest integers. Example: a=[1,2,3], b=[4,5,6] returns [4,13,28,27,18] (product is 4 + 13x + 28x^2 + 27x^3 + 18x^4); a=[1,0,2], b=[0,5,0] returns [0,5,0,10,0].",
+    "answer": "fft_multiply"
+  },
+  {
+    "task_id": "code_math_07",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `ntt_multiply` that takes two lists of integers representing polynomial coefficients modulo a prime p = 998244353 = 119*2^23+1 (with primitive root 3), and returns their convolution using the Number Theoretic Transform (NTT, the finite-field analog of FFT). Implement iterative NTT with bit-reversal, ntt(a, invert) function, and multiply via pointwise multiplication in frequency domain. Example: ntt_multiply([1,2,3],[4,5,6]) returns [4,13,28,27,18]; ntt_multiply([1,1],[1,1]) returns [1,2,1].",
+    "answer": "ntt_multiply"
+  },
+  {
+    "task_id": "code_math_08",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `berlekamp_massey` that takes a list of integers seq (first n terms of a linear recurrence over integers) and returns the minimal linear recurrence coefficients as a list [c_1, c_2, ..., c_k] where for all i >= k, seq[i] = sum(c_j * seq[i-j] for j in range(1, k+1)). Use the Berlekamp-Massey algorithm: initialize C=[1], B=[1], L=0, m=1, b=1. For each term, compute discrepancy d; if d=0 extend C with zero; else update C = C - (d/b) * x^m * B. Example: seq=[0,1,1,2,3,5,8,13] returns [1,1] (Fibonacci); seq=[1,1,2,3,5,8,13] returns [1,1]; seq=[2,5,12,29,70,169] returns [2,1] (Pell).",
+    "answer": "berlekamp_massey"
+  },
+  {
+    "task_id": "code_math_09",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `tonelli_shanks_sqrt` that takes three integers: a, an odd prime p, and an optional `mod` parameter (same as p), and returns the smallest non-negative modular square root r such that r^2 = a (mod p), or -1 if no square root exists. Use the Tonelli-Shanks algorithm: write p-1 = Q * 2^S; find quadratic non-residue z; set M=S, c=z^Q, t=a^Q, R=a^((Q+1)//2). Loop reducing M while t != 1: find smallest i such that t^(2^i) = 1; update using c^(2^(M-i-1)). Example: tonelli_shanks_sqrt(2, 113) returns 62; tonelli_shanks_sqrt(5, 41) returns 13; tonelli_shanks_sqrt(3, 11) returns 5; tonelli_shanks_sqrt(10, 17) returns -1.",
+    "answer": "tonelli_shanks_sqrt"
+  },
+  {
+    "task_id": "code_math_10",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `baby_step_giant_step` that takes integers a, b, p (where a is a generator of a cyclic group mod prime p) and returns the discrete logarithm x such that a^x = b (mod p), or -1 if no solution exists. Use the baby-step giant-step algorithm (meet-in-the-middle, O(sqrt(p))). Let m = ceil(sqrt(p-1)). Precompute baby steps: a^j mod p for j in [0,m). Then iterate giant steps: b * (a^(-m*i)) mod p, checking against the baby step hash table. Example: baby_step_giant_step(2, 3, 11) returns 8 (since 2^8 = 256 = 3 mod 11); baby_step_giant_step(3, 4, 13) returns 4 (since 3^4 = 81 = 3 mod 13? No, 3^4=81=3 mod 13, not 4). Let me redo: baby_step_giant_step(3, 4, 13): 3^x=4 mod13. 3^1=3, 3^2=9, 3^3=27=1, 3^4=3, period 3, so 4 not reachable. Returns -1.",
+    "answer": "baby_step_giant_step"
+  },
+  {
+    "task_id": "code_math_11",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `linear_sieve` that takes an integer n and returns a tuple (is_prime: list[bool], primes: list[int], spf: list[int]) where spf[i] = smallest prime factor of i, computed using the linear sieve (O(n)). Iterate i from 2 to n, mark i as prime if not yet visited, then iterate over primes p <= spf[i] and mark i*p with spf[i*p]=p, stop when p > spf[i]. Example: linear_sieve(20) returns ([False,False,True,True,False,True,False,True,False,False,...], [2,3,5,7,11,13,17,19], [0,0,2,3,2,5,2,7,2,3,2,11,2,13,2,3,2,17,2,19,2]).",
+    "answer": "linear_sieve"
+  },
+  {
+    "task_id": "code_math_12",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `mobius_sieve` that takes an integer n and returns the Möbius function mu[i] for all i in [1..n] (mu[i]=0 if i has squared prime factor, otherwise (-1)^k where k is number of distinct prime factors). Compute using a linear sieve: track smallest prime factor (spf) and number of distinct prime factors or squared factor flag. Example: mobius_sieve(10) returns [0,1,-1,-1,0,-1,1,-1,0,0,1] (mu[1]=1, mu[2]=-1, mu[3]=-1, mu[4]=0, mu[5]=-1, mu[6]=1, mu[7]=-1, mu[8]=0, mu[9]=0, mu[10]=1).",
+    "answer": "mobius_sieve"
+  },
+  {
+    "task_id": "code_math_13",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `euler_totient_sieve` that takes an integer n and returns a list phi where phi[i] = Euler's totient function for all i in [0..n]. Use the linear sieve: initialize phi[i]=i for all i. When a prime p is found, for each multiple i*p, if i%p==0 then phi[i*p]=phi[i]*p else phi[i*p]=phi[i]*(p-1). Example: euler_totient_sieve(12) returns [0,1,1,2,2,4,2,6,4,6,4,10,4] (phi[1]=1, phi[2]=1, phi[3]=2, phi[4]=2, phi[5]=4, phi[6]=2, phi[7]=6, phi[8]=4, phi[9]=6, phi[10]=4, phi[11]=10, phi[12]=4).",
+    "answer": "euler_totient_sieve"
+  },
+  {
+    "task_id": "code_math_14",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `matrix_linear_recurrence` that takes initial terms (list of ints), coefficients (list of ints, length k), and an integer n, and returns the nth term of the linear recurrence defined by: for i >= k, seq[i] = sum(coeffs[j] * seq[i-j-1] for j in range(k)). Use matrix exponentiation: construct companion matrix of size k x k, compute its (n-k+1)th power, multiply by initial vector. Example: seq[0]=0, seq[1]=1, coeffs=[1,1] (Fibonacci), matrix_linear_recurrence([0,1],[1,1],10) returns 55; matrix_linear_recurrence([2,1],[2,1],10) returns 8119 (Pell).",
+    "answer": "matrix_linear_recurrence"
+  },
+  {
+    "task_id": "code_math_15",
+    "category": "Math",
+    "type": "code",
+    "prompt": "Write a Python function called `lagrange_interpolation_ff` that takes a list of (x_i, y_i) points over a finite field F_p (where p is a large prime, sorted by x_i) and returns a function that can evaluate the unique degree-(n-1) polynomial at any point mod p in O(n) time after precomputation. Use the fact that for equispaced or consecutive x_i = i (0,1,...,n-1), factorials can precompute numerator and denominator polynomials for O(n) barycentric evaluation. Example: points=[(0,1),(1,4),(2,9),(3,16)] over any large prime p > 16, evaluate at x=5 returns 36 (since y=x^2+2x+1=(x+1)^2 at 5 is 36 mod p).",
+    "answer": "lagrange_interpolation_ff"
+  }
+]

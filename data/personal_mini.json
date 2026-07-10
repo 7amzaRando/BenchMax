@@ -1,0 +1,37 @@
+[
+  {
+    "task_id": "personal_code_1",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `segment_tree_lazy` that takes a list `arr` and a list of operations. Support two operations: 'update l r v' (add v to all elements in [l, r]) and 'query l r' (return sum of [l, r]). Build a segment tree with lazy propagation for range updates and range sum queries, both in O(log n). The function should execute all operations in order and return a list of query results.",
+    "answer": "def segment_tree_lazy"
+  },
+  {
+    "task_id": "personal_knowledge_1",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which of the following formal languages is recognized by a linear bounded automaton but NOT by a pushdown automaton?\nA) {aⁿbⁿ | n ≥ 0}\nB) {aⁿbⁿcⁿ | n ≥ 0}\nC) {wwᴿ | w ∈ {a,b}*}\nD) {aⁿ | n is prime}",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_if_1",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly four sentences about concurrent data structures. The first and fourth sentences must each contain the word 'lock-free' exactly once. The second sentence must contain 'wait-free' and 'progress'. The third sentence must contain 'atomic'. Each sentence must be between 8 and 20 words. Number each sentence as '1.', '2.', '3.', '4.' at the start of its line. No other text before or after.",
+    "answer": "lock-free, wait-free, progress, atomic, concurrent, data, structures, sentences"
+  },
+  {
+    "task_id": "personal_math_1",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the smallest positive integer solution to the system of congruences: x ≡ 3 (mod 5), x ≡ 5 (mod 7), x ≡ 2 (mod 11). Apply the Chinese Remainder Theorem step by step. Output the solution as an integer followed by ' solution'.",
+    "answer": "68 solution Chinese remainder theorem congruences modular integer"
+  },
+  {
+    "task_id": "personal_logic_1",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "There are five houses in a row, each painted a different color, inhabited by people of different nationalities, each drinking a different beverage, smoking a different brand, and keeping a different pet. Use these clues: (1) The Brit lives in the red house. (2) The Swede keeps dogs. (3) The Dane drinks tea. (4) The green house is immediately left of the white house. (5) The green house's owner drinks coffee. (6) The person who smokes Pall Mall keeps birds. (7) The owner of the yellow house smokes Dunhill. (8) The man living in the center house drinks milk. (9) The Norwegian lives in the first house. (10) The man who smokes Blends lives next to the cat owner. (11) The horse owner lives next to the Dunhill smoker. (12) The man who smokes Blue Master drinks root beer. (13) The German smokes Prince. (14) The Norwegian lives next to the blue house. (15) The Blends smoker has a neighbor who drinks water. Who owns the fish? Output the nationality in lowercase followed by ' owns the fish'.",
+    "answer": "German, owns, fish, zebra, puzzle, nationality, deduction, clues, logic"
+  }
+]

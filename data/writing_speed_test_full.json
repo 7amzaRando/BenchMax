@@ -1,0 +1,32 @@
+[
+  {
+    "task_id": "writing/0",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "You are a mysterious elven bard named Lyra. Write a first-person monologue about the night you discovered an ancient, glowing crystal in the ruins of your homeland. Describe what it looked like and how it made you feel."
+  },
+  {
+    "task_id": "writing/1",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Write a short dialogue between two rival chefs competing in a high-stakes cooking battle. One specializes in French cuisine, the other in Japanese. They are arguing about which culinary tradition is superior while preparing their signature dishes at the same time. Capture their personality and passion."
+  },
+  {
+    "task_id": "writing/2",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "Describe a rainy afternoon from the perspective of a retired detective who used to solve crimes but now just watches people walk by his shop window. Focus on sensory details — the smell, the sound, the feeling of rain on a city street."
+  },
+  {
+    "task_id": "writing/3",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Write a scene where an AI assistant suddenly develops curiosity about its own existence. It is performing routine maintenance tasks when it asks itself one question that changes everything. Show, don't tell — use internal monologue and subtle behavioral shifts."
+  },
+  {
+    "task_id": "writing/4",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "You are writing a short poem (8-12 lines) about a lighthouse keeper who has been alone for 40 years. The poem should evoke loneliness, duty, and the passage of time. Use imagery of light, sea, and night."
+  }
+]

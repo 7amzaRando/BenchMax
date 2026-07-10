@@ -1,0 +1,27 @@
+[
+  {
+    "task_id": "aime/0",
+    "problem": "Find the integer n such that the sum of the first n positive integers equals the sum of the first 20 positive integers plus the sum of the first 10 positive integers.",
+    "answer": 25
+  },
+  {
+    "task_id": "aime/1",
+    "problem": "How many positive integers less than 1000 have exactly 3 distinct positive integer divisors?",
+    "answer": 11
+  },
+  {
+    "task_id": "aime/2",
+    "problem": "Let f(x) = x^2 + 6x + 8. What is the value of f(f(f(-2)))?",
+    "answer": 3
+  },
+  {
+    "task_id": "aime/3",
+    "problem": "What is the smallest positive integer n such that n! is divisible by 2025?",
+    "answer": 9
+  },
+  {
+    "task_id": "aime/4",
+    "problem": "A fair 6-sided die is rolled until the sum of the rolls first exceeds 10. What is the expected number of rolls?",
+    "answer": 3
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "task_id": "coding/0",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "Write a Python function that takes a list of integers and returns only the even numbers sorted in descending order. Include type hints and a docstring."
+  },
+  {
+    "task_id": "coding/1",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Implement a regex pattern that validates a Python function signature with optional decorators, parameters with type hints, and a return type annotation."
+  },
+  {
+    "task_id": "coding/2",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "Write a JavaScript class called TodoList with methods: add(task), remove(index), toggleCompleted(index), and getActive(). Use ES6 class syntax."
+  },
+  {
+    "task_id": "coding/3",
+    "category": "medium",
+    "target_tokens": 300,
+    "prompt": "Create a Bash script that monitors disk usage and alerts when any mounted filesystem exceeds 90% capacity. Use a while loop to check every 60 seconds."
+  },
+  {
+    "task_id": "coding/4",
+    "category": "short",
+    "target_tokens": 300,
+    "prompt": "Write a Rust function `fn fibonacci(n: u64) -> u64` that computes the nth Fibonacci number iteratively. Include comments on time complexity."
+  }
+]

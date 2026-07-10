@@ -1,0 +1,702 @@
+[
+  {
+    "task_id": "personal_code_1",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `segment_tree_lazy` that takes a list `arr` and a list of operations. Support two operations: 'update l r v' (add v to all elements in [l, r]) and 'query l r' (return sum of [l, r]). Build a segment tree with lazy propagation for range updates and range sum queries, both in O(log n). The function should execute all operations in order and return a list of query results.",
+    "answer": "def segment_tree_lazy"
+  },
+  {
+    "task_id": "personal_code_2",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `a_star_search` that implements A* pathfinding on a grid with obstacles. It takes `grid` (0=open, 1=blocked), `start` (row, col), and `goal` (row, col). Use Manhattan distance heuristic and a min-heap priority queue. Return the shortest path as a list of (row, col) tuples from start to goal inclusive, or an empty list if no path exists.",
+    "answer": "def a_star_search"
+  },
+  {
+    "task_id": "personal_code_3",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `dinic_max_flow` that implements Dinic's algorithm for maximum flow. It takes `n` (node count), `edges` as (from, to, capacity) tuples, source `s`, and sink `t`. Build a level graph using BFS, then send blocking flow using DFS with dead-end pruning. Return the maximum flow value as an integer.",
+    "answer": "def dinic_max_flow"
+  },
+  {
+    "task_id": "personal_code_4",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `suffix_array_lcp` that takes a string `s` and returns two lists: the suffix array and the LCP array. Implement the O(n log n) doubling algorithm with counting sort for the suffix array, then use Kasai's algorithm to compute the LCP array (longest common prefix between consecutive suffixes). Handle strings up to length 10^5 efficiently.",
+    "answer": "def suffix_array_lcp"
+  },
+  {
+    "task_id": "personal_code_5",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `convex_hull_graham` that takes a list of (x, y) points and returns the convex hull as a list of points in counterclockwise order using Graham's scan. First find the point with the lowest y-coordinate (break ties by x), sort by polar angle, then scan with cross-product orientation tests. Exclude collinear interior points, keeping only hull vertices.",
+    "answer": "def convex_hull_graham"
+  },
+  {
+    "task_id": "personal_code_6",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `implicit_treap` that implements an implicit treap (cartesian tree with random priorities). Support `insert(pos, val)` to insert val at position pos and `range_sum(l, r)` to compute the sum of elements in [l, r). Use split(root, k) and merge(left, right) as primitives. The function takes an initial list and a list of operations and returns a list of range sum results.",
+    "answer": "def implicit_treap"
+  },
+  {
+    "task_id": "personal_code_7",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `three_dim_knapsack` that solves the 0/1 knap problem with weight, volume, and value constraints. It takes arrays `weights`, `volumes`, `values`, weight capacity `W`, and volume capacity `V`. Use a 3D DP table dp[i][w][v] tracking maximum value achievable with first i items, weight w, and volume v. Return the maximum total value.",
+    "answer": "def three_dim_knapsack"
+  },
+  {
+    "task_id": "personal_code_8",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `levenshtein_linear` that computes the Levenshtein edit distance between two strings using O(min(n,m)) space. Return both the distance and the edit sequence as a list of ('insert', char), ('delete', char), or ('substitute', old, new) operations. Use two rolling DP arrays for distance, then reconstruct the path using Hirschberg's divide-and-conquer technique.",
+    "answer": "def levenshtein_linear"
+  },
+  {
+    "task_id": "personal_code_9",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `rabin_karp_2d` that implements 2D pattern matching using rolling hash. It takes a 2D `text` matrix and a 2D `pattern` matrix of characters. Compute hash values for all text submatrices the same size as the pattern using a 2D rolling hash with base1 for rows and base2 for columns. Return a list of (row, col) positions where pattern occurs.",
+    "answer": "def rabin_karp_2d"
+  },
+  {
+    "task_id": "personal_code_10",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `manacher_palindromes` that takes a string `s` and returns a list of all distinct palindromic substrings using Manacher's O(n) algorithm. Transform s by inserting separators between characters, compute palindrome radii at each center using mirror positions and expansion, then extract all unique palindromes. Return them as a list of strings.",
+    "answer": "def manacher_palindromes"
+  },
+  {
+    "task_id": "personal_code_11",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `tarjan_scc` that implements Tarjan's algorithm for finding strongly connected components in a directed graph. It takes `n` (node count) and a list of edges as (u, v) tuples. Maintain an index counter, a stack, and arrays for indices, low-link values, and on-stack tracking. Return a list of SCCs, each as a list of node indices in topological order (reversed).",
+    "answer": "def tarjan_scc"
+  },
+  {
+    "task_id": "personal_code_12",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `bidirectional_dijkstra` that implements bidirectional Dijkstra's shortest path algorithm. It takes `n` node count, adjacency list `graph` (list of (neighbor, weight) pairs), `source`, and `target`. Run forward Dijkstra from source and backward Dijkstra from target simultaneously using two heaps, alternating between them. Terminate when a node has been settled by both searches. Return the shortest distance and the path as a list of nodes.",
+    "answer": "def bidirectional_dijkstra"
+  },
+  {
+    "task_id": "personal_code_13",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `floyd_warshall_paths` that implements Floyd-Warshall for all-pairs shortest paths. It takes `n` and a matrix `dist` where dist[i][j] is the edge weight from i to j (infinity if no edge). Compute shortest distances and also maintain a next-node matrix `nxt` for path reconstruction. Return both the distance matrix and a function that reconstructs the path between any two nodes.",
+    "answer": "def floyd_warshall_paths"
+  },
+  {
+    "task_id": "personal_code_14",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `chinese_postman` that implements the route inspection (Chinese postman) algorithm for an undirected graph. It takes `n` (node count) and `edges` as (u, v, weight) tuples. Find all odd-degree vertices, compute all-pairs shortest paths between them, solve a minimum-weight perfect matching on odd vertices (via DP over subsets), then determine the minimum length of a closed walk covering every edge at least once. Return the total length.",
+    "answer": "def chinese_postman"
+  },
+  {
+    "task_id": "personal_code_15",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `hopcroft_karp` that implements the Hopcroft-Karp algorithm for maximum bipartite matching. It takes `left_n`, `right_n`, and `edges` as (left_node, right_node) tuples. Use alternating BFS to find the shortest augmenting path distance and DFS to find disjoint augmenting paths in batches. Return the maximum matching size and the matching as a dict mapping left nodes to right nodes.",
+    "answer": "def hopcroft_karp"
+  },
+  {
+    "task_id": "personal_code_16",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `lis_nlogn` that implements the O(n log n) algorithm for the longest increasing subsequence. It takes a list of integers and returns both the length of the LIS and one longest increasing subsequence as a list. Maintain an array `tails` where tails[i] is the smallest possible tail value of an increasing subsequence of length i+1. For reconstruction, also store predecessor indices.",
+    "answer": "def lis_nlogn"
+  },
+  {
+    "task_id": "personal_code_17",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `voronoi_fortune` that implements Fortune's sweep-line algorithm for computing a Voronoi diagram of a set of 2D points. It takes a list of (x, y) seed points. Use a priority queue of site events and circle events, and a balanced BST of beach line arcs. Output the Voronoi edges as a list of line segment tuples ((x1,y1), (x2,y2)) representing the finite edges of the diagram.",
+    "answer": "def voronoi_fortune"
+  },
+  {
+    "task_id": "personal_code_18",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `hungarian_algorithm` that implements the Kuhn-Munkres (Hungarian) algorithm for the assignment problem. It takes an n x n cost matrix of non-negative integers. For each row, subtract the row minimum, then for each column subtract the column minimum. Cover all zeros with minimum lines using the standard Hungarian method (marking, augmenting). Return the minimum total cost and the assignment as a list of (row, col) pairs.",
+    "answer": "def hungarian_algorithm"
+  },
+  {
+    "task_id": "personal_code_19",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python class called `RedBlackTree` with methods `insert(val)` and `inorder()` that implements a red-black tree. On insert, perform standard BST insertion, color the new node red, then fix violations using rotations and color flips: handle cases for uncle being red (recolor) and uncle being black (rotate). Maintain the five red-black properties at all times. The `inorder` method should return values in sorted order as a list.",
+    "answer": "def RedBlackTree"
+  },
+  {
+    "task_id": "personal_code_20",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `kmp_search` that implements the Knuth-Morris-Pratt string matching algorithm. It takes a text string and a pattern string. Build the LPS (longest proper prefix which is also a suffix) array for the pattern in O(m) time, then scan the text using the LPS array to skip unnecessary comparisons. Return a list of all starting indices where the pattern occurs in the text, or an empty list if none.",
+    "answer": "def kmp_search"
+  },
+  {
+    "task_id": "personal_code_21",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `bishop_min_moves` that computes the minimum number of bishop moves to reach (x2, y2) from (x1, y1) on an infinite chessboard. A bishop moves any number of squares diagonally. Consider the two diagonals: same-color squares require 1 or 2 moves (0 if same square), different-color squares are unreachable. For the 2-move case, the intersection point of the two diagonals is the intermediate square. Return the minimum moves or -1 if unreachable.",
+    "answer": "def bishop_min_moves"
+  },
+  {
+    "task_id": "personal_code_22",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `lcs_suffix_automaton` that finds the longest common substring of two strings using a suffix automaton. Build a SAM for the first string s, then traverse it with the second string t, tracking current state and current length. When a transition exists, follow it and increment length; otherwise follow suffix links until a transition exists. Return the longest common substring and its starting positions in both strings.",
+    "answer": "def lcs_suffix_automaton"
+  },
+  {
+    "task_id": "personal_code_23",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `held_karp_tsp` that implements the Held-Karp dynamic programming algorithm for the traveling salesman problem. It takes an n x n distance matrix. Use DP over subsets: dp[mask][i] = minimum cost to visit all cities in mask exactly once, ending at city i. Iterate over all subsets, for each subset iterate over possible ending cities and transition from previous subsets. Return the minimum tour cost as an integer.",
+    "answer": "def held_karp_tsp"
+  },
+  {
+    "task_id": "personal_code_24",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `boyer_moore` that implements the Boyer-Moore string search algorithm with the bad-character heuristic. It takes a text string and a pattern string. Build the bad-character shift table (last occurrence of each character in the pattern). Then scan the text from left to right, comparing the pattern from right to left. When a mismatch occurs, shift the pattern using the bad-character rule. Return the index of the first match or -1.",
+    "answer": "def boyer_moore"
+  },
+  {
+    "task_id": "personal_code_25",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `matrix_chain_order` that solves the optimal matrix chain multiplication problem using DP. It takes a list `dims` where matrix i has dimensions dims[i-1] x dims[i]. Compute the minimum number of scalar multiplications needed to multiply the chain. Use a 2D DP table m[i][j] = minimum cost for matrices i through j, and s[i][j] = split point. Return the minimum cost and the optimal parenthesization as a string like '((A1(A2A3))A4)'.",
+    "answer": "def matrix_chain_order"
+  },
+  {
+    "task_id": "personal_knowledge_1",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which of the following formal languages is recognized by a linear bounded automaton but NOT by a pushdown automaton?\nA) {aⁿbⁿ | n ≥ 0}\nB) {aⁿbⁿcⁿ | n ≥ 0}\nC) {wwᴿ | w ∈ {a,b}*}\nD) {aⁿ | n is prime}",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_2",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "What is the nuclear spin quantum number of deuterium (²H) and how does it affect NMR spectroscopy compared to protium (¹H)?\nA) I=0; deuterium is NMR-inactive\nB) I=1/2; identical splitting patterns to protium\nC) I=1; deuterium causes triplet splitting and has a quadrupole moment\nD) I=3/2; deuterium shows four NMR peaks",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_knowledge_3",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the RSA cryptosystem with modulus n = 3233 (p=53, q=61) and public exponent e = 17, what is the private exponent d?\nA) 413\nB) 2753\nC) 1921\nD) 1237",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_4",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In category theory, which property is NOT guaranteed to exist in an arbitrary category?\nA) Identity morphisms for every object\nB) Composition of morphisms when the codomain matches the domain\nC) An initial object (an object with exactly one morphism to every other object)\nD) Associativity of morphism composition",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_knowledge_5",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "What is the correct ground-state electron configuration of a neutral copper atom (Cu, Z=29) and why does it deviate from the expected Aufbau filling?\nA) [Ar] 3d¹⁰ 4s¹ due to the enhanced stability of a filled d-subshell\nB) [Ar] 3d⁹ 4s² following the standard Aufbau principle\nC) [Ar] 3d⁸ 4s² 4p¹ due to p-orbital hybridization\nD) [Ar] 3d¹⁰ 4s⁰ due to complete s-to-d electron transfer",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_knowledge_6",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the proof of the Cook-Levin theorem, the Boolean formula constructed from an NTM computation of time T(n) has size:\nA) O(T(n)), linear in the number of computation steps\nB) O(T(n)²), dominated by the transition constraint clauses across tape cells\nC) O(T(n)³), dominated by the input specification clauses\nD) O(2^T(n)), exponential due to state encoding",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_7",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which single-qubit quantum gate has the matrix representation (1/√2) * [[1, 1], [1, -1]] and what is its action on the computational basis states |0⟩ and |1⟩?\nA) Pauli-X gate; swaps |0⟩ and |1⟩\nB) Hadamard gate; creates equal superpositions from both basis states\nC) Phase gate S; adds relative phase of i to |1⟩\nD) T gate; adds relative phase of e^(iπ/4) to |1⟩",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_8",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which parsing algorithm can handle ALL context-free grammars, including ambiguous grammars, with O(n³) worst-case time complexity?\nA) LR(1) parser\nB) LALR(1) parser\nC) Earley parser\nD) LL(1) recursive descent parser",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_knowledge_9",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "What is the maximum number of distinct regions into which 6 circles can partition the Euclidean plane, assuming each pair of circles intersects at exactly two distinct points?\nA) 32\nB) 44\nC) 42\nD) 64",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_knowledge_10",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the P versus NP debate, which of the following statements about the class co-NP is known to be TRUE?\nA) co-NP = NP is a proven theorem\nB) If P = NP, then co-NP = NP\nC) co-NP is strictly contained within NP\nD) The Halting Problem is in co-NP",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_11",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which of the following molecules has a trigonal bipyramidal electron-pair geometry with T-shaped molecular geometry due to lone pairs?\nA) PCl₅ — no lone pairs, trigonal bipyramidal molecular\nB) SF₄ — one lone pair, seesaw molecular geometry\nC) BrF₃ — two lone pairs, T-shaped molecular geometry\nD) XeF₂ — three lone pairs, linear molecular geometry",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_knowledge_12",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the 3D Ising model at a second-order phase transition, the specific heat C diverges as |T − Tc|^(−α). The critical exponent α for the 3D Ising universality class is approximately:\nA) 0 (logarithmic divergence, as in the 2D Ising model)\nB) 0.11\nC) 0.33 (equal to the inverse of the correlation length exponent ν)\nD) 0.63 (equal to the magnetization exponent β)",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_knowledge_13",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the IPv4 packet header, which field is decremented at each router hop and, upon reaching zero, causes the packet to be discarded and an ICMP Time Exceeded message to be sent?\nA) Identification field — used for fragmentation reassembly\nB) Fragment Offset — indicates position in a fragmented packet\nC) Time to Live (TTL) — prevents routing loops\nD) Header Checksum — detects corruption in the header",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_knowledge_14",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Consider the propositional logic formula (p → q) ∨ (q → p). Which of the following best describes this formula?\nA) It is a tautology — at least one of the two implications must be true under any truth assignment\nB) It is a contradiction — both implications cannot be true simultaneously\nC) It is satisfiable but not a tautology — true only when p and q have the same truth value\nD) It is satisfiable but not a tautology — true only when at least one of p or q is true",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_knowledge_15",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "For a real symmetric matrix A ∈ ℝ^{n×n}, which of the following conditions is both necessary and sufficient for A to be positive definite?\nA) All entries of A are positive real numbers\nB) All eigenvalues of A are non-negative\nC) All leading principal minors of A are strictly positive\nD) The trace of A is positive and the determinant of A is positive",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_if_1",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly four sentences about concurrent data structures. The first and fourth sentences must each contain the word 'lock-free' exactly once. The second sentence must contain 'wait-free' and 'progress'. The third sentence must contain 'atomic'. Each sentence must be between 8 and 20 words. Number each sentence as '1.', '2.', '3.', '4.' at the start of its line. No other text before or after.",
+    "answer": "lock-free, wait-free, progress, atomic, concurrent, data, structures, sentences"
+  },
+  {
+    "task_id": "personal_if_2",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a JSON object with exactly two top-level keys: 'metadata' and 'values'. Under 'metadata', include nested keys 'created' set to '2026-07-05', 'version' set to integer 3, and 'type' set to the string 'test' (not a number). Under 'values', include an array of exactly five integers that are perfect squares greater than 1. The 'type' field must be the literal string 'test'. Output ONLY this JSON object with no text before or after.",
+    "answer": "JSON, metadata, values, perfect, squares, version, type, test, 2026"
+  },
+  {
+    "task_id": "personal_if_3",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a paragraph about distributed consensus satisfying ALL constraints: (1) exactly 75 words total, count carefully, (2) must contain 'Raft' and 'Paxos' each exactly once, (3) must contain 'log' exactly three times, (4) must NOT contain the word 'algorithm' in any form including plurals, (5) must end with the exact 5-word phrase 'Consensus enables fault tolerance.' followed by nothing else. After the paragraph, on a new line, output the word count as 'WORDS: N'.",
+    "answer": "Raft, Paxos, log, Consensus, enables, fault, tolerance, distributed, word, count"
+  },
+  {
+    "task_id": "personal_if_4",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "List exactly five programming languages in strictly descending order of their first public release year (oldest first). Each line must be numbered '1.' through '5.' followed by the language name, a pipe character '|', and the four-digit release year. After the list, on a new line output 'OLDEST:' followed by the oldest language name, then on another line 'NEWEST:' followed by the newest language name. No other text.",
+    "answer": "oldest, newest, languages, programming, release, year, pipe, numbered, list"
+  },
+  {
+    "task_id": "personal_if_5",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Create a Markdown pipe-delimited table with exactly three columns: 'Metric', 'Value', 'Unit'. Add exactly two data rows: row 1 with Metric='Accuracy', Value='95.2', Unit='%' and row 2 with Metric='Latency', Value='42', Unit='ms'. The table MUST include a separator line between header and data rows containing '|---|---|---|'. Output ONLY this Markdown table with no surrounding text.",
+    "answer": "Metric, Value, Unit, Accuracy, Latency, table, Markdown, pipe, delimited, separator"
+  },
+  {
+    "task_id": "personal_if_6",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly two sentences. The first sentence must be a question starting with 'What' about memory management. The second sentence must answer that question and must contain the words 'garbage', 'collection', and 'tracing' in that exact order with no other words between them. The answer sentence must be between 12 and 22 words. Output the two sentences on separate lines without numbering.",
+    "answer": "What, question, garbage, collection, tracing, memory, management, answer, sentences"
+  },
+  {
+    "task_id": "personal_if_7",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a single line of Python code that simultaneously: (1) generates a list of the first 20 prime numbers using a list comprehension with a nested any() check, (2) filters to keep only primes greater than 30, (3) computes the sum of those filtered primes, and (4) assigns the result to a variable named 'sum_big_primes'. Use exactly one assignment statement with no semicolons. Output ONLY the line of code.",
+    "answer": "sum, big, primes, Python, list, comprehension, assignment, statement, filtered"
+  },
+  {
+    "task_id": "personal_if_8",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Output a string that is a valid URL with protocol 'https', domain 'example.org', path '/api/v2/data', and exactly three query parameters: 'limit'=100, 'offset'=0, 'sort'='desc'. The parameters must appear in alphabetical order by name. On the next line output 'SCHEME:' followed by the protocol. On the next line output 'HOST:' followed by the domain. On the next line output 'PATH:' followed by the path. No other text.",
+    "answer": "https, example, api, limit, offset, sort, URL, scheme, host, path, query, parameters, alphabetical"
+  },
+  {
+    "task_id": "personal_if_9",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a riddle whose answer is 'a stack' data structure. The riddle must be exactly three sentences. The first sentence must contain 'push'. The second sentence must contain 'pop'. The third sentence must contain 'LIFO'. You must NOT include the words 'stack', 'answer', 'riddle', or 'data' anywhere in the riddle. After the riddle, output 'ANSWER: ' and then the answer.",
+    "answer": "push, pop, LIFO, ANSWER, riddle, first, last, order"
+  },
+  {
+    "task_id": "personal_if_10",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Generate a Markdown ordered (numbered) list of exactly five Greek letters: 'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', each on its own line numbered 1 through 5. After the list, output a bold line containing 'TOTAL:' followed by the number of items. After that, insert a thematic break using three asterisks separated by single spaces. After that, output the first letter of each item separated by commas in order.",
+    "answer": "Alpha, Beta, Gamma, Delta, Epsilon, TOTAL, Markdown, ordered, list, thematic, break"
+  },
+  {
+    "task_id": "personal_if_11",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a single sentence that explains what a Monad is in functional programming without using ANY of the following words: 'monad', 'functor', 'applicative', 'bind', 'return', 'flatMap', 'pure', 'wrap', 'container', or 'context'. The sentence must be between 12 and 28 words. After the sentence, on a new line, output 'WORD COUNT: ' followed by the number of words in the sentence as a digit.",
+    "answer": "functional, programming, explains, sentence, word, count, Monad, without"
+  },
+  {
+    "task_id": "personal_if_12",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Output exactly seven lines. Line 1: the current year as four digits. Line 2: the word 'START' in uppercase. Line 3: a palindrome that reads the same forward and backward consisting of at least 5 letters. Line 4: the word 'MIDDLE' in uppercase. Line 5: the reverse of the palindrome from line 3. Line 6: the word 'END' in uppercase. Line 7: the current year plus one. No other text.",
+    "answer": "START, MIDDLE, END, palindrome, reverse, year, lines, uppercase"
+  },
+  {
+    "task_id": "personal_if_13",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write a paragraph naming exactly four data structures that support O(1) average-case insertion. For each data structure, provide its worst-case insertion time complexity in Big-O notation in parentheses immediately after its name. The paragraph must be exactly four sentences, one per data structure, ordered from best worst-case insertion time to worst. Use semicolons to separate clauses within a sentence if needed. Output ONLY the paragraph.",
+    "answer": "data, structures, insertion, worst, case, average, O(1), Big-O, paragraph, sentences, ordered"
+  },
+  {
+    "task_id": "personal_if_14",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Compose exactly 8 lines of output. Lines 1-4 must be 'Stage 1', 'Stage 2', 'Stage 3', 'Stage 4' each on its own line. Line 5 must be a single uppercase letter 'X'. Line 6 must be a single uppercase letter 'Y'. Line 7 must be a single uppercase letter 'Z'. Line 8 must be exactly 8 hyphen characters '--------'. No other text before, after, or between lines.",
+    "answer": "Stage, lines, output, letter, hyphens, X, Y, Z"
+  },
+  {
+    "task_id": "personal_if_15",
+    "category": "Instruction Following",
+    "type": "free_form",
+    "prompt": "Write exactly three sentences about garbage collection strategies. The first sentence must start with 'Reference counting' and be about reference counting. The second sentence must start with 'Tracing' and be about tracing collectors. The third sentence must start with 'Generational' and be about generational collection. Each sentence must be between 10 and 18 words. The first sentence must end with 'cycles.' the second with 'memory.' and the third with 'pause.' exactly.",
+    "answer": "Reference, counting, Tracing, Generational, garbage, collection, cycles, memory, pause, sentences"
+  },
+  {
+    "task_id": "personal_math_1",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the smallest positive integer solution to the system of congruences: x ≡ 3 (mod 5), x ≡ 5 (mod 7), x ≡ 2 (mod 11). Apply the Chinese Remainder Theorem step by step. Output the solution as an integer followed by ' solution'.",
+    "answer": "68 solution Chinese remainder theorem congruences modular integer"
+  },
+  {
+    "task_id": "personal_math_2",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A conical tank with vertex at the bottom has radius 3 m at the top and height 5 m. Water enters at 0.5 m³/min. How fast is the water level rising when the depth is 3 m? Use related rates: relate V = (1/3)πr²h and similar triangles r/h = 3/5 to express V in terms of h alone, then differentiate. Output the answer in m/min as an exact expression followed by ' m per minute'.",
+    "answer": "meters, per, minute, rate, conical, tank, related, rates, derivative, volume, depth, rising"
+  },
+  {
+    "task_id": "personal_math_3",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A sequence is defined by a₀ = 0, a₁ = 1, and aₙ = 4a_{n-1} − 3a_{n-2} for n ≥ 2. Solve the linear recurrence to find a closed form, then compute a₈. Use the characteristic equation r² − 4r + 3 = 0. Output 'a₈ = ' followed by the number.",
+    "answer": "sequence, recurrence, closed, form, characteristic, equation, linear, compute, solve"
+  },
+  {
+    "task_id": "personal_math_4",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the double integral ∬_R (x² + y²) dA where R is the triangular region bounded by y = x, y = 0, and x = 1. Set up iterated integrals with appropriate limits. Output the result as a simplified fraction followed by ' integral'.",
+    "answer": "double, integral, region, bounded, triangular, fraction, iterated, evaluate"
+  },
+  {
+    "task_id": "personal_math_5",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "How many distinct spanning trees does the complete graph K₅ have? Apply Cayley's formula τ(Kₙ) = n^{n−2}. Output the number followed by ' spanning trees'.",
+    "answer": "spanning, trees, Cayley, formula, K5, complete, graph, number"
+  },
+  {
+    "task_id": "personal_math_6",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the sum Σ_{k=0}^{10} (−1)^k · C(10,k) · 2^{10−k}. Hint: factor out 2^{10} and recognize a binomial expansion of (1 − 1/2)^{10}. Output the number followed by ' sum'.",
+    "answer": "sum, binomial, coefficient, alternating, expansion, evaluate, combinatorics"
+  },
+  {
+    "task_id": "personal_math_7",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "What is the units digit of the power tower 7^(7^7)? Compute the exponent modulo 4 using Euler's theorem and the cyclic pattern of powers of 7 modulo 10 (cycle length 4). Output a single digit followed by ' digit'.",
+    "answer": "digit, units, power, tower, modular, arithmetic, Euler, cyclic, pattern"
+  },
+  {
+    "task_id": "personal_math_8",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "How many ternary strings of length 8 (each digit from {0,1,2}) contain at least one 0, at least one 1, and at least one 2? Use inclusion-exclusion: subtract strings missing each digit, add back those missing two digits. Output the integer followed by ' strings'.",
+    "answer": "strings, ternary, inclusion, exclusion, counting, length, digits"
+  },
+  {
+    "task_id": "personal_math_9",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate lim_{x→0} (sin x − tan x) / x³ using Taylor series expansions of sin and tan up to x³. Output the answer as a simplified fraction followed by ' limit'.",
+    "answer": "limit, calculus, Taylor, series, sin, tan, evaluate, L'Hopital"
+  },
+  {
+    "task_id": "personal_math_10",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "How many integers between 1 and 10,000 inclusive are NOT divisible by 2, 3, or 5? Use the inclusion-exclusion principle: count multiples of each, subtract pairwise intersections, add triple intersection. Output the integer followed by ' integers'.",
+    "answer": "integers, inclusion, exclusion, divisible, counting, multiples, between"
+  },
+  {
+    "task_id": "personal_math_11",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Let z = (cos(π/7) + i·sin(π/7))^14. Use De Moivre's theorem: (cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ). Express z in rectangular form a + bi where a and b are real numbers. Output 'z = ' followed by the result.",
+    "answer": "DeMoivre, complex, numbers, Euler, formula, power, trigonometric, rectangular"
+  },
+  {
+    "task_id": "personal_math_12",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A particle's position is s(t) = t⁴ − 8t² + 16 for t ≥ 0. Find the total distance traveled from t = 0 to t = 4. Compute velocity v(t) = s'(t), find when it changes sign, integrate |v(t)| in segments. Output the number followed by ' distance'.",
+    "answer": "distance, particle, position, velocity, integral, absolute, segments, motion"
+  },
+  {
+    "task_id": "personal_math_13",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the number of positive integer solutions to x₁ + x₂ + x₃ + x₄ = 20 where x₁ ≥ 1, x₂ ≥ 2, x₃ ≥ 3, x₄ ≥ 4. Use the substitution yᵢ = xᵢ − lower bound to convert to nonnegative variables, then apply stars and bars. Output the integer followed by ' solutions'.",
+    "answer": "solutions, positive, integer, stars, bars, combinatorics, substitution, equation"
+  },
+  {
+    "task_id": "personal_math_14",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Let f(x) = x³ − 3x² + 4 = 0 have roots α, β, γ. Compute α³ + β³ + γ³ using Newton's identities or the identity α³+β³+γ³ = (α+β+γ)³ − 3(α+β+γ)(αβ+βγ+γα) + 3αβγ. Output the integer followed by ' roots'.",
+    "answer": "roots, cubic, symmetric, sums, Newton, identities, Vieta, polynomial"
+  },
+  {
+    "task_id": "personal_math_15",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the determinant of the 4×4 matrix A where a_{ij} = i·j (the product of its row and column indices). Observe that each row is a scalar multiple of [1,2,3,4], so rows are linearly dependent. Output the number followed by ' determinant'.",
+    "answer": "determinant, matrix, linearly, dependent, rows, scalar, multiple, rank"
+  },
+  {
+    "task_id": "personal_math_16",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A card is drawn from a standard 52-card deck, replaced, then another is drawn. What is the probability the two cards have the same rank (e.g., both kings)? Compute as 13 ranks × (4/52)². Output the answer as a simplified fraction followed by ' probability'.",
+    "answer": "probability, cards, deck, rank, fraction, independent, events, drawing"
+  },
+  {
+    "task_id": "personal_math_17",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "What is the coefficient of x⁵ in the expansion of (2x − 1)¹⁰? Use the binomial theorem: C(10,k) (2x)^{10−k} (−1)^k, and identify the term where the exponent of x is 5. Output the integer (which may be negative) followed by ' coefficient'.",
+    "answer": "coefficient, binomial, expansion, term, integer, negative, theorem"
+  },
+  {
+    "task_id": "personal_math_18",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the smallest positive integer n such that n³ + n² + n + 1 is divisible by 13. Factor as (n+1)(n²+1) and check residues modulo 13. Output the number followed by ' smallest'.",
+    "answer": "smallest, positive, integer, divisible, modulo, factor, residues, congruences"
+  },
+  {
+    "task_id": "personal_math_19",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the infinite sum Σ_{k=1}^{∞} 1/(k(k+2)). Use partial fractions: 1/(k(k+2)) = 1/2 · (1/k − 1/(k+2)), then telescope. Output the result as a simplified fraction followed by ' series'.",
+    "answer": "series, infinite, sum, partial, fractions, telescoping, evaluate"
+  },
+  {
+    "task_id": "personal_math_20",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A circle is inscribed in a square. A smaller square is then inscribed in the circle. Compute the ratio of the area of the smaller square to the area of the larger square. Let the circle have radius r, express both areas in terms of r, and simplify. Output as a simplified fraction followed by ' ratio'.",
+    "answer": "ratio, area, square, circle, inscribed, fraction, geometry, radius"
+  },
+  {
+    "task_id": "personal_math_21",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Compute Bell number B₅: the number of ways to partition a 5-element set into nonempty disjoint subsets. Use the recurrence B_{n+1} = Σ_{k=0}^{n} C(n,k) B_k starting from B₀ = 1. Output the integer followed by ' partitions'.",
+    "answer": "Bell, number, partitions, set, recurrence, combinatorial, subsets"
+  },
+  {
+    "task_id": "personal_math_22",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "For matrix A = [[3, 1], [2, 2]], compute A¹⁰ × [1, 1]ᵀ. Find eigenvalues: λ=4, λ=1. Notice [1,1]ᵀ is an eigenvector of λ=4, so A¹⁰v = λ¹⁰v. Output the two components separated by comma and space followed by ' eigenvector'.",
+    "answer": "eigenvector, eigenvalue, matrix, power, diagonalization, linear, algebra"
+  },
+  {
+    "task_id": "personal_math_23",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "How many trailing zeros does 100! have? Count the number of factors of 5 in the prime factorization: floor(100/5) + floor(100/25) + floor(100/125). Output the integer followed by ' zeros'.",
+    "answer": "zeros, trailing, factorial, prime, factors, powers, floor, counting"
+  },
+  {
+    "task_id": "personal_math_24",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "The monic polynomial p(x) = x⁵ + ax⁴ + bx³ + cx² + dx + e has roots 1, 2, 3, 4, 5. Find b, the coefficient of x³, which equals the sum of products of roots taken two at a time (the elementary symmetric sum e₂). Compute all C(5,2)=10 pairwise products and sum them. Output the integer followed by ' symmetric'.",
+    "answer": "symmetric, polynomial, roots, coefficient, Vieta, elementary, sums"
+  },
+  {
+    "task_id": "personal_math_25",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the positive integer n such that n! + 1 = 71². This is a known Brocard's problem solution. Compute 71² = 5041, subtract 1 to find the factorial, then determine n. Output 'n = ' followed by the number.",
+    "answer": "Brocard, factorial, perfect, square, integer, equation, solve"
+  },
+  {
+    "task_id": "personal_logic_1",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "There are five houses in a row, each painted a different color, inhabited by people of different nationalities, each drinking a different beverage, smoking a different brand, and keeping a different pet. Use these clues: (1) The Brit lives in the red house. (2) The Swede keeps dogs. (3) The Dane drinks tea. (4) The green house is immediately left of the white house. (5) The green house's owner drinks coffee. (6) The person who smokes Pall Mall keeps birds. (7) The owner of the yellow house smokes Dunhill. (8) The man living in the center house drinks milk. (9) The Norwegian lives in the first house. (10) The man who smokes Blends lives next to the cat owner. (11) The horse owner lives next to the Dunhill smoker. (12) The man who smokes Blue Master drinks root beer. (13) The German smokes Prince. (14) The Norwegian lives next to the blue house. (15) The Blends smoker has a neighbor who drinks water. Who owns the fish? Output the nationality in lowercase followed by ' owns the fish'.",
+    "answer": "German, owns, fish, zebra, puzzle, nationality, deduction, clues, logic"
+  },
+  {
+    "task_id": "personal_logic_2",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "On an island of knights (always tell truth) and knaves (always lie), you meet six inhabitants: A, B, C, D, E, and F. A says: 'B is a knight and C is a knave.' B says: 'D is a knave or E is a knight.' C says: 'If A is a knight, then F is a knave.' D says: 'E is a knave and F is a knight.' E says: 'A is a knave or B is a knave.' F says: 'C is a knight if and only if D is a knight.' Determine how many are knights. Output the number of knights followed by ' knights'.",
+    "answer": "knights, knaves, island, truth, lies, logic, puzzle, deduction, inhabitants"
+  },
+  {
+    "task_id": "personal_logic_3",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "A farmer must transport a wolf, a goat, a cabbage, a dog, and a cat across a river using a boat that can carry at most three items at once. The wolf will eat the goat if left alone together. The goat will eat the cabbage. The dog will eat the cat. The cat will eat the mouse (which is also being transported). What is the minimum number of crossings needed? Output the number followed by ' crossings'.",
+    "answer": "crossings, river, farmer, transport, constraints, minimum, puzzle, boat"
+  },
+  {
+    "task_id": "personal_logic_4",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "You have 12 identical-looking coins, but one is counterfeit and weighs either slightly more or slightly less than a genuine coin (you don't know which). Using a balance scale, what is the minimum number of weighings needed in the worst case to identify the counterfeit coin AND determine whether it is heavier or lighter? Output the number followed by ' weighings'.",
+    "answer": "weighings, coins, counterfeit, balance, scale, minimum, worst, case, heavier, lighter"
+  },
+  {
+    "task_id": "personal_logic_5",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Seven prisoners are lined up facing forward (each can see only the prisoners in front of them). They will each be given a hat that is either black or white, chosen uniformly at random. Starting from the back (who sees the six in front), each must guess their own hat color aloud. They can agree on a strategy beforehand. What is the maximum number of prisoners that can be guaranteed to guess correctly? Output the number followed by ' prisoners'.",
+    "answer": "prisoners, hats, strategy, parity, guessing, guaranteed, correct, optimal"
+  },
+  {
+    "task_id": "personal_logic_6",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Cheryl tells Albert and Bernard that her birthday is one of these dates: May 15, May 16, May 19, June 17, June 18, July 14, July 16, August 14, August 15, August 17. She tells Albert the month and Bernard the day. Albert says: 'I don't know the birthday, but I know Bernard doesn't know either.' Bernard says: 'Now I know the birthday.' Albert says: 'Now I know it too.' What is the month of Cheryl's birthday? Output the month name in full lowercase followed by ' month'.",
+    "answer": "Cheryl, birthday, month, date, puzzle, logic, deduction, Albert, Bernard"
+  },
+  {
+    "task_id": "personal_logic_7",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Three wise men are told that at least one has a red dot on their forehead. They can see each other's dots but not their own. They are asked in rounds: 'If you know your dot color, step forward.' In the first round, no one steps forward. In the second round, still no one steps forward. In the third round, some step forward. How many step forward in the third round? Output the number followed by ' wise men'.",
+    "answer": "wise, men, dots, common, knowledge, deduction, rounds, red, logic"
+  },
+  {
+    "task_id": "personal_logic_8",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "A says: 'B is lying.' B says: 'C is lying.' C says: 'A and B are both lying.' Who is telling the truth? Determine for each person whether they are truthful or lying. Output the letter(s) of those telling the truth separated by commas followed by ' truthful'.",
+    "answer": "truthful, lying, paradox, logic, statements, deduction, consistency"
+  },
+  {
+    "task_id": "personal_logic_9",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "In a race with eight runners (A through H), these facts are known: (1) A finished ahead of B. (2) C finished ahead of D but behind E. (3) F finished behind G but ahead of H. (4) E finished behind A but ahead of F. (5) B finished ahead of C. (6) D finished ahead of G. Determine the finishing order from 1st to 8th. Output the sequence of letters separated by ' > ' followed by ' order'.",
+    "answer": "order, race, finishing, sequence, deduction, constraints, ranking, logical"
+  },
+  {
+    "task_id": "personal_logic_10",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Five friends (Alice, Bob, Carol, Dave, Eve) each have a different favorite color (red, blue, green, yellow, purple) and a different favorite number (2, 3, 5, 7, 11). Clues: (1) The person whose favorite number is 3 likes green. (2) Alice's favorite number is prime and her color is not blue. (3) Bob likes red or yellow and his number is not 5. (4) Carol's number is the smallest prime and her color is not purple. (5) Dave's number is 7 and his color is not yellow. (6) The person who likes blue has the number 11. (7) Eve's number is not 2 and her color is not purple. (8) The person who likes purple has a number that is one less than the person who likes yellow's number. What is Eve's favorite color? Output the color in lowercase followed by ' color'.",
+    "answer": "Eve, color, favorite, grid, puzzle, deduction, constraints, attributes, logic"
+  },
+  {
+    "task_id": "personal_logic_11",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "An ancient manuscript contains the claim: 'This statement is false.' Separately, another page says: 'The statement on the other page is true.' A third page says: 'Exactly one of the statements on the other two pages is true.' How many of the three statements are true? Output the number followed by ' statements'.",
+    "answer": "statements, paradox, truth, false, self, reference, logical, consistency"
+  },
+  {
+    "task_id": "personal_logic_12",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "You have a 3-liter jug and a 5-liter jug, both empty, and an unlimited supply of water. You need to measure exactly 4 liters. Each operation is either filling a jug to the top, emptying a jug completely, or pouring water from one jug to the other until either the source is empty or the destination is full. What is the minimum number of operations needed? Output the number followed by ' operations'.",
+    "answer": "jug, water, measuring, operations, minimum, pouring, BFS, state, space"
+  },
+  {
+    "task_id": "personal_logic_13",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "A census taker asks a woman: 'How many children do you have and what are their ages?' She replies: 'I have three children. The product of their ages is 36. The sum of their ages is the house number next door.' The census taker looks at the house number, thinks, and says: 'I need more information.' She replies: 'The oldest one plays the piano.' The census taker then knows the ages. What is the oldest child's age? Output the number followed by ' years'.",
+    "answer": "ages, children, product, sum, puzzle, census, oldest, deduction, factor"
+  },
+  {
+    "task_id": "personal_logic_14",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "A says: 'If I am a knight, then B is a knight.' B says: 'If I am a knight, then C is a knave.' C says: 'A is a knave.' On this island, knights tell only truth and knaves tell only lies. Determine the type (knight or knave) of each person. Output the three types in order A, B, C as comma-separated words (e.g., 'knight, knave, knight') followed by ' types'.",
+    "answer": "knight, knave, types, conditional, logic, truth, deduction, island"
+  },
+  {
+    "task_id": "personal_logic_15",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "You have a 7-minute hourglass and an 11-minute hourglass. You need to measure exactly 15 minutes. You may flip either hourglass at any time. Assume the flipping takes negligible time. What is the minimum number of flips needed (counting the initial start as one flip per hourglass)? Output the number followed by ' flips'.",
+    "answer": "hourglass, flips, measuring, time, minutes, puzzle, minimum, operations"
+  },
+  {
+    "task_id": "personal_logic_16",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Four people (A, B, C, D) must cross a rickety bridge at night with only one flashlight. At most two can cross at a time, and any crossing party must have the flashlight. The flashlight must be walked back and forth. Crossing times: A=1 min, B=2 min, C=5 min, D=10 min. When two cross together, they move at the slower person's pace. What is the minimum total crossing time? Output the number followed by ' minutes'.",
+    "answer": "bridge, crossing, flashlight, minimum, time, minutes, puzzle, optimization"
+  },
+  {
+    "task_id": "personal_logic_17",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "How many squares (of all sizes) are there on a standard 8×8 chessboard? Count 1×1, 2×2, 3×3, up to 8×8. The number of k×k squares on an n×n board is (n−k+1)². Output the total followed by ' squares'.",
+    "answer": "squares, chessboard, counting, sizes, total, sum, formula"
+  },
+  {
+    "task_id": "personal_logic_18",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "In a game show with four doors, one hides a car and the other three hide goats. You pick door 1. The host, who knows what is behind each door, opens door 3 revealing a goat. Then you are asked: do you want to stick with door 1, or switch to one of the remaining unopened doors? The host then opens another goat door from the remaining. You are then asked to stick or switch one final time. What is the probability of winning the car if you always switch when given the option? Output as a simplified fraction followed by ' probability'.",
+    "answer": "probability, Monty, Hall, doors, switching, conditional, goats, car, game, show"
+  },
+  {
+    "task_id": "personal_logic_19",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "You are in a room with two doors. One door leads to freedom, the other to certain doom. There are two guards, one in front of each door. One guard always tells the truth, the other always lies. You do not know which is which. You may ask exactly one question to one guard to determine the door to freedom. What is the minimum number of words in a question that guarantees you find freedom? The question is addressed to a single guard and must be in the form: 'If I asked the other guard which door leads to freedom, what would they say?' Your answer should be the number of doors you should NOT choose. Output 'door ' followed by 1 or 2.",
+    "answer": "door, guards, truth, lies, puzzle, question, freedom, logical"
+  },
+  {
+    "task_id": "personal_logic_20",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "There are 100 lockers numbered 1 to 100, all initially closed. Person 1 opens every locker. Person 2 toggles every 2nd locker (2, 4, 6, ...). Person 3 toggles every 3rd locker, and so on up to person 100. After all 100 people have acted, how many lockers are open? A locker is toggled as many times as it has distinct divisors. It ends open if it has an odd number of divisors, which happens exactly for perfect squares. Output the number followed by ' lockers'.",
+    "answer": "lockers, toggles, perfect, squares, divisors, open, closed, sequence"
+  }
+]

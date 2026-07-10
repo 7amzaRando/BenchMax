@@ -1,0 +1,7 @@
+# BenchMax Rust sandbox — for Aider Polyglot (Rust)
+# No extra deps — cargo + stdlib is sufficient
+FROM rust:1.75
+
+WORKDIR /workspace
+
+CMD ["cargo", "--version"]

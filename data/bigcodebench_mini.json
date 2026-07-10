@@ -1,0 +1,42 @@
+[
+  {
+    "task_id": "BigCodeBench/0",
+    "prompt": "from typing import List\n\ndef analyze_sales(data: List[dict]) -> dict:\n    \"\"\" Given a list of sales records, each with 'product' (str), 'price' (float),\n    and 'quantity' (int), return a dict with:\n      - 'total_revenue': sum of price * quantity across all records\n      - 'avg_price': average price across all records (rounded to 2 decimals)\n      - 'top_product': product name with highest total revenue\n    >>> analyze_sales([\n    ...     {'product': 'A', 'price': 10.0, 'quantity': 5},\n    ...     {'product': 'B', 'price': 20.0, 'quantity': 2},\n    ...     {'product': 'A', 'price': 10.0, 'quantity': 3},\n    ... ])\n    {'total_revenue': 130.0, 'avg_price': 13.33, 'top_product': 'A'}\n    \"\"\"\n",
+    "entry_point": "analyze_sales",
+    "canonical_solution": "    total_revenue = sum(r['price'] * r['quantity'] for r in data)\n    avg_price = round(total_revenue / sum(r['quantity'] for r in data), 2)\n    product_revenue = {}\n    for r in data:\n        product_revenue[r['product']] = product_revenue.get(r['product'], 0) + r['price'] * r['quantity']\n    top_product = max(product_revenue, key=product_revenue.get)\n    return {'total_revenue': total_revenue, 'avg_price': avg_price, 'top_product': top_product}\n",
+    "test": "def check(candidate):\n    res = candidate([{'product': 'A', 'price': 10.0, 'quantity': 5}, {'product': 'B', 'price': 20.0, 'quantity': 2}])\n    assert abs(res['total_revenue'] - 90.0) < 0.01\n    assert res['top_product'] == 'A'\n    res2 = candidate([{'product': 'X', 'price': 5.0, 'quantity': 10}])\n    assert abs(res2['total_revenue'] - 50.0) < 0.01\n    assert res2['top_product'] == 'X'\n",
+    "required_packages": []
+  },
+  {
+    "task_id": "BigCodeBench/1",
+    "prompt": "from typing import List\n\ndef merge_logs(logs_a: List[str], logs_b: List[str]) -> List[str]:\n    \"\"\" Merge two sorted timestamped log lists (ISO format prefix) into one sorted list.\n    Each log line starts with 'YYYY-MM-DD HH:MM:SS'. Return the merged list.\n    >>> merge_logs([], [])\n    []\n    >>> merge_logs(['2024-01-01 10:00:00 INFO start'], [])\n    ['2024-01-01 10:00:00 INFO start']\n    >>> merge_logs(\n    ...     ['2024-01-01 10:00:00 INFO a'],\n    ...     ['2024-01-01 09:00:00 INFO b']\n    ... )\n    ['2024-01-01 09:00:00 INFO b', '2024-01-01 10:00:00 INFO a']\n    \"\"\"\n",
+    "entry_point": "merge_logs",
+    "canonical_solution": "    merged = []\n    i = j = 0\n    while i < len(logs_a) and j < len(logs_b):\n        if logs_a[i] <= logs_b[j]:\n            merged.append(logs_a[i])\n            i += 1\n        else:\n            merged.append(logs_b[j])\n            j += 1\n    merged.extend(logs_a[i:])\n    merged.extend(logs_b[j:])\n    return merged\n",
+    "test": "def check(candidate):\n    assert candidate([], []) == []\n    assert candidate(['2024-01-01 10:00:00 INFO x'], []) == ['2024-01-01 10:00:00 INFO x']\n    r = candidate(['2024-01-01 10:00:00 INFO a'], ['2024-01-01 09:00:00 INFO b'])\n    assert r == ['2024-01-01 09:00:00 INFO b', '2024-01-01 10:00:00 INFO a']\n    r2 = candidate(['2024-01-01 08:00:00 INFO a', '2024-01-01 12:00:00 INFO c'], ['2024-01-01 10:00:00 INFO b'])\n    assert r2 == ['2024-01-01 08:00:00 INFO a', '2024-01-01 10:00:00 INFO b', '2024-01-01 12:00:00 INFO c']\n",
+    "required_packages": []
+  },
+  {
+    "task_id": "BigCodeBench/2",
+    "prompt": "from typing import List, Dict\n\ndef normalize_scores(scores: Dict[str, float]) -> Dict[str, float]:\n    \"\"\" Given a dict mapping names to scores, return a new dict with min-max normalized\n    scores (map min->0, max->1, linearly interpolate). If all scores equal, return all 1.0.\n    >>> normalize_scores({'a': 10.0, 'b': 20.0, 'c': 30.0})\n    {'a': 0.0, 'b': 0.5, 'c': 1.0}\n    >>> normalize_scores({'x': 5.0})\n    {'x': 1.0}\n    \"\"\"\n",
+    "entry_point": "normalize_scores",
+    "canonical_solution": "    values = list(scores.values())\n    mn = min(values)\n    mx = max(values)\n    if mx == mn:\n        return {k: 1.0 for k in scores}\n    return {k: round((v - mn) / (mx - mn), 4) for k, v in scores.items()}\n",
+    "test": "def check(candidate):\n    r = candidate({'a': 10.0, 'b': 20.0, 'c': 30.0})\n    assert abs(r['a'] - 0.0) < 1e-4\n    assert abs(r['b'] - 0.5) < 1e-4\n    assert abs(r['c'] - 1.0) < 1e-4\n    r2 = candidate({'x': 5.0})\n    assert r2['x'] == 1.0\n    r3 = candidate({'a': 1.0, 'b': 1.0, 'c': 1.0})\n    assert all(v == 1.0 for v in r3.values())\n",
+    "required_packages": []
+  },
+  {
+    "task_id": "BigCodeBench/3",
+    "prompt": "from typing import List\n\ndef find_anagrams(words: List[str]) -> List[List[str]]:\n    \"\"\" Group a list of words by anagrams. Return a list of groups, each group is a list\n    of words that are anagrams of each other. Order of groups does not matter.\n    >>> find_anagrams(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n    [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]\n    >>> find_anagrams([])\n    []\n    \"\"\"\n",
+    "entry_point": "find_anagrams",
+    "canonical_solution": "    groups = {}\n    for w in words:\n        key = ''.join(sorted(w))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(w)\n    return list(groups.values())\n",
+    "test": "def check(candidate):\n    r = candidate(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n    assert len(r) == 3\n    assert candidate([]) == []\n    r2 = candidate(['a'])\n    assert len(r2) == 1\n    r3 = candidate(['ab', 'ba', 'abc', 'cba'])\n    assert len(r3) == 2\n",
+    "required_packages": []
+  },
+  {
+    "task_id": "BigCodeBench/4",
+    "prompt": "from typing import List, Tuple\n\ndef find_meeting_times(busy: List[Tuple[str, str]], work_start: str, work_end: str, duration: int) -> List[Tuple[str, str]]:\n    \"\"\" Given a list of busy time intervals ['HH:MM', 'HH:MM'], work hours start and end,\n    and a required meeting duration in minutes, return all available time slots of at least\n    the given duration during work hours. Times are 24h format.\n    >>> find_meeting_times([('09:00', '10:30')], '08:00', '17:00', 60)\n    [('08:00', '09:00'), ('10:30', '17:00')]\n    >>> find_meeting_times([], '09:00', '17:00', 30)\n    [('09:00', '17:00')]\n    \"\"\"\n",
+    "entry_point": "find_meeting_times",
+    "canonical_solution": "    def to_min(t):\n        h, m = t.split(':')\n        return int(h) * 60 + int(m)\n    def to_str(m):\n        return f'{m // 60:02d}:{m % 60:02d}'\n    busy_sorted = sorted((to_min(s), to_min(e)) for s, e in busy)\n    ws = to_min(work_start)\n    we = to_min(work_end)\n    slots = []\n    cur = ws\n    for bs, be in busy_sorted:\n        if bs > cur and bs - cur >= duration:\n            slots.append((to_str(cur), to_str(bs)))\n        cur = max(cur, be)\n    if we > cur and we - cur >= duration:\n        slots.append((to_str(cur), to_str(we)))\n    return slots\n",
+    "test": "def check(candidate):\n    r = candidate([('09:00', '10:30')], '08:00', '17:00', 60)\n    assert len(r) == 2\n    assert r[0] == ('08:00', '09:00')\n    assert r[1] == ('10:30', '17:00')\n    r2 = candidate([], '09:00', '17:00', 30)\n    assert len(r2) == 1\n    assert r2[0] == ('09:00', '17:00')\n    r3 = candidate([('08:00', '12:00'), ('13:00', '17:00')], '08:00', '17:00', 60)\n    assert r3 == [('12:00', '13:00')]\n",
+    "required_packages": []
+  }
+]

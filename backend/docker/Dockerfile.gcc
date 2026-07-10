@@ -1,0 +1,12 @@
+# BenchMax C/C++ sandbox — for Aider Polyglot (C++)
+# Catch2 header pre-downloaded for offline operation
+FROM gcc:13
+
+RUN apt-get update && apt-get install -y --no-install-recommends wget make && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /usr/local/include/catch2 && \
+    wget -q https://raw.githubusercontent.com/catchorg/Catch2/v2.13.10/single_include/catch2/catch.hpp -O /usr/local/include/catch2/catch.hpp
+
+WORKDIR /workspace
+
+CMD ["gcc", "--version"]

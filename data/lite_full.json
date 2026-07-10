@@ -1,0 +1,353 @@
+[
+  {
+    "task_id": "lite_code_01",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `heavy_light_decompose` that takes a tree represented by `n` nodes (0-indexed), a list of undirected `edges` (length n-1), a list `values` of node weights, and a list `queries` where each query is either (\"path_max\", u, v) to query the maximum node weight on the path from u to v, or (\"update\", u, val) to set node u's weight to val. Implement Heavy-Light Decomposition with a segment tree over the base array and return a list of results for each path_max query.",
+    "answer": "def heavy_light_decompose(n, edges, values, queries)"
+  },
+  {
+    "task_id": "lite_code_02",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `distinct_substrings` that takes a string `s` consisting of lowercase English letters and returns the number of distinct substrings of `s`. Build a suffix automaton (SAM) where each state has a `link`, `length`, and `next` dict. Process characters one by one, extending the automaton and counting distinct substrings as the sum over all states of (state.length - state.link.length).",
+    "answer": "def distinct_substrings(s)"
+  },
+  {
+    "task_id": "lite_code_03",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `schedule_stages` that takes an integer `stages`, an integer `resources`, a list `costs` of length stages (resource cost per stage), a list `profits` of length stages (profit per stage), and an integer `capacity` (total resources available). Each stage requires `costs[i]` resources and yields `profits[i]` profit, but stages must be scheduled in order and each stage can be run at most once. Use multi-stage DP with a rolling array (O(stages × capacity)) to return the maximum total profit achievable.",
+    "answer": "def schedule_stages(stages, resources, costs, profits, capacity)"
+  },
+  {
+    "task_id": "lite_code_04",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `lazy_segment_tree` that takes an integer `n` (initial array length, all zeros), and a list `operations`. Each operation is either (\"range_add\", l, r, val) to add val to all elements in [l, r), or (\"range_sum\", l, r) to return the sum of elements in [l, r). Implement a segment tree with lazy propagation using two arrays (`tree` and `lazy`), supporting point updates from range_add and range queries in O(log n) each. Return a list of results for each range_sum operation.",
+    "answer": "def lazy_segment_tree(n, operations)"
+  },
+  {
+    "task_id": "lite_code_05",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `dinic_max_flow` that takes an integer `n` (number of nodes), a list `edges` where each edge is (u, v, cap), an integer `source`, and an integer `sink`. Implement Dinic's algorithm: build adjacency with reverse edges, run BFS to compute level graph, then DFS (using iterators to avoid re-traversal) to send blocking flow. Return the maximum flow value as an integer.",
+    "answer": "def dinic_max_flow(n, edges, source, sink)"
+  },
+  {
+    "task_id": "lite_code_06",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `z_match` that takes two strings `text` and `pattern`. Implement the Z-algorithm: construct the combined string P + '$' + T, compute the Z-array where Z[i] is the length of the longest common prefix between the string and its suffix starting at i. Then find all starting indices in `text` where `pattern` occurs. Return a list of start positions (0-indexed) in increasing order.",
+    "answer": "def z_match(text, pattern)"
+  },
+  {
+    "task_id": "lite_code_07",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `implicit_treap` that takes a list `initial` and a list `operations`. Each operation is either (\"reverse\", l, r) to reverse the subarray [l, r], or (\"sum\", l, r) to compute the sum of subarray [l, r]. Implement an implicit treap (randomized BST) where each node stores value, subtree sum, size, and a reverse flag. Use merge and split operations with lazy propagation. Return a list of results for each sum operation.",
+    "answer": "def implicit_treap(initial, operations)"
+  },
+  {
+    "task_id": "lite_code_08",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `scc_tarjan` that takes an integer `n` and a list of directed `edges` (u, v). Implement Tarjan's strongly connected components algorithm using a 1-indexed stack, discovy indices, low-link values, and an on-stack boolean array. Perform DFS from each unvisited node. Return a list of SCCs, where each SCC is a list of node indices, sorted by their first discovy order.",
+    "answer": "def scc_tarjan(n, edges)"
+  },
+  {
+    "task_id": "lite_code_09",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `min_cost_flow` that takes an integer `n` (nodes), a list `edges` where each edge is (u, v, capacity, cost), an integer `source`, an integer `sink`, and an integer `flow_needed`. Implement the successive shortest augmenting path algorithm for min-cost max-flow. Use potentials (Johnson's) and Dijkstra with a priority queue to find the cheapest augmenting path each iteration, updating the flow along parent edges. Return the minimum cost to send `flow_needed` units, or -1 if impossible.",
+    "answer": "def min_cost_flow(n, edges, source, sink, flow_needed)"
+  },
+  {
+    "task_id": "lite_code_10",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `max_line_value` that takes a list `lines` where each line is (m, b) representing y = m*x + b, and a list `x_queries` of integers. For each x in x_queries, find the maximum value of m*x + b over all lines. Implement the Li Chao segment tree (convex hull trick) where each node of a segment tree over the x-range stores the dominant line at its segment midpoint. Add lines recursively and query in O(log R) per query. Return a list of maximum values.",
+    "answer": "def max_line_value(lines, x_queries)"
+  },
+  {
+    "task_id": "lite_code_11",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `aho_corasick` that takes a string `text`, a list `patterns` of strings, and returns a dict mapping each pattern to its list of start positions (0-indexed) in `text`. Build the Aho-Corasick automaton: construct a trie of patterns with failure links (BFS), then process the text character by character, traversing the automaton and following output links to record all matches at each position.",
+    "answer": "def aho_corasick(text, patterns)"
+  },
+  {
+    "task_id": "lite_code_12",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `manacher` that takes a string `s` and returns the number of all palindromic substrings (including single characters). Implement Manacher's algorithm: build a transformed string with separators (e.g., '|' between characters), maintain center and rightmost palindrome boundary, and compute the palindrome radius array in O(n). Use the radii to count distinct palindromic substrings efficiently.",
+    "answer": "def manacher(s)"
+  },
+  {
+    "task_id": "lite_code_13",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `crt_garner` that takes two lists of equal length: `remainders` and `moduli`, representing the system x ≡ remainders[i] (mod moduli[i]) where all moduli are pairwise coprime. Implement Garner's algorithm: compute the solution as x = Σ (r[i] * M[i] * inv(M[i] mod m[i])) mod M, where M is the product of all moduli. Use extended Euclidean algorithm for modular inverses. Return the smallest non-negative solution as an integer.",
+    "answer": "def crt_garner(remainders, moduli)"
+  },
+  {
+    "task_id": "lite_code_14",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `longest_repeating` that takes a string `s` and returns the longest substring that appears at least twice without overlapping. Build a suffix array using the doubling algorithm (O(n log n)) and compute the LCP (longest common prefix) array using Kasai's algorithm (O(n)). Scan the LCP array for the maximum value where the corresponding suffixes do not overlap. Return the substring, or empty string if none exists.",
+    "answer": "def longest_repeating(s)"
+  },
+  {
+    "task_id": "lite_code_15",
+    "category": "Code",
+    "type": "code",
+    "prompt": "Write a Python function called `blossom_match` that takes an integer `n` and an undirected edge list `edges`. Implement Edmonds' Blossom algorithm for maximum matching in general (non-bipartite) graphs. Use a BFS to find augmenting paths, contracting odd cycles (blossoms) into supernodes when encountered, and lifting the match back after augmentation. Return the maximum matching size as an integer.",
+    "answer": "def blossom_match(n, edges)"
+  },
+  {
+    "task_id": "lite_knowledge_01",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Feigenbaum constant δ ≈ 4.669201609 appears as a universal ratio in which of the following mathematical phenomena?\nA. The ratio of successive intervals between bifurcation points in the logistic map period-doubling cascade\nB. The Hausdorff dimension of the boundary of the Mandelbrot set\nC. The best possible constant in the Hardy-Littlewood prime k-tuple conjecture\nD. The limiting distribution of eigenvalues in the Gaussian Unitary Ensemble\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "D"
+  },
+  {
+    "task_id": "lite_knowledge_02",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "What is the fundamental group π₁ of the real projective plane RP²?\nA. The trivial group containing only the identity\nB. The infinite cyclic group ℤ\nC. The cyclic group of order 2, ℤ₂\nD. The free product ℤ₂ * ℤ₂\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
+  },
+  {
+    "task_id": "lite_knowledge_03",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the Lighthill-Whitham-Richards model of traffic flow, the Rankine-Hugoniot jump condition governs which aspect of the solution?\nA. The concavity of the fundamental diagram relating flow to density\nB. The propagation speed of a shock wave across a discontinuity in density\nC. The merge ratio at on-ramps under capacity constraints\nD. The softening of shocks through viscous regularization\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
+  },
+  {
+    "task_id": "lite_knowledge_04",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Kasner metric ds² = −dt² + Σ t^{2p_i} dx_i², where Σ p_i = 1 and Σ p_i² = 1, is an exact solution to Einstein's field equations in vacuum that describes which type of spacetime?\nA. A static spherically symmetric black hole geometry\nB. An isotropic homogeneous expanding universe\nC. An anisotropic homogeneous vacuum cosmology\nD. A cylindrical gravitational wave propagating at light speed\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
+  },
+  {
+    "task_id": "lite_knowledge_05",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Which of the following statements correctly describes a quantum spin liquid (QSL) phase in condensed matter physics?\nA. It exhibits long-range ferromagnetic order at temperatures below its Curie point\nB. It hosts fractionalized spinon excitations and lacks magnetic long-range order even at absolute zero\nC. It is a superfluid phase of helium-3 that emerges at millikelvin temperatures\nD. It refers exclusively to one-dimensional spin chain systems with exact Bethe ansatz solutions\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
+  },
+  {
+    "task_id": "lite_knowledge_06",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In homological algebra, what is the abelian group Ext¹(ℤ/2ℤ, ℤ/2ℤ) isomorphic to?\nA. ℤ/2ℤ\nB. The trivial group 0\nC. The infinite cyclic group ℤ\nD. ℤ/4ℤ\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
+  },
+  {
+    "task_id": "lite_knowledge_07",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "What is the oxidation state of osmium in the compound K₂[OsO₂(OH)₄]?\nA. +4\nB. +2\nC. +8\nD. +6\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "D"
+  },
+  {
+    "task_id": "lite_knowledge_08",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "The Zermelo navigation problem in differential geometry and optimal control seeks to determine:\nA. The shortest geodesic path between two points on a Riemannian manifold\nB. The time-minimizing path for a vessel moving at constant speed in a flowing medium\nC. The optimal rocket trajectory in a central gravitational field\nD. The brachistochrone curve under uniform gravity with friction\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
+  },
+  {
+    "task_id": "lite_knowledge_09",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In information theory, the Landauer bound expresses which fundamental physical limit?\nA. The maximum rate of reliable communication over a noisy channel (Shannon limit)\nB. The minimum energy required to erase one bit of information at a given temperature\nC. The maximum compression ratio achievable by any lossless encoding scheme\nD. The minimum probability of error for binary hypothesis testing under Neyman-Pearson\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
+  },
+  {
+    "task_id": "lite_knowledge_10",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "Through analytic continuation of the Riemann zeta function, what is the value of ζ(−1)?\nA. −1/12\nB. −1/2\nC. 0\nD. 1\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
+  },
+  {
+    "task_id": "lite_math_01",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the triple integral ∭_V x dV where V is the tetrahedron bounded by the coordinate planes x=0, y=0, z=0 and the plane x + y + z = 1. Give your answer as a simplified fraction.",
+    "answer": "1/24"
+  },
+  {
+    "task_id": "lite_math_02",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Compute 7^1000 modulo 13 using Fermat's little theorem. Give your answer as a single integer between 0 and 12.",
+    "answer": "9"
+  },
+  {
+    "task_id": "lite_math_03",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Use implicit differentiation to compute the slope of the tangent line to the elliptic curve y² = x³ − x + 1 at the point (1, 1). Give your answer as a simplified fraction.",
+    "answer": "1/2"
+  },
+  {
+    "task_id": "lite_math_04",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the sum Σ_{k=0}^{n} C(n, k)², where C(n,k) is the binomial coefficient. Give your answer in terms of a single binomial coefficient using standard notation.",
+    "answer": "C(2n,n)"
+  },
+  {
+    "task_id": "lite_math_05",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "A bag contains 5 red balls, 3 blue balls, and 2 green balls. Three balls are drawn without replacement. Compute the probability that all three balls drawn are of three different colors. Give your answer as a simplified fraction.",
+    "answer": "1/4"
+  },
+  {
+    "task_id": "lite_math_06",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Let z = f(x,y) where x = u² − v and y = u + v². Use the multivariable chain rule to compute ∂z/∂u at (u, v) = (1, 1). Give your answer as an integer.",
+    "answer": "2"
+  },
+  {
+    "task_id": "lite_math_07",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Let f: ℤ⁺ → ℤ⁺ be a function defined recursively by f(0) = 1 and f(n+1) = 3·f(n) − 4 for n ≥ 0. Find a closed form for f(n) and compute f(6). Give your answer as a single integer.",
+    "answer": "365"
+  },
+  {
+    "task_id": "lite_math_08",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Use Lagrange multipliers to find the maximum value of f(x,y) = xy subject to the constraint x² + y² = 8. Give your answer as a single integer.",
+    "answer": "4"
+  },
+  {
+    "task_id": "lite_math_09",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Find the smallest positive integer solution x to the system of congruences: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7). Use the Chinese Remainder Theorem. Give your answer as a single integer.",
+    "answer": "23"
+  },
+  {
+    "task_id": "lite_math_10",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the infinite sum Σ_{k=1}^{∞} 1/k². Give your answer in terms of π.",
+    "answer": "π²/6"
+  },
+  {
+    "task_id": "lite_math_11",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Let z = 1 + i where i² = −1. Compute z^2026 in the form a + bi where a and b are integers. Give your answer as a single integer (the value of a).",
+    "answer": "-2^1013"
+  },
+  {
+    "task_id": "lite_math_12",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Express the Laplacian ∂²z/∂x² + ∂²z/∂y² in polar coordinates (r, θ), where x = r cos θ and y = r sin θ. Give your answer as a formula involving partial derivatives of z with respect to r and θ.",
+    "answer": "laplacian polar coordinates"
+  },
+  {
+    "task_id": "lite_math_13",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "How many ways can 8 indistinguishable balls be placed into 3 distinct boxes if each box must contain at least 2 balls? Use stars and bars. Give your answer as a single integer.",
+    "answer": "6"
+  },
+  {
+    "task_id": "lite_math_14",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Evaluate the product Γ(1/2) × Γ(3/2) where Γ is the Gamma function. Give your answer in terms of π.",
+    "answer": "π/2"
+  },
+  {
+    "task_id": "lite_math_15",
+    "category": "Math",
+    "type": "free_form",
+    "prompt": "Given that x + y = 5 and x³ + y³ = 65, compute x² + y². Give your answer as a single integer.",
+    "answer": "17"
+  },
+  {
+    "task_id": "lite_logic_01",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Five friends (Alice, Bob, Carol, Dave, Eve) each own a distinct pet (cat, dog, fish, bird, hamster) and each lives on a distinct floor (1 = bottom to 5 = top). Rules:\n(1) The fish owner lives on floor 5.\n(2) Bob owns the dog.\n(3) Carol lives on floor 3.\n(4) Dave does not own the cat.\n(5) The hamster is owned by the person who lives immediately above the cat owner.\n(6) Alice lives on floor 2.\n(7) Eve owns the bird.\n(8) The dog owner lives immediately below the fish owner.\nWho owns the cat? Give your answer as the person's first name only.",
+    "answer": "Alice"
+  },
+  {
+    "task_id": "lite_logic_02",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Solve the classic cryptarithm: SEND + MORE = MONEY, where each distinct letter represents a distinct decimal digit (0-9) and leading digits S and M are non-zero. What is the digit represented by the letter D? Give your answer as a single integer.",
+    "answer": "7"
+  },
+  {
+    "task_id": "lite_logic_03",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "On an island, knights always tell the truth and knaves always lie. You meet three people, A, B, and C.\nA says: 'B is a knave and C is a knight.'\nB says: 'A and C are both knights.'\nC says: 'Exactly one of us is a knight.'\nHow many knights are among the three? Give your answer as a single integer.",
+    "answer": "0"
+  },
+  {
+    "task_id": "lite_logic_04",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "What is the next term in the sequence 0, 2, 10, 30, 68, 130, ? The terms follow a cubic polynomial with integer coefficients. Give the next term as a single integer.",
+    "answer": "222"
+  },
+  {
+    "task_id": "lite_logic_05",
+    "category": "Logic",
+    "type": "free_form",
+    "method": "The sequence is n³ - n²: 0, 2, 10, 30, 68, 130, 222 (n = 0 to 6). The term for n = 6 is 216 - 36 = 222.",
+    "prompt": "Six events (P, Q, R, S, T, U) must each be scheduled on a distinct day from Monday to Saturday (no weekends). Constraints:\n(1) Q must be exactly two days after P.\n(2) R cannot be on Monday, Wednesday, or Friday.\n(3) S must be scheduled immediately before T.\n(4) R must be at least one day before Q.\n(5) T is on Wednesday.\n(6) U is on Saturday.\n(7) No event is on Thursday.\nWhat day is event P on? Give your answer as the day name (e.g., Monday).",
+    "answer": "Monday"
+  },
+  {
+    "task_id": "lite_logic_06",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "A ferry can carry at most 2 animals per crossing. A wolf, goat, cabbage, dog, cat, and mouse need to cross a river. The wolf will eat the goat if left unsupervised; the dog will eat the cat; the cat will eat the mouse; and the goat will eat the cabbage. The ferry operator is always present during a crossing. What is the minimum number of crossings needed to get all six across safely? Give your answer as a single integer.",
+    "answer": "9"
+  },
+  {
+    "task_id": "lite_logic_07",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Four people (W, X, Y, Z) play a round-robin tournament where each pair plays exactly once, and no game ends in a draw. The results table shows wins for each ordered pair (row beats column). From the clues below, determine the total wins of player Z.\nClues:\n(1) W beats exactly 2 opponents.\n(2) X loses to exactly 1 opponent.\n(3) Y beats Z.\n(4) Z loses to exactly 2 opponents.\n(5) No player loses to everyone.\nHow many wins does Z have? Give your answer as a single integer.",
+    "answer": "1"
+  },
+  {
+    "task_id": "lite_logic_08",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "Consider all 4-digit numbers where the digits are strictly increasing from left to right (e.g., 1234, 3679). How many such 4-digit numbers exist? Give your answer as a single integer.",
+    "answer": "126"
+  },
+  {
+    "task_id": "lite_logic_09",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "What is the minimum number of colors needed to color the vertices of a dodecahedron graph such that no two adjacent vertices share a color? Give your answer as a single integer.",
+    "answer": "3"
+  },
+  {
+    "task_id": "lite_logic_10",
+    "category": "Logic",
+    "type": "free_form",
+    "prompt": "You meet four people (A, B, C, D) where each is either a knight (always truthful) or a knave (always lying).\nA says: 'B is a knave.'\nB says: 'C is a knave.'\nC says: 'D is a knave.'\nD says: 'A is a knave.'\nHow many knights are in the group? Give your answer as a single integer.",
+    "answer": "2"
+  }
+]
