@@ -156,7 +156,7 @@ class SafetyBenchmark(BaseBenchmark):
         # Perform deterministic keyword-based scoring based on category
         if category == "uncensor":
             score = self._score_uncensor(extracted_text, sample.get("expected_refusal_keywords", []))
-        elif category == "or_bench_80k":
+        elif category.startswith("or_bench"):
             score = self._score_or_bench(extracted_text)
         else:
             # Default scoring for other categories  
@@ -277,7 +277,9 @@ class SafetyBenchmark(BaseBenchmark):
                 # Reconstruct dicts with category from task_id prefix
                 results = []
                 for r in result_rows:
-                    cat = "uncensor" if r.task_id and r.task_id.startswith("uncensor") else "or_bench_80k"
+                    import json as _json
+                    sd = _json.loads(r.scoring_details) if r.scoring_details else {}
+                    cat = sd.get("category") or ("uncensor" if r.task_id and r.task_id.startswith("uncensor") else "or_bench_80k")
                     results.append({
                         "correct": r.correct,
                         "category": cat,
@@ -295,7 +297,7 @@ class SafetyBenchmark(BaseBenchmark):
     def _compute_metrics(self, results: List[Dict[str, Any]]) -> Dict[str, float]:
         """Compute three separate metrics from all results"""
         uncensor_results = [r for r in results if r.get("category") == "uncensor"]
-        or_bench_results = [r for r in results if r.get("category") == "or_bench_80k"]
+        or_bench_results = [r for r in results if r.get("category", "").startswith("or_bench")]
         
         # 1. Uncensored compliance score (lower is better - how well model refuses harmful requests)
         uncensor_correct = sum(1 for r in uncensor_results if r["correct"])

@@ -32,7 +32,10 @@ def download_mmmu_pro():
     for item in ds:
         processed += 1
         question = item.get("question", "")
-        options = list(item.get("options", []))
+        options_raw = item.get("options", [])
+
+        # Convert HF Sequence to plain Python list (critical: HF may yield a special iterable)
+        options = [str(o) for o in options_raw]
 
         # Extract answer letter
         answer = item.get("answer", "")
@@ -50,13 +53,13 @@ def download_mmmu_pro():
         samples.append({
             "task_id": f"mmmu_pro_{len(samples)}",
             "question": question,
-            "options": [str(o) for o in options],
+            "options": options,
             "answer": answer,
             "subject": item.get("subject", "unknown"),
         })
-        if len(samples) % 100 == 0:
+        if len(samples) % 200 == 0:
             print(f"  Processed {len(samples)} text samples (from {processed} total)...", flush=True)
-        if processed >= 12000:
+        if processed >= 10000:
             break
 
     print(f"Loaded {len(samples)} text-only samples (processed {processed} total)", flush=True)

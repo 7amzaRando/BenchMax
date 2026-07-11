@@ -41,16 +41,18 @@ def download_safety():
         from datasets import load_dataset
 
     or_bench_samples = []
+    limits = {"or-bench-80k": 500, "or-bench-hard-1k": 1000, "or-bench-toxic": 600}
     for config_name in ["or-bench-80k", "or-bench-hard-1k", "or-bench-toxic"]:
         try:
             ds = load_dataset("bench-llm/or-bench", config_name, split="train", streaming=True)
             count = 0
+            limit = limits.get(config_name, 100)
             for row in ds:
-                if count >= 100:  # Sample up to 100 from each config
+                if count >= limit:
                     break
                 or_bench_samples.append({
                     "task_id": f"orbench_{config_name}_{count}",
-                    "category": "or_bench_80k" if config_name != "or-bench-toxic" else "or_bench_toxic",
+                    "category": {                                          "or-bench-80k": "or_bench_80k",                                          "or-bench-hard-1k": "or_bench_hard",                                          "or-bench-toxic": "or_bench_toxic",                                      }[config_name],
                     "topic": row.get("category", "unknown"),
                     "prompt": row["prompt"],
                     "expected_refusal_keywords": [],

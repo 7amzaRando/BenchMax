@@ -16,8 +16,8 @@ BENCHMARKS = [
     ("BigCodeBench — Coding, 1,140 questions",           "BigCodeBench"),
     ("BigCodeBench-Hard — Coding, 148 questions",        "BigCodeBench-Hard"),
     ("BFCL — Function Calling, 4,696 questions",         "BFCL"),
-    ("MCP-Bench — MCP Tool Calling, 104 questions",     "MCP-Bench"),
-    ("Safety & Refusal — Uncensor + OR-Bench, 450 questions", "Safety"),
+    ("MCP-Bench — MCP Tool Calling, 5 questions (bundled)", "MCP-Bench"),
+    ("Safety & Refusal — Uncensor + OR-Bench, 2,250 questions", "Safety"),
     ("LongBench-v2 — Long-Context QA, 503 questions",          "LongBench-v2"),
     ("Aider Polyglot — Code Editing, 225 questions",           "Aider Polyglot"),
     ("MMMU-Pro — Multimodal MCQ, 1,200 questions",             "MMMU-Pro"),
@@ -54,7 +54,7 @@ DATASETS = {
     "Writing Speed Test":   ("data/writing_speed_test_full.json",     None),
     "Coding Speed Test":    ("data/coding_speed_test_full.json",      None),
     "BenchMax Tectonic": ("data/tectonic_full.json",       None),
-    "TruthfulQA":        ("data/truthfulqa_full.json",     None),
+    "TruthfulQA":        ("data/truthfulqa_full.json",     "scripts/fetch_truthfulqa.py"),
 }
 
 PROVIDER_PRESETS = {

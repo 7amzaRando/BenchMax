@@ -1,4 +1,12 @@
-"""Download the real MCP-Bench dataset from Accenture/mcp-bench on GitHub."""
+"""Download the real MCP-Bench dataset from Accenture/mcp-bench on GitHub.
+
+NOTE: The Accenture/mcp-bench repository only contains 'runner_format' task files
+which do NOT include the 'tool_calls' ground truth field. The original task files with
+ground truth are not publicly available. This script downloads the runner_format files
+for reference but falls back to bundled samples with hand-crafted ground truth.
+
+To regenerate the bundled ground truth, the expected tool calls must be derived
+from the dependency_analysis field in each task."""
 import json, sys, os, urllib.request
 from pathlib import Path
 
@@ -30,31 +38,14 @@ def download_mcp_bench():
             print(f"  FAILED: {e}")
 
     # Convert to BenchMax format
-    unified = []
-    for t in all_tasks:
-        task_list = t.get("tasks", [])
-        for task_item in task_list:
-            unified.append({
-                "task_id": task_item.get("task_id", f"mcp_{len(unified)}"),
-                "category": t.get("combination_type", "single_server"),
-                "server_count": t.get("server_count", 0),
-                "available_servers": [s.get("name", "") for s in t.get("servers", [])],
-                "task_description": task_item.get("fuzzy_description", task_item.get("task_description", "")),
-                "conversation_history": [],
-                "correct_tool_call": task_item.get("tool_calls", [{}])[0] if task_item.get("tool_calls") else None,
-                "expected_answer": task_item.get("expected_answer", ""),
-            })
+    # Note: runner_format files don't contain tool_calls, so correct_tool_call is null.
+    # The ground truth must be extracted from dependency_analysis or set manually.
+    # Until a reliable ground-truth source exists, this script does NOT overwrite
+    # the data files. The benchmark falls back to hand-crafted bundled samples.
+    print(f"Downloaded {len(all_tasks)} tasks from runner_format files (no tool_calls ground truth available)")
+    print("Skipping data file write — benchmark falls back to bundled samples with correct ground truth")
 
-    full_path = DATA_DIR / "mcp_bench_full.json"
-    with open(full_path, "w", encoding="utf-8") as f:
-        json.dump(unified, f, indent=2, ensure_ascii=False)
-    print(f"\nSaved {len(unified)} samples to {full_path}")
-
-    mini_path = DATA_DIR / "mcp_bench_mini.json"
-    with open(mini_path, "w", encoding="utf-8") as f:
-        json.dump(unified[:5], f, indent=2, ensure_ascii=False)
-    print(f"Saved {min(5, len(unified))} samples to {mini_path}")
-    return len(unified)
+    return len(all_tasks)
 
 if __name__ == "__main__":
     count = download_mcp_bench()

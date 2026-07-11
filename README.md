@@ -161,7 +161,7 @@ Sync results to the public leaderboard and compare with the community
 <td width="50%">
 
 #### Standalone .EXE
-Build a single-file executable via PyInstaller (~84MB, no Python environment needed)
+Build a single-file executable via PyInstaller (~125MB, no Python environment needed)
 
 </td>
 <td width="50%">

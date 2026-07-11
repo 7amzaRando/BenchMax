@@ -1,1042 +1,355 @@
 [
   {
-    "task_id": "openapi_explorer_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on this new dashboard that pulls search results from three different services—one for AI stuff, one for code hosting, and one for edge networking—and I’m scratching my head over how each handles pagination. Some APIs might use a page/page_size setup, others a cursor or next_cursor, and I’m not even sure if all of them support paging in their search calls or if I have to switch to their “list” routes instead. \n\nCould you dig into each service’s search endpoints and tell me:\n• whether it pages at all or not  \n• if it does, what style it uses (page numbers, cursors, etc.)  \n• the exact parameter names, types, required flags, and defaults  \n• any response fields that indicate where to pick up the next batch  \n\nAnd if a service’s search doesn’t page, check its list endpoints the same way. I really need a solid breakdown—names, defaults, response tokens—the whole picture, so I can convince my boss this setup will actually work. Need real details, not guesses. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "openapi_explorer_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m building a little integration for my team and could really use a sanity check on two services we’re about to hook up. One of them is an AI platform where most of what I’ll do is “create” stuff (models, completions, that kind of thing), and the other is a code-hosting service where I only care about endpoints under “/repos” for cloning, PRs, labels, etc. \n\nHere’s what I’m trying to figure out: for each of those AI create-calls, how many required fields do I actually need to send? And then for the repo routes on the other side, how many mandatory inputs are there in the path, query string or request body? On top of that, each service uses its own auth methods—API keys, OAuth2 flows, maybe others—and I’d love to know which types each one offers and which types they share so I can reuse our login flow.\n\nIt’d be a huge help if you could pull those counts straight from their specs, highlight any endpoints that demand more than three required inputs (those will need extra form design on our side), list out the auth scheme types for both platforms, and then point out the overlap. Ideally I’d get back a tidy JSON-style summary I can hand off to my manager. And please, real numbers only—I can’t show up with guesswork. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "unit_converter_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m prepping for a Reactor X startup tomorrow and it’s stressing me out a bit. My boss handed me 14 different sensor readings, all in weird units, and I need to know if we meet the safety thresholds (which are all in SI or related metric units). Here’s what I’ve got:\n\n- Inlet temperature: 350 °F (threshold 150 °C)  \n- Inlet pressure: 50 psi (threshold 350 kPa)  \n- Reactor length: 10 ft (threshold 5 m)  \n- Catalyst weight: 500 lb (threshold 200 kg)  \n- Tank volume: 2000 imperial gal (threshold 8 m³)  \n- Data buffer: 2 GB (threshold 1500 MB)  \n- Heat-exchanger area: 1000 ft² (threshold 90 m²)  \n- Motor power: 50 hp (threshold 40 kW)  \n- Reaction time: 2 hours (threshold 6000 s)  \n- Valve angle: 0.25 turns (threshold 45 °)  \n- Conveyor speed: 2 m/s (threshold 4000 ft/min)  \n- Valve force: 500 lbf (threshold 2000 N)  \n- Fluid density: 128 lb/ft³ (threshold 2000 kg/m³)  \n- Fuel energy: 10000 Btu (threshold 12000 kJ)  \n\nCould you convert each reading into the same units as its threshold, then tell me for each one whether it passes (converted ≥ threshold) or fails? And if any come up as a fail, I’d really appreciate you doing a second check with a different conversion route—just to be absolutely sure we didn’t slip up on units. \n\nIt’d be awesome if you could bundle everything in a JSON summary that shows, for each sensor: its name, the original reading, the converted value with units, the threshold with units, pass/fail status, and the cross-validation details when you’ve done that extra check. I really need actual numbers on this—can’t go to my boss with just opinions. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "unit_converter_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m gearing up for a 2 h 30 min high-altitude drone test flight and my boss wants every single detail in SI. Right now all my numbers are in U.S. customary units: engine inlet at 500 °F and outlet at 300 °F; propeller pitch is 15° (I’d like that in gons); cruise speed is 60 knots; altitude’s 10 000 ft; wing span 15 ft; wing area 1 200 in²; cargo-bay pressure 50 psi; takeoff thrust 3 000 lbf; on-board log storage is 2 GB with a 10 MB downlink buffer; battery capacity 5 kWh over this 2 h 30 min flight; and the fuel tank holds 200 US gal of fuel whose density is 810 g/L. \n\nCan you help me convert all of that—temperatures to kelvins, angle to gons, speed to m/s, lengths to meters, area to m², pressure to pascals, force to newtons, storage to bytes, energy to joules, compute the average power draw in kW then to horsepower, volume to m³, density to kg/m³, and time to seconds—then calculate the total starting fuel mass in kilograms and, if it ends up over 100 kg, report it in tonnes (otherwise in pounds)? In the end I need a tidy JSON where each entry has original_value, original_unit, converted_value, converted_unit, plus two computed fields—average_power and starting_fuel_mass—and a note on which fuel-mass branch you chose. I really need solid, data-driven numbers here—no hand-wavy estimates.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m prepping for a presentation on the big global climate deals and could really use some solid data. Could you find the main half-dozen—or so—negotiation frameworks that show up most often and give me a quick intro to each, plus roughly how many internal links or references they have? Then dive into the Paris Agreement: I’d like about a 200-word summary focused on its emission-reduction targets and five standout facts. After that, I’m curious what topics usually pop up alongside the Kyoto Protocol—aim for at least five related ideas, and if you only spot a few, try to round it out. Oh, and would you cross-check those five Paris facts against your summary and flag any that don’t actually appear there? Finally, please wrap everything into a single JSON output since my professor insists on that. And whatever you pull, make sure it’s backed by real numbers or citations—I can’t go in there with just opinions.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a sustainability briefing and need to really understand how solar panels stack up against wind turbines when it comes to environmental impacts—think resource use, lifecycle emissions, land use, etc. Could you:\n\n- Give me a short, punchy summary of each technology’s environmental footprint (a paragraph or two each).\n- Pull out about five of the most important facts related to their environmental impact for each, and show them side-by-side so I can see the main differences at a glance.\n\nOn top of that, I’ve got to cover the policy side—what incentive schemes or regulatory frameworks are actually driving solar and wind adoption right now? A clear, two-to-three-paragraph overview of the key support mechanisms would be great. While you’re at it, when you look at the main write-ups on solar and wind, do they actually link to that policy overview? Let me know “yes” or “no” for each.\n\nLastly, if you spot another renewable technology in those policy discussions that seems like a smart next step for us to research, tell me which one and give me two sentences on why it’s worth a closer look. \n\nI’m presenting next week, so I really need solid numbers and references—can’t go in with just vague statements. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to plan a fun bike ride around Denver’s Central Park this Saturday morning—thinking of starting and ending at the Denver Art Museum sometime between 9 and noon. I’d love to swing by a really good café on the way—something within a few miles that’s got at least a 4-star rating and is actually open when I’m riding. But I don’t want to kill myself on hills or end up riding forever, so I’m hoping to find the spot that gives me the shortest round-trip plus the least uphill grunt. \n\nCould you help me figure out which cafés in about a 5 km radius fit the bill, rank them by total distance plus elevation gain, pick the best one, and then give me turn-by-turn bike directions (with distances, estimated times, and elevation change) for a 9 AM departure? Also, it’d be awesome to get a quick summary of all the candidates—name, address, rating, distance and elevation details—so I can see why the top pick wins. I really need actual numbers here, not just opinions, so I can be confident this ride won’t turn into a slog.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m planning a bike outing in downtown San Francisco next weekend and could really use a hand. I want to start around City Hall and rent from a solid shop that’s actually open when I arrive—and ideally rated 4 stars or higher. If I can’t find at least three places like that within a couple of kilometers, I’m okay with dropping to 3.5 stars just to have enough options. Then I’d love to cruise over to a top-rated café about a kilometer away. What I’m really after is the bike-shop/coffee-shop pairing that gives me the shortest ride. \n\nCould you figure out which rental spot and café that is, and give me all the nitty-gritty? I’d need the shop’s address, hours, phone number and website, plus the café’s name, address and rating. Also please include the total biking distance and time, full turn-by-turn directions, and how hilly the route is by giving me elevations at the start, midpoint and end—and even the street address of that midpoint. I need actual numbers and real locations, not vague guesses, so I can share it with my friends and get everything booked. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "bibliomantic_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve been tossing around this idea of launching a small sustainable agriculture venture—think urban farming or community gardens—right in downtown Seattle over the next six months. I’m really on the fence about timing and direction, so I was wondering if you could do a deep-dive I Ching reading for me. \n\nLike, what hexagram comes up first? Do any lines shift, and if they do, what’s the follow-up hexagram all about? Then, maybe run a second style of I Ching consult just to see if it echoes the first reading or highlights something totally different. I’d love to get the exact Chinese names, symbols, full commentary, and the line-by-line texts—so I’m not just getting a TL;DR, but the actual guidance in its own words.\n\nAt the end, could you weigh both readings side by side? Do they agree on the core message, or is one more cautious while the other pushes forward? And then give me a final take—should I dive in now, tweak the plan, or wait a bit? I really need those real quotes and details to share with my partner and make a solid call. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "bibliomantic_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to decide whether we should roll out our flagship product in the Southeast Asian market over the next few months. Our leadership team’s split – some think it’s the perfect moment, others worry it’s too much of a gamble. I’d love to tap into some I Ching insight to guide us. Could you peek at the oracle’s load (if it’s handling fewer than about fifty readings, go ahead with a full, in-depth cast; if it’s busier, do a quick toss of the coins)? Jot down the hexagram numbers and any moving lines for each, then pull in the commentaries. If the quick and deep readings agree, that’s our final verdict; if they clash, maybe do one more light toss to break the tie. Then, if there are moving lines, flip them to see the secondary hexagram and note its message too. At the end, I need everything laid out – the raw toss results, the final hexagram and its write-up, the follow-up one if it exists, and a clear recommendation I can share with my boss. Please give me actual numbers and detailed notes so I’m not just presenting opinions.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "biomcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been asked to put together a 360-degree update on the BRAF V600E mutation in melanoma and honestly, I’m a bit swamped. I need to know what’s come out in the last three months—papers (including any preprints), how often this mutation actually shows up and what that might mean clinically, which late-stage vemurafenib trials are still recruiting and who’s backing them, plus any biomarker angles (like PD-L1 criteria), the current take on vemurafenib’s profile, and whether there have been serious safety alerts or even hiccups with the genomic testing kits used in these studies. Basically, I can’t show up without solid figures—allele frequencies, trial counts, sponsor names, adverse-event tallies, device problem reports—everything tied back to real sources. Can you help me pull all that together in one place?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "biomcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a melanoma project and really stuck piecing together everything about that common BRAF V600E change. My boss wants a solid briefing on how that mutation drives the disease, what recent studies are saying, and whether treatments like vemurafenib or dabrafenib are truly holding up in patients who carry it. On top of that, I need to know what clinical trials are actually enrolling V600E-positive melanoma folks right now, how those trials are set up, what outcomes they’re reporting (and if any published papers or updates back them up), and how all that lines up with the drugs’ approved uses and safety concerns. \n\nI’m not looking for vague summaries—I need hard numbers, trial IDs, approval dates, key label warnings, safety‐signal stats, that sort of thing—all from the latest half‐year or so. Can you help me pull together a clear, evidence‐backed overview covering:\n\n• The role of BRAF V600E in melanoma  \n• Highlights from recent papers on that mutation  \n• Open Phase 2/3 studies targeting it (designs, outcomes, refs)  \n• Approval status and key label sections for vemurafenib/dabrafenib  \n• Any serious adverse event patterns reported post‐approval  \n\nI’ve got to show real data and sources—nothing off the cuff—so I can recommend the best targeted strategy. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "call_for_papers_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m knee-deep in organizing paper submissions for my team and just noticed there are dozens of Europe-based conferences on AI and on data privacy with deadlines sneaking up in the next week. I’m kind of panicking because I don’t want to miss any last-call dates—some might even close in the next 24 hours. \n\nCould you pull together a list of those upcoming European events in artificial intelligence and data privacy that still have open calls over the next seven days? It’d be awesome if you could flag which ones are truly urgent (like closing in a day) versus those with a bit more breathing room, and jot down the city, how many days we’ve got left, and whether it’s AI or privacy. \n\nI really need solid info—actual deadlines and locations—so I can get our proposals in on time. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "call_for_papers_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on my PhD in sustainable energy and my supervisor just asked me to pull together a shortlist of conferences happening over the next six months that I should really keep an eye on. Honestly, there are so many calls for papers out there under labels like “renewable energy” or “sustainable energy” that I’m getting lost. Could you find me about five upcoming conferences—complete with their names, when they start (relative to now), and where they’re held—and highlight any common themes? I’ve noticed terms like wind, solar or hydro seem to show up a lot in titles, so if one of those subtopics is particularly hot, maybe zoom in on that a bit more. I need to send something solid to my supervisor soon, so please back it up with real event details, not just guesses.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "car_price_evaluator_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m prepping for a marketing push next week and could use some solid data. We need to spotlight the pickup brands that have the most models priced north of 100 000, while also highlighting car brands whose average model price sits under about 60 000. Then, if any brand shows up in both groups, I’d like to see what motorcycles they offer and how much those bikes go for. Could you pull together who the top three truck brands are (by count of six-figure models), which car brands make the budget cut, and any overlaps—and for those overlaps list out the bike models and their prices? I really need actual counts, averages, and price tags so I can back up my plan with real numbers, not just gut feelings. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "car_price_evaluator_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on a little overview for my boss about how Brazilian car brands line up price-wise. Basically, I want to see which brands are on the cheaper end (say under R$40 000 on average), which sit in a mid-range (around R$40–80 000), and which ones are in that premium R$80 000-plus territory. For those top-tier brands, it’d be great to know if they’re big enough to also show up in bikes or trucks—and if there’s some internal brand code we can reference. At the end, I need a simple rundown with each brand’s average price, its segment (low/mid/high), and for the high-end names, their code plus a yes/no on whether they’ve diversified into motorcycles or trucks. I really need actual numbers and facts here—not just gut feelings—so I can back my recommendations with solid data. Could you help me pull this together?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "context7_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to choose between Next.js and Gatsby for a new project, and my manager wants a side-by-side look at their routing docs. Basically, I need to know how many real code examples each framework includes in its routing guide. If they’re almost neck-and-neck, I’d also like to see how many snippets they each have on dynamic routing. Could you dive into both official docs, count up those snippet examples for routing and dynamic routing, and let me know which one comes out ahead? I really need hard numbers—can’t just go to the boss with gut feelings.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "context7_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got to lock in a JavaScript front-end framework for a new single-page app by next week, and routing plus solid state management are deal-breakers. I’m really prioritizing documentation that’s packed with real code examples, not just theory. Could you check out the two most highly regarded frameworks right now, tally up how many code snippets they each have for routing and for state handling, and see which one comes out ahead? If the front-runner has roughly 50 or more total snippets in those areas, I’ll go with that. If it falls short, I’d also want to know how many “advanced patterns” examples the second tool has and then pick whichever has more. I need actual counts to back this up—no vague opinions—so I can make a strong case to the team.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "dex_paprika_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a DeFi deep-dive for a client who’s curious how Ethereum stacks up against that other fast chain, Solana, in terms of big-money pools and how choppy they’ve been lately. Could you help me figure out which three pools on each network are moving the most USD volume right now, and call out any that jumped or dropped by more than about 5% in the last 24 hours? For those volatile ones, I’d love to see a daily price chart for roughly the past month and a look at the most recent ~50 swaps or liquidity moves. \n\nOn top of that, I need to know where USDC is getting the most action on each chain—so what’s the single largest USDC pair by volume, and how has its price trended day-to-day over the last month? And finally, can you give me a quick snapshot of overall DEX health across the ecosystem? I really need hard numbers and real data here—I can’t go in with just opinions. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "dex_paprika_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve got this project where my team needs a clear picture of what’s been happening on the biggest DeFi venues over the last six months—specifically Uniswap V3 on Ethereum and QuickSwap on Polygon. I’m trying to figure out which pools have been doing the heaviest trading (let’s say the top five by volume on each chain), then dig into how those pools have behaved day-to-day: price swings, rough volatility, number of trades, that kind of thing. \n\nOn top of that, I’d like to know what tokens are sitting in each of those pools, and whether those same tokens show up in any major pools on the other network. Ultimately, I want a side-by-side look at each pool’s address, token info, volume stats, daily price history (so we can calculate a volatility percentage), plus a quick snapshot of transaction counts and where else those tokens are getting traded cross-chain. \n\nSounds like a lot, I know—but I really need actual figures and solid data to back this up. Can you help me pull all that together? Whatever you find, please make sure it’s backed up by real numbers or reliable sources, okay?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "fruityvice_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m tinkering with a new snack idea and could really use your help. I want to build a fruit salad that ends up at about 500 calories, loads of fiber but under roughly 30 g of sugar total. My rough plan is to kick things off with an apple, then—depending on whether it falls into the Rosaceae family—go with either a strawberry or switch to pineapple. Next, based on how sweet that second pick is (I’m eyeballing about 5 g sugar per 100 g as my cutoff), I’d add either an orange or a banana. \n\nCan you grab the real nutrition facts for each of those fruits, help me decide which ones to use, figure out exactly how many grams of each to hit the 500 calories, maximize fiber, and stay under 30 g of sugar? I’d need:\n\n- The calories, fiber, and sugar per 100 g for each selected fruit\n- The precise weights of each fruit in the mix\n- A final tally of total calories, fiber, and sugar\n\nI really need hard numbers backed by genuine data—no guessing—so I can show the results to my team. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "fruityvice_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got a bit of a smoothie challenge for next week and could use your brain on it. My coach wants each 300 mL drink to have exactly 200 g of fruit but stay under about 30 g of sugar and still hit at least 8 g of fiber. I’m thinking about using things like apple, banana, orange, strawberry, kiwi, mango, pineapple, blueberry—and if that doesn’t give me enough options, maybe throw in pear or grape. \n\nWhat I really need is a handful of three-fruit blends (so roughly 66–67 g of each fruit) that meet those sugar and fiber limits, and then a 7-day lineup cycling through all the valid combos. Could you break down each day’s smoothie with exactly which fruits, how many grams of each, plus the total sugar and fiber? I can’t just wing this—I need real numbers to show my coach.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "game_trends_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working at a small indie game publisher and my boss wants me to spot any breakout titles over the next week. What I’m really after are those under-the-radar games that haven’t cracked the top five bestsellers but are still pulling in roughly 5,000 concurrent players. If any of those are buzzing on both Steam and Epic, I’d love to see their individual ranks and an averaged ranking—only if that average comes out to ten or below. For games that only pop on Steam, make sure they’re not quietly heading into any Epic free-to-play or upcoming giveaways. And for anything only trending on Epic, flag if it’s set to go free in the next seven days. Could you put together a shortlist laid out like that, with real rank numbers, player counts, and free-status notes? I really need hard data to bring back to my team, not just gut feelings.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "game_trends_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m putting together a pitch for next week’s gaming campaign and I need a clear picture of what’s really popping on both Steam and Epic over the past seven days. I’m curious which titles made it into the top tier of buzz on each store, and then for the ten biggest hitters I’d like to know two things on Steam: what their peak live player counts looked like and where they sit in the sales charts right now. At the same time, I want to check on Epic whether those same games are free today or dropping free soon, and how hot they are on Epic’s trending list.\n\nI’m trying to spot the sweet spots—like games that have huge Steam crowds (say above about fifty-thousand at peak) but are free on Epic, which I’d flag as “High-Impact Free Play,” or stuff that’s selling really well on Steam (top twenty sellers) but isn’t filling its lobbies (under around ten-thousand peak) that I’d call “Sales-Driven.” Everything else would just be “Standard Trend.” \n\nCould you pull together real numbers for those ten games—Steam peak player counts, Steam sales ranks, Epic free status, Epic trending scores—and label each one with the category above? I’d really appreciate a neat, data-driven rundown (ideally something I can drop straight into a JSON-style report) because I need hard evidence to show the team, not just gut feelings.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "huge_icons_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m wrapping up a new UI kit for my app and there are five icons I absolutely need—home, search, user-profile, notification and settings—but I’m not sure they all show up under those exact names in the library I’m using. For example, I’ve seen “user-profile” turned into “person” or “account,” notifications sneak in as “bell” or “alert,” and settings sometimes go by “gear” or “cog.” Could you dig in and see which ones are available under the exact or fallback names, then give me the actual import or usage snippets for React, Vue, Angular, Svelte, React Native and Flutter? If any icon doesn’t exist at all or a framework can’t handle one, just flag it so I know what’s missing or only partially supported. I really need real code examples, not just guesses, so I can hand it straight to my team.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "huge_icons_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together docs for the Hugeicons set in my cross-platform component library and could really use some hard numbers and copy-and-paste code. First off, how many icons are in the entire collection? I need at least ten to make this guide worthwhile—if it’s under ten, let me know so I can rethink my approach. \n\nThen for the six core UI bits—home, search, notifications, settings, user, and logout—I’d like you to pick the very first icon that matches each name, but if it doesn’t show up try the “outline” version instead. Once you’ve chosen those, could you walk me through exactly how to import and use each one in React, Vue, Angular, Svelte, React Native, and Flutter? Finally, I need a ready-to-go React snippet for the home icon. \n\nIt would be amazing if you could bundle the whole thing—total icon count, a mapping of category to icon name (noting if you had to fall back), plus the usage instructions for each platform, and the React home example—in one JSON object I can drop straight into my docs. I really need concrete data and real code, not just general advice.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m knee-deep in setting up a spam filter for a side project and could really use some hard data to make a solid call. I’ve been poking around for a pre-trained English classifier that’s not too huge (ideally something under roughly 700 million parameters) and is released under an Apache-2.0-style license. I first checked out a few DistilBERT-ish models, but if none fit the bill, I guess I could fall back to something BERT-based. \n\nAt the same time, I need a dataset with at least around 20 k training examples so it doesn’t feel too flimsy, and I’d love to trial a couple of live demos—preferably built with something like Gradio—just to see how they actually perform on spammy text. \n\nAlso, since keeping up with the latest is crucial, I want to skim today’s fresh papers and see if any mention spam classification; if nothing jumps out, I’m okay with looking at the first handful for any useful benchmark scores or datasets they report. Oh, and if there are any community collections focusing on spam classification, I’d like a peek at those too.\n\nCould you pull together:\n- Details on the best fitting model (name, parameter count, license)\n- Dataset info (ID, train-size)\n- Any live demo spaces you find (with actual performance metrics)\n- A few of today’s papers that talk about spam filtering, with their datasets and scores\n- And any relevant collections or curated sets around spam classification\n\nThen, based on all that evidence—numbers, links, whatever—I’d love a recommendation for which model+dataset pairing seems strongest for fine-tuning. I really need concrete figures and sources so I can walk my boss through it with confidence, not just guesses. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve got this side project where I need to set up an English-to-French translation workflow, but I’m only allowed to use what’s already on Hugging Face. I’m a bit stuck figuring out which of Google’s translation models are both top quality and still on the lean side (maybe under a billion parameters?), and which of the OPUS English-to-French datasets have enough examples to actually work well (I’m thinking at least around ten thousand). \n\nIdeally I’d love to land on the three strongest model-dataset pairings, ranked by the dataset’s size—so I can show my boss some concrete options. And once those are picked, I’d also like to see if there are any live demos or Spaces where I can test them out, plus any recent papers that actually mention those exact models or datasets. Oh, and if Google or OPUS have bundled any of these into collections, point me to those too. \n\nI really need hard numbers, precise model sizes and dataset counts, direct links to demos, papers or collections—nothing vague. Can you dig up all that evidence for me?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "math_mcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m pulling together a report on last quarter’s harvest from our 10 farms, and honestly I need some hard numbers. We recorded yields of 120, 150, 150, 200, 180, 170, 160, 140, 130, and 155 tons. \n\nHere’s what I’m trying to nail down:\n- What’s our total output, average yield per farm, the median and the most common harvest size, plus our lowest and highest yields and the overall spread?\n- Then, at $30 a ton, what does that translate to in revenue?\n- After covering $2,000 in fixed costs per farm (so 10 farms total), what’s left as net profit and what’s our profit margin when you express it as a percentage (rounded to the nearest whole number)?\n- Finally, I’m curious about the gap between our top-performing farm (200 tons) and the average yield—if that difference is more than 30 tons, I want to budget extra fertilizer at $10 per ton of that gap (and round up); if it’s 30 or less, I’ll stick with a $500 allowance (and round down).\n\nCould you crunch all those figures? I really need solid data—can’t go to my boss with just guesses. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "math_mcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve been digging into my sales over the last six months—120, 150, 130, 170, 150 and 160 units—and I’m honestly a bit lost on how to pull it all together for my boss. Could you help me figure out where I stand overall (like total sales, average, median, and which month number appeared most often), spot the best and worst months, and even see how the top month compares to the bottom as a ratio? \n\nAlso, I heard it’s useful to look at how skewed things are by subtracting the median from the mean, and then rounding that skewness differently depending on whether it’s positive or not. On top of that, we’re aiming for an average of 180 units over the next seven months—so I need to know the total target for those seven months and exactly how many extra units I’d have to push next month to hit it (rounded to a whole number). \n\nCould you put all of that into a clean JSON summary (with fields like total_sales, average_sales, median_sales, mode_sales, max_sales, min_sales, max_to_min_ratio, skewness, adjusted_skewness, target_total_7_months, additional_needed_next_month_exact, additional_needed_next_month_rounded)? I really need real numbers for every piece so I can back it up properly—no guesses, just solid calculations.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nixos_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been wrestling with setting up Neovim in a truly rock-solid NixOS environment and could really use a clear snapshot of where things stand. Here’s the deal: I’m on the stable NixOS channel, but I’m not even sure which channels are still alive or where Neovim lives in each. I’d love to know if the specific 0.9.2 release is packaged there—if it isn’t, what are the last few Neovim versions I could grab reproducibly? On top of that, I’m dabbling with flakes and want to see how many community flakes actually offer Neovim and what the download stats look like. Then there’s Home Manager and nix-darwin—does “programs.neovim” show up in their option trees, what does its entry look like, and how deep does the support go? Basically, I need hard numbers and real metadata—channel names, package counts, version hashes or fallback lists, flake counts, option paths, anything that proves this is actually supported end to end. I can’t go forward on gut feelings alone, so whatever you find, make sure it’s backed up by concrete data.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nixos_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been banging my head against getting a rock-solid Python 3.10 setup that works exactly the same on NixOS (with flakes on unstable) and on my Mac via nix-darwin. What I really need is to pin down the precise Python 3.10 package from unstable—ideally lock in version 3.10.8 by its commit hash—then find out if there’s a community flake out there bundling that (or a later) release and pick the best one. On top of that, I want to wire it up in home-manager and nix-darwin so Jupyter and all my usual Python packages just land in my user environment without me juggling things by hand.\n\nCould you help me track down:\n\n• The exact NixOS package name for Python 3.10 on the unstable channel and its full package metadata?  \n• The version history so I can grab the commit hash for 3.10.8?  \n• A good community flake that already includes Python 3.10.8 or above (with name and any relevant metadata)?  \n• The right option path and example config block in home-manager to enable Python packages plus Jupyter Notebook?  \n• The parallel option group and config snippet for nix-darwin to get the same Python/Jupyter support on macOS?  \n• Finally, a complete flake.nix snippet that pins that exact commit, imports the chosen flake, and sets up both home-manager and darwin modules with those options?\n\nI really need the actual values—package names, commit hashes, option names/paths, config blocks, etc.—so I can hand this over to my team and prove it’s rock solid. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "osint_intelligence_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve got a bit of a situation with the domain example-inc.com. My boss wants a full picture of any look-alike sites, subdomains and exposed services so we can see if someone’s squatting on typos or even hosting malicious stuff on the same network. I’m not even sure how many variants there might be if you fuzz it a bit, and I don’t want to miss a single suspicious spelling error or clone that ends up pointing back to our own servers. \n\nCould you help me track down all the possible typo-style domains that resemble example-inc.com, figure out which ones pose the biggest risk, and then map out what subdomains they’ve got? I also need to know every IP they resolve to, what ports are open (especially SSH or web ports), and who technically “owns” each IP and domain from a registration standpoint. And if any of those look-alikes share IP ranges with the real example-inc.com, flag that as a potential “sibling” setup. \n\nAt the end, I really need solid numbers or output—like actual DNS/DNS record details, open-port findings, and registrar versus network-owner info—so I can show my team real evidence. Does that make sense?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "osint_intelligence_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got this sketchy domain, fakeshoponline.com, that only popped up roughly three months ago and now keeps showing up in phishing reports. I’m trying to piece together who’s really behind it—what their name servers and mail servers look like, any subdomains they’ve spun up recently, and where all those endpoints actually live. On top of that, I’m worried about look-alike tricks—domains with just a letter or two changed—that might resolve to the same IP space and even run a web server or open mail relay. Can you help me trace all of that back to the registrant’s info so I can see which ones share the same owner and which are red herrings? I really need everything backed by concrete DNS records, IP mappings, port/service checks, and ownership details—so I can show my team hard evidence, not just theories.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "reddit_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m putting together a quick rundown of how active conversations have been in r/MachineLearning versus r/artificial over the past week. I’d love to know which of the hottest posts in each community really took off—how many comments they started with and how much they grew when you dig into the deeper threads. If any threads jumped past around fifty comments, could you take a closer look at how the discussion branches out there?\n\nI’m also really curious about anything mentioning GPT, Transformer, or LLaMA—how those keyword-driven talks compare in volume and depth to everything else. And then, for an extra comparison, if any exact same titles showed up in both subreddits, can you pull the first handful of comments from each and highlight any difference in tone or main concerns?\n\nAt the end, I need a sense of which discussions saw the biggest surge in engagement, the top three most-talked-about GPT/Transformer/LLaMA threads, and five solid recommendations on which AI topics are worth keeping an eye on next. I really need real comment counts and clear evidence behind it—no wild guesses. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "reddit_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m putting together a quick highlight for our ML community newsletter and I want to focus on two posts: the one that’s getting the most chatter right now and the next biggest by upvotes. Could you:\n\n• Grab the current top 5 hot threads from r/MachineLearning  \n• Figure out which one has the highest comment count and call that our “main” thread  \n• Skim its first 15 top-level comments (down to three replies deep) and check how many of those 15 actually sparked at least one reply—if more than 10 did, dig two more levels deep instead  \n• At the same time, pull the runner-up by score from the remaining four, read its first 10 comments up to two levels deep  \n• Finally, give me a JSON array of two objects (main and runner-up) where each object has:  \n  – id (post ID)  \n  – title  \n  – score  \n  – comment_count  \n  – fetched_depth (the depth you ended up using)  \n  – top_comment_snippet (the text of its single most upvoted top-level comment)  \n  – deeper_refetch_performed (true only if you had to go deeper on the main thread)\n\nI really need the real numbers and snippets so I can drop this straight into our newsletter—no guesses, just hard data. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "national_parks_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been plotting a week-long road trip through California and Oregon, bouncing between parks where I can both hike and camp. I’d love to avoid anywhere that’s under closure alerts or has serious hazards, and I really need campgrounds that actually have showers—plus I’d like the visitor centers to be open every day from about 9 AM to 5 PM so I’m not showing up at a ghost town. On top of that, I’d be thrilled if there’s something cool going on each evening after 6 PM—like ranger talks, stargazing programs, live music, whatever. \n\nCould you help me figure out which parks fit all those criteria over the next seven days and then sketch out a day-by-day plan? I’m imagining something that tells me each day: where I’m headed, a quick park overview, which visitor centers are open with their hours, which campsites have showers, and any evening events I shouldn’t miss. \n\nI really need the details—current alerts, official hours, amenity lists, event schedules—so I can actually book and not just rely on hearsay. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "national_parks_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m planning a week of backpacking in California and trying to pick the three best national parks that won’t let me down. Ideally they’d offer solid hiking and camping, have almost no current closures or safety alerts, keep their visitor centers or services open every day for the next seven days, and have at least a couple of campgrounds with real potable water and toilets. It’d be even better if there’s some kind of event happening—like a ranger talk or guided walk—sometime in the upcoming week. Can you help me narrow it down to the top three spots and show me the proof—how many alerts they each have, their daily service coverage, how many campgrounds meet the water-and-toilet requirement, and what events they’ve got lined up? I need actual numbers and details so I can book with confidence.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a research talk on medieval swords and I want to pick out five examples from two different corners of the Met—the Arms and Armor collection and the Medieval Art galleries. Ideally each sword would have a nice photo for my slides, but if one section only has a few with images, it’s okay to include some without so I still end up with five. For each piece, could you pull together its name, the date or era it comes from, the artist or cultural origin, and a link to its image (if there is one)? I really need concrete details and real links so I can plug them straight into my presentation without any guesses.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve gotten myself into a bit of an art-history deep dive: my prof wants a quick reference on the absolute earliest landscape paintings in the Met’s European collection—like, the ones that kicked off the whole genre over there. But I’m kind of lost on where to even start in their database. I think there’s a “European Paintings” section, and I only really want works tagged as “landscape,” ideally with actual images so I can drop them into my slides. Could you help me figure out which five pieces have the oldest documented dates, and then pull together each painting’s title, artist, date, medium, and a link to its main image? I really need solid, real-data details and URLs—nothing hand-wavy—so I can back up my little presentation. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "movie_recommender_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m putting together a two-day movie marathon for my film club and I want three very different vibes: space exploration, post-apocalyptic survival, and that quirky steampunk flair. I’m thinking about ten go-to films for each vibe, but I also want to see if any titles show up in more than one category—that way those overlapping movies become the marquee picks. If nothing overlaps, I’ll just pick the top couple from each list. Then, for each of those headliners, I’d love around five more “movies like” them to really flesh out the lineup. Finally, I need a big master list of all those extra suggestions, sorted so the films that pop up most often float to the top. Can you pull together the original vibe lists, highlight the core picks, share all the expansion titles, and wrap up with that final ranked recommendation list? I really need actual movie names and how frequently they appear—no vague gut feelings—because I have to show this to the group.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "movie_recommender_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m putting together a week-long sci-fi film showcase at my local theater next week and need to nail down a slate of five movies. Ideally, they’d all be solid science-fiction picks that really lean into space exploration—starship voyages, alien worlds, that kind of epic adventure. I’m not sure there are five titles that hit both “pure sci-fi” and “deep space” perfectly, so if we can’t find enough classics crossing both, I’d top up the list with the best new sci-fi releases opening in the next seven days. Could you help me choose those five, highlight which ones come from that overlap of space-heavy sci-fi and which are the fresh upcoming flicks, and give me a quick note on why each made the cut? I really need actual titles with solid reasons so I can pitch it to our crowd.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nasa_data_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a high-level solar system briefing for some senior folks, and juggling all the pieces is giving me a headache. I need to know if any near-Earth asteroids are swinging by in the next week—especially the ones that might be flagged as potentially hazardous. At the same time, I’d love a snapshot of the Sun’s recent activity: flares, coronal mass ejections, particle storms, geomagnetic disturbances—everything from the past seven days. And if there’s been at least an M-class flare, could you grab that week-ahead solar wind forecast we usually lean on? I also want to double-check that no critical alerts slipped through, so please cross-check any space weather notifications from the past week.\n\nOn the imagery side, I could really use a fresh satellite shot of New York City (around 40.7128, –74.0060) plus the latest batch of EPIC Earth photos from deep space. Oh, and don’t forget today’s astronomy picture of the day—title, media type, and URL.\n\nFor the exoplanet section, show me the top 5 confirmed worlds that take more than about 300 days to orbit but are under twice Earth’s size. A small JSON snippet for that would be perfect so I can paste it straight into our system.\n\nFinally, I need the latest from Curiosity on Mars: what’s the most recent Martian sol and its Earth date, plus any new Mastcam shots from that sol?\n\nCould you bundle all of this into one neat report I can drop into our dashboard? I really need actual numbers and solid sources—no hand-waving, please.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nasa_data_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got a bit of a space‐heavy request that’s been bugging me—my boss wants a one‐stop update covering a bunch of NASA goodies for the coming week, and I’m totally drowning in where to start. \n\nFirst off, can you see if any asteroids swing by Earth over the next seven days and then flag the three biggest ones? I’m talking diameter, so once you’ve got those, I’d love their JPL stats—like how bright they seem, how fast they’re moving, and just how close they actually get. \n\nWhile you’re at it, I also need a breakdown of everything going on with space weather during that same period. You know, all the flare alerts, geomagnetic storms, CMEs, radiation belt changes—any of those daily notifications—and a quick sense of how the solar wind might behave over the next week (if there’s a way to simulate it roughly, that’d be fantastic). \n\nOn top of that, I’m digging into urban growth around San Francisco. Could you grab the very latest satellite picture of the Bay Area and then zoom right in on 37.7749, –122.4194 with about a 0.1°×0.1° patch, checking the cloud cover too? \n\nAlso, Curiosity’s been snapping away—would you pull its mastcam shots from one sol before its most recent day and some navcam pics from that final sol? \n\nAnd just for fun (and science), I want to see which confirmed exoplanets out there take more than roughly 1,000 days to orbit but are under twice Earth’s radius—and from that group, which one has the looooongest year. \n\nOh, and before I forget: today’s Astronomy Picture of the Day (with a thumbnail if it’s a video) needs to be in there as well. \n\nI really can’t bring a bunch of vague opinions to my boss—everything should come with real numbers, dates, image links or data sources so I can back it all up. Thanks a ton!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "okx_exchange_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "So, here’s the deal: I’m putting together a quick “breakout radar” for BTC-USDT, ETH-USDT, and ADA-USDT, and I really need hard numbers to back any call. What I’m wondering is:\n\n– What’s the current price vs. its average over roughly the past day?  \n– How far off is that in percentage terms?  \n– In the last 15 minutes, does it look like the coin’s on an upswing or heading down?  \n– And over the last 5 minutes, has volume shot up or tanked compared to its recent average?  \n– Finally—based on all that—are any of these really cracking out into a breakout right now?\n\nCould you pull the live data, run those calculations, and give me a concise summary (JSON, table, whatever) for each pair? I can’t walk into my team meeting with gut feels—I need real, data-driven answers. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "okx_exchange_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been tinkering with a quick crypto check for BTC and ETH – basically looking at the last half-hour of one-minute candles to see who’s been really moving. If either coin has jumped more than about 1% over those 30 minutes, I want to know its latest price and whether it’s still pushing in the same direction. Then, whichever one shows the bigger burst, could you peek at roughly the past hour of five-minute bars and give me a sense of how choppy its closes have been (like the % volatility)? And if that volatility turns out to be north of about 0.5%, I’d love a deeper look into the last 60 one-minute bars to see exactly what’s going on. In the end, I need a clear breakdown for each coin: the one-minute momentum %, the current price (if it qualified), a yes/no on whether it’s still trending, the five-minute volatility % for the stronger coin, and a flag saying if you did that extra minute-by-minute deep dive. I really need real numbers here – can’t just wing it in my presentation. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_002",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m wrapping up a project on how deep learning is being used in genomics and proteomics, and my manager has asked for a snapshot of what’s really new in the last three months. I’ve seen buzz about CNNs, RNNs, Transformers and such, but I’m not sure which models are actually gaining traction across different studies, or which datasets they’ve been tested on (like specific genome sequencing collections versus mass-spec proteomics sets). Could you dive into the recent preprints and journal articles, pick out roughly eight of the newest papers, and for each one tell me:\n\n- What type of algorithm they used (CNN, RNN, Transformer, etc.)\n- Which genomic or proteomic dataset they evaluated on\n- Their headline performance number (accuracy, AUC, whatever they highlight)\n- A one-sentence summary of the main takeaway\n\nAlso, if any algorithm only shows up in a single paper (i.e. a one-off), flag it so I know it might be a fringe idea. I really need concrete details and real numbers—no vague impressions—because I’m presenting this to my team and need solid evidence from the actual studies.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_004",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m trying to put together a quick overview of what’s been happening with machine learning applied to protein folding over the past three months. My boss wants to know which approach is getting the most buzz – I’m betting AlphaFold still has the lead, but if papers aren’t talking about it, feel free to switch focus to RoseTTAFold. Could you pull together a set of recent studies from all the usual sources, tally how many times each one mentions the target method, note where you found each paper, and give me a one-sentence summary? For anything you can’t grab the full text on, just use the abstract. Then sort everything by the mention count so I can see at a glance who’s really driving the field. I really need actual counts and solid sources—no guesswork—so I can show the team the real numbers.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m wrestling with a pretty hefty bit of linear algebra and vector calculus for my project and could really use a hand. I’ve got two 3×3 matrices—one with rows [4, 2, 1], [2, 3, 0], [1, 0, 2] and the other [1, 0, 2], [0, 1, 1], [2, 1, 3]—and also two vectors [1, 2, 3] and [3, 2, 1]. On top of that there’s a scalar potential φ(x,y,z)=x²·y + y²·z + z²·x and a vector field F(x,y,z)=[x·y, y·z, z·x].  \n\nI need to see what happens when I add and subtract those matrices, multiply them, scale the product by 0.5 and then check its determinant. If the absolute value ends up over 0.1, I want the inverse; if not, we’ll have to dive into an SVD breakdown. After that I’d like to pull out eigenvalues and eigenvectors, get a QR decomposition, find an orthonormal basis for the scaled matrix’s column space, and then re-express the sum of the originals in that new basis—plus figure out the rank.  \n\nMeanwhile, for the vectors [1, 2, 3] and [3, 2, 1], I’d appreciate their dot product, cross product, and the projection of one onto the other. Then there’s the symbolic side: the gradient of φ, its directional derivative along [1, 1, 1], the curl of F at [1, 1, 1], the divergence of F at [0, 0, 0], and the scalar Laplacian of φ.  \n\nIf it’s not too much, could you also sketch a 3D plot of F over the cube x,y,z∈[–1, 1] and a 2D plot of f(x,y)=sin(√(x²+y²)) over x,y∈[–5, 5]? And once all that’s done, let’s wipe out every intermediate tensor or matrix so nothing’s left hanging.  \n\nI really need the exact numbers—my advisor wants concrete results, not just vague descriptions. Appreciate any help you can give!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on this 3D Gaussian model for my thesis and it’s been driving me nuts. I’ve defined a covariance matrix that looks like\n\n[2.0, 0.3, 0.5  \n 0.3, 1.5, 0.4  \n 0.5, 0.4, 1.0]\n\nand my sample vector is [1.2, –0.8, 0.5]. I need to know if that matrix is actually invertible (what’s its determinant? if it comes out zero, I might shrink it by a factor of 0.01 so I can invert it), then get the inverse so I can plug it into my Mahalanobis stuff. On top of that, I’d love to see its eigenvalues and eigenvectors—and even run an SVD or QR to get a feel for its geometry—grab an orthonormal basis for its column space, and re-express the matrix there. When I project my vector onto the first eigenvector, what number do I get? \n\nAs a side project, I’m also exploring the function f(x,y,z)=exp(–0.5*(x²+y²+z²)). Could you tell me its directional derivative at [1.2, –0.8, 0.5] along that leading eigenvector? It’d be great to have the full symbolic gradient of f, plus the divergence and curl of that gradient field. And because I learn best by seeing things, I need a 3D quiver plot of the gradient over x,y,z from –2 to 2 (about 15 points per axis) and a simple 2D curve of exp(–0.5 x²) from x=–3 to 3 with y going from –0.1 to 1.1 (200 samples). \n\nMy advisor wants everything—determinant, inverse matrix, eigenvalues/vectors, singular values, Q and R from QR, your orthonormal basis, the changed-basis form, the projection value, the directional derivative, the gradient expression, divergence, curl—and the two plots all wrapped up in a JSON report. I really need hard numbers and visuals to back it all up, not just a high-level summary. Can you help me pull all that together?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "weather_data_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m organizing a big outdoor festival and I’ve hit a bit of a snag: every time I check “Springfield” I get a dozen or more possibilities around the world, and the quick temperature readings I see online don’t always match the more detailed reports—sometimes by over two degrees, which makes me uneasy. \n\nWhat I’d really love is your help figuring out which Springfield and which day in the next week would give me the best shot at a warm, mostly dry day—ideally with the chance of rain at or under about 30%. If none of them can stay under that threshold, then just find me the day with the lowest chance of showers, no matter how it ranks on warmth. \n\nAlso, if you notice any of those Springfields where the “fast” temp and the official temp are more than 2 °C apart, just flag them for me so I know which cities to cross off. \n\nIn the end, I need a clear answer: which city, what date, and what the high/low temps, chance of rain and humidity look like that day. Plus a short note on any locations you tossed out because of weird temp mismatches. I’ve got to show my team real numbers, not just guesses, so please back everything up with solid data. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "weather_data_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together an outdoor promo in Springfield next week and, to be honest, I’m not even sure which Springfield is the right one—there are so many! I’d like to zero in on the biggest city (somewhere over 100 K folks) and get a clear picture of what’s happening weather-wise right now. Also, if you could grab a quick temperature check and flag it if it’s off by more than a couple of degrees, that’d be great. Then, can you scan the forecast for the next three days and, if more than one day looks too rainy, stretch it out to the full seven-day outlook? What I really need is up to three days that sit around 20–25 °C with less than a 30 percent chance of rain. I need solid numbers and a detailed rundown so I can sell this plan to my boss—with real data, not just vibes.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "time_mcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m trying to schedule a one-hour global strategy call next week with our teams in New York, London and Tokyo. The only windows I’ve got are 09:00 UTC, 15:00 UTC or 20:00 UTC, and I’d love to pick the slot that keeps as many people as possible within their 9 am–5 pm workday. Could you work out what those UTC times look like locally in New York (America/New_York), London (Europe/London) and Tokyo (Asia/Tokyo), count how many offices fall into normal business hours for each option, and then recommend the best slot (going with the earlier one if there’s a tie)? It’d be awesome if you could drop all the details—local times, office counts and the final pick—in a simple JSON snippet, since I really need hard numbers to show my boss, not just guesses.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "time_mcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m juggling a global team spread across Los Angeles, New York, London and Tokyo, and I need to lock down a one-hour meeting sometime during everyone’s 09:00–17:00 local workday in the upcoming week. Could you start by looking at the next full hour here in LA and then convert that slot into each office’s local time? If any of them fall outside 09:00–17:00, bump it an hour forward in LA and keep checking—rolling over to the next day at 09:00 if we hit 17:00—and keep going until we find a time that works for all four offices within the next seven days. If nothing lines up, just let me know it’s impossible. I really need the exact start and end times for each city so I can send the invites.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m gearing up for tomorrow’s multidisciplinary rounds and I’ve got three patients that are driving me nuts with all the numbers. First is Mr. A, a 65-year-old guy who’s about 95 kg and 170 cm (so roughly 67″). He’s diabetic, hypertensive, has CHF, prior MI and AF, and he’s headed for a high-risk suprainguinal vascular case. Labs show creatinine 1.8 mg/dL, cystatin C 1.5 mg/L, fasting insulin 20 µIU/mL, fasting glucose 150 mg/dL (but his electrolytes panel spiked his glucose to 200 mg/dL), calcium 8.0 mg/dL with albumin at 3.0 g/dL, sodium 130 mEq/L, total cholesterol 5.2 mmol/L and HDL 1.0 mmol/L. Vitals are 150/90 mmHg, HR 80, QT interval around 380 ms. He’s on oxycodone 5 mg q6h plus a 25 µg/h fentanyl patch, chronic prednisone 10 mg daily, plus standard antihypertensives and a statin. On top of that, his liver numbers—bilirubin 3.0 mg/dL, albumin 2.5 g/dL, INR 1.8—with slight ascites and grade 1 encephalopathy—have me wondering about his Child-Pugh and MELD.  \n\nThen there’s a 12-year-6-month-old girl, 50 kg, 150 cm, BP around 120/80, fasting insulin 15 µIU/mL, glucose 100 mg/dL.  \n\nAnd finally a 30-year-old pregnant woman who had her LMP on 2024-02-15 with a 30-day cycle.  \n\nI need to pull together their body metrics (BMI, BSA, ideal vs. adjusted weight), IV fluid rates, creatinine clearance vs. eGFR (and switch to the cystatin‐C equation if it’s under 60), MAP, HOMA-IR, corrected calcium and sodium, QTc, CHA₂DS₂-VASc, Wells’ PE probability, RCRI, Framingham and PREVENT 10-year risk, plus that liver scoring and her obstetric dates. Oh, and converting prednisone 10 mg to hydrocortisone and tallying his daily MME. Can you walk me through the actual calculations with those exact numbers and then tell me what you’d recommend for each? I really need hard data—no loose guesses—so I can confidently present to the team.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m looking at a 65-year-old guy who’s booked for an elective hip replacement and I’m a bit overwhelmed by all his numbers. He’s 95 kg, 175 cm tall, type 2 diabetic on insulin, hypertensive on meds, on a statin for high lipids, has chronic kidney disease (creatinine 1.4 mg/dL, cystatin C 1.0 mg/L), peripheral arterial disease, atrial fibrillation—and he still smokes. His latest labs show sodium 130 mEq/L with glucose at 280 mg/dL, calcium 8.2 mg/dL with albumin 3.3 g/dL, blood pressure about 150/95, total cholesterol 5.0 mmol/L and HDL 1.0 mmol/L. \n\nI’m trying to pull together:\n• a sense of his BMI and body surface area  \n• which weight to use for creatinine clearance (actual vs ideal vs adjusted)  \n• whether to trust a creatinine-only eGFR or the one that adds cystatin C (and what to do if they differ)  \n• corrected sodium for his high glucose and corrected calcium for low albumin  \n• his mean arterial pressure  \n• his 10-year cardiovascular event risk given age 65, male, TC 5.0, HDL 1.0, SBP 150, diabetes, smoking, on blood pressure meds and statin  \n• his revised cardiac risk index for non-cardiac surgery  \n• his CHA₂DS₂-VASc with AF, HTN, diabetes, peripheral vascular disease and age  \n• and even an idea of his insulin resistance via HOMA-IR using fasting insulin 20 µIU/mL and fasting glucose 140 mg/dL\n\nCan you walk me through all of that with every calculation, how you decided between weights or eGFRs, and the final risk estimates? I need all the intermediate figures and the reasoning—real numbers, no guesswork—so I can feel confident about the recommendations.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_biomcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a project about why melanoma patients with the BRAF V600E mutation so often become resistant to treatment, and I’m a bit stuck piecing everything together. I’d love to know:\n\n• What we actually know about that V600E change in BRAF – basic gene details, how it tweaks the protein’s function, and any hotspots or annotations researchers point to.  \n• The most important recent studies (including a couple of preprints if there’s anything interesting) that dive into resistance mechanisms. Can you give me their titles, abstracts or main take-home points, and any standout data?  \n• Which clinical trials are currently testing BRAF inhibitors in melanoma (ideally phase 2 or 3), plus their IDs, names, phases, and where they’re recruiting.  \n• And, almost as a bonus, whether any of those trial sites line up with the big cancer centers in Boston.\n\nI really need solid numbers and references—I can’t present this to my supervisor with just vague summaries. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_biomcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m prepping a report for my boss on BRAF V600E in melanoma and I’ve hit a wall. I really need to know how common that V600E swap is and what clinical impact it actually has. Then I want a clear rundown of the big Phase III trials testing BRAF inhibitors in melanoma—what each one showed on outcomes, whether any of them saw serious side-effect rates above about 20% (and if so, which drugs were involved), plus the key publications behind each trial. On top of that, I’ve heard whispers about brand-new protein-level tweaks that help tumors resist those drugs—some of it even only on preprint servers in the last few months. Could you dig up the hard numbers, abstracts or summaries (even DOIs or PubMed IDs), and basically give me solid, evidence-backed info I can actually cite? I don’t want just high-level chatter—I need real data for slides. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_nasa_data_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a little side project for my boss about last week’s space weather chaos. I know we had a mix of solar flares, CMEs, geomagnetic storms, particle events, magnetopause crossings and high-speed streams, but I really want to nail down exactly which single event in each category was the most intense over the past seven days and the precise date it happened. \n\nOnce we’ve got those peak events, could you pull in the full, raw metrics for each one so I’ve got the hard numbers? Then—just to make sure I’m not shooting in the dark—can you look up each type on Wikipedia (grab the first hit), give me a concise summary (around 200–250 characters) focused on its impact on Earth, extract about five key facts about those impacts, and suggest a few related topics I could dig into? Finally, I need a quick line for each event comparing our numbers to what Wikipedia calls “mild,” “moderate,” or “severe,” so I know if we really saw a monster flare or just a run-of-the-mill storm. \n\nI’ve got to present all this with real data and solid sources—no hand-waving—so any help would be awesome. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_nasa_data_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve got this astronomy assignment for my research group, and it’s been bugging me: I need to know which near-Earth rocks swung by in the past week, and whether any big solar storms might’ve garbled our telescope data. Basically, I want a rundown of every asteroid that made its closest pass in the last seven days—when it came by, how far it was, how fast it was going, how big it is, and whether it’s officially considered hazardous. Then, for each one, flag if an M-class (or stronger) flare popped off within about a day of its flyby, since that could’ve messed up observations.\n\nOnce we’ve got that list, I’m especially interested in the three most dangerous candidates—give me a handful of concrete orbit facts for each (like key numbers about their path), plus a roughly 200-word style summary of their discovery history. I’m going to pull all this together into a report, so I really need precise figures and real-source info—not just vague descriptions. Can you dig that up for me?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_national_parks_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m trying to nail down a three-day hiking and waterfall road trip next week, starting from Denver. Ideally I want parks within about a five-hour drive where there’s at least one waterfall viewpoint rated around four stars or higher within roughly 10 km of the park’s core, no active closure alerts, a visitor center open around lunchtime for any last-minute trail info, and at least one campsite with vacancies. Could you pick the two best parks that check all those boxes, tell me the waterfall names and their ratings, point out which campground sits closest to each top waterfall, give me the drive distance and time from Denver, step-by-step directions if we head out right now, and even the elevation at the campsite? I really need actual numbers on ratings, distances, availability—nothing vague—so I can lock in our reservations.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_national_parks_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been itching to head out of Denver for a 5-day camping trip sometime in the next week, but I’m kind of torn on which national park makes the most sense. Ideally it’s no more than about a 200 km drive, offers solid hiking and camping, and has a visitor center where I can catch any talks or events going on that week. I’m also really curious about spending nights at camp spots that vary in elevation—maybe one high ridge, one mid-level meadow and one lower valley—just to see how the landscape and weather change. \n\nOn top of that, I don’t want to be stuck cooking at every stop, so it’d be awesome to know what town is nearest each campsite and where I can grab a good meal—not just any greasy spoon, but something rated at least four stars, and I need to know how long the drive is and exactly how to get there. In the middle of the trip I’d like to base myself at a visitor center for a couple of nights to break things up and dive into any ranger-led programs.\n\nCould you put together a day-by-day itinerary for the upcoming week that does all of that—picks the best park within a reasonable drive from Denver, highlights three campsites that maximize elevation differences, flags any alerts or events happening, finds the nearest town restaurants with ratings and drive times, and then lays out morning/afternoon/evening plans for each of the five days? I really need actual data on this—can’t go wandering off with just vague advice. Whatever you find, please back it up with real numbers or solid sources, okay?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nixos_context7_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been banging my head trying to get a Flask-based web app running in a totally reproducible way across our team’s setups. We need Python 3.10, Flask itself, Redis, and Docker all coming from the same Nix channel (we’re on 25.05), plus config snippets that play nicely with Home Manager on Linux laptops and nix-darwin on macOS. On top of that, my lead wants a tiny excerpt—like 500 words or so—on how Flask routing works to stick in our README. \n\nWhat would really help is if you could pull together:\n• A quick snapshot of the 25.05 channel (how big it is, broadly speaking)  \n• The exact Nix package names and versions for python3, flask, redis, and docker, ideally with the commit or revision that pins them  \n• The main Home Manager options we should set for Python and Docker, with their descriptions  \n• The equivalent nix-darwin settings so my mac-using teammate can just drop them in  \n• Whether there’s a Poetry flake out there we can lean on (or a note if none exist)  \n• And finally, about 500 tokens’ worth of official Flask routing docs so I can paste it straight into our project guide  \n\nIf you could wrap all of that up as a single JSON I can hand off to my team, that’d save me hours of guesswork—and give me the hard data I need to prove this setup will actually work everywhere. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nixos_context7_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m setting up a NixOS box on the unstable branch for a project that needs MongoDB, but I’m not even 100% sure I’m on unstable right now. I’d love to double-check which channels are active and get a feel for how big the unstable channel is these days (packages and options count, roughly). After that, I want to know exactly which MongoDB package is shipped there today, grab its precise version string, and pin down the commit hash behind that build so I can keep things fully reproducible. \n\nOnce I know that, I need to enable MongoDB via Home Manager—though if there isn’t a `services.mongodb` option there I might have to fall back to checking nix-darwin. And finally, I really need a solid excerpt (around two thousand tokens or so) from the official MongoDB docs on indexing. \n\nI can’t walk into a planning meeting with “it should work”—I need actual numbers, commands or logs, commit IDs, and a real doc snippet. Can you pull all that together?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_weather_data_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m heading to Seattle for just one day soon and staying right in downtown. I really want to start my morning at Pike Place Market, grab coffee at the highest-rated spot nearby, then finish up at that famous skyline overlook (you know, the one everyone snaps on Instagram). \n\nProblem is, I’m not sure which day in the next week will give me a dry window with temps around 15–25 °C. And I’d like to know what Seattle’s weather looks like right now, too—temperature, humidity, wind, all that. \n\nOnce we’ve nailed down the best day, could you sketch out a walking plan? Something like leaving my hotel around 9 am to Pike Place, then strolling over to the top coffee shop around 9:30, and then hiking up to Kerry Park by 10. I’d also love to see how those walking times compare to just driving straight from the hotel to Kerry Park, purely for kicks. And finally, what’s the exact address of that viewpoint and its elevation above sea level?\n\nI really need actual numbers and solid details—can’t go showing up with just guesses!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_weather_data_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m heading to Seattle this weekend with just one full day to explore downtown, and I’d love your help piecing together the perfect itinerary. I’d like to start my morning at a really top-rated coffee shop that’s actually open when I arrive—ideally within about a kilometer of the city center—and then around noon stroll over to the best lunch spot you can find within a 15-minute walk of that café. After lunch, I want to spend the afternoon hitting two must-see attractions, both highly rated and within a couple of kilometers of the restaurant.\n\nI’m also debating whether to walk or rent a bike for the afternoon, so could you check today’s weather forecast and recommend the best travel mode? And because I’m not a fan of brutal uphill battles, it’d be awesome if you could give me turn-by-turn directions for each leg and flag any climbs over roughly 50 meters in elevation. \n\nCould you send me a detailed plan—place names, addresses, ratings, opening hours at the times I need them, travel times, chosen travel mode, a quick weather summary, step-by-step directions, elevation numbers, and any warning about steep stretches? I really need solid numbers and facts, since I’m going to follow it exactly.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "dex_paprika_okx_exchange_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m looking into whether there’s any easy arbitrage for UNI right now on its main chains—Ethereum, Polygon, and BSC—over the past week. I know some pools on those networks can trade a bit above or below what UNI goes for on OKX’s UNI-USDT pair, but I’m not sure how big those gaps really are. Could you pull the biggest UNI pools by volume on each chain, figure out their average daily closing price for the last seven days, and then compare that to OKX’s average daily close? If any of those pools are drifting more than about 2% from OKX, I’d also like to see what kind of trade sizes or liquidity they’ve actually seen recently so I can tell if there’s enough depth to make a move. I need real numbers—average pool price, average OKX price, percent differences, and any swap-size or volume details for the outliers—because I’m trying to build a quick, data-driven arbitrage playbook. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "dex_paprika_okx_exchange_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve been digging into DeFi for a project and I’m trying to figure out if a major liquidity pool on Ethereum really moves in step with the same pair on OKX. I’d love to get a feel for the overall DEX scene (make sure Ethereum’s in there), see which Ethereum exchange has the most pools, and then home in on that single biggest pool by dollar volume. Once we’ve got that, I want the token pair info, plus a daily on-chain price series for the past month, alongside OKX’s daily candles for the same pair. From there I’m hoping to crunch a correlation coefficient and call out any days where the on-chain price was off by more than 2%. And as a final touch, a quick rundown of the last ten swaps in that pool—volumes and types grouped by day—would really seal the deal. I need real numbers and dates so I can show my team something solid, not just gut feelings. Does that make sense?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_wikipedia_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been putting together a little talk on Monet’s Impressionist works and I’m really curious about what the Met has in its European Paintings section. I’m not even sure how many of his pieces there are tagged as “Impressionism” and have images you can actually look at, so could you dig into that catalog for me? Then, for each Monet painting you find, I’d love if you could hunt down the matching Wikipedia entry (and if the title alone doesn’t link, try “painting title + Claude Monet”), grab a quick overview of the work, anything the article says specifically about its Impressionist style, and whatever it says under “Composition.” From that last bit, could you pull out the top three compositional techniques Monet used? Oh, and one more thing—please double-check that the date and medium the Met lists match what’s on Wikipedia. I need solid, sourced details for my presentation—no guessing, just real metadata and Wikipedia citations, okay?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_wikipedia_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a small art-history spotlight on seating in New Kingdom Egypt—specifically what’s on view at the Met—and I’m a bit stuck on how to pull everything together. My professor wants me to pick out an example piece from the Met’s Egyptian section, but I’m not even sure what they call that department or how to find chairs with pictures in their collection. Once I have a few candidates, I need to know their dates (make sure they’re really New Kingdom) and exactly what they’re made of. If there aren’t enough chairs, I might have to slip in a stool or footrest to hit at least two examples, and then choose the one with the most elaborate materials list as my main focus.\n\nAfter that, I have to see what Wikipedia says about Ancient Egyptian furniture—grab the article summary, pull out the top five insights specifically about New Kingdom pieces, and boil down the “Construction and materials” bit into a quick blurb. It’d also help to know a handful of related topics I could mention for extra context. Finally, I need to check if my chosen Met object uses any materials that don’t show up in those Wikipedia facts—those could be neat anomalies to point out.\n\nI really need actual Met IDs, image links, periods, materials lists, the Wikipedia summary, key New Kingdom facts, that short construction/materials paragraph, related topics, and a note on any unmatched materials. Can you help me track it all down? I can’t go to my professor with guesses—gotta have real data or solid sources.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_math_mcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a mini portfolio analysis for a class project and could use some help untangling the math. I’ve got three assets with expected returns of 0.08, 0.12 and 0.10, and I estimated their covariance matrix as:\n\n[0.04 0.006 0.014  \n 0.006 0.09 0.02  \n 0.014 0.02 0.16]\n\nWhen I peeked at the determinant, I worried it might be zero or really small, so I thought I might gently bump the whole matrix by 0.1% until it’s safely nonzero. After that, I’d like to get its eigenvalues and eigenvectors, figure out the largest and smallest eigenvalue, and compute the condition number. If it turns out to be over 100, I’ll need to go the SVD route and build a pseudoinverse; otherwise a regular inverse should do. Once I’ve got whichever inverse is appropriate, I want to multiply it by the return vector [0.08, 0.12, 0.10] to see what portfolio weights pop out. I’m also curious to project the return vector onto the principal eigenvector (the one tied to the biggest eigenvalue) and then verify my weights sum to 1 by dotting them with [1,1,1].\n\nCould you walk me through all of that and give me the actual numbers? Specifically:  \n• The nonzero determinant after any tiny scaling  \n• The condition number  \n• Whether you ended up using an inverse or a pseudoinverse  \n• The full inverse (or pseudoinverse) matrix  \n• The final weight vector  \n• The projected return onto that top eigenvector  \n• And the dot‐product sum of the weights  \n\nI really need concrete figures—no hand-waving—because I have to show this to my professor and can’t just say “it works out.” Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_math_mcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a linear algebra exercise for my thesis advisor and could really use some hard numbers. I’ve got two 3×3 matrices—one is  \n[4, 2, 1; 0, 3, –1; 2, 0, 1]  \nand the other is  \n[1, 0, 2; 0, 2, 0; 1, 0, 1]—plus the vector [1, 2, 3].  \n\nWhat I’m trying to do is mix those matrices together, invert that second one, multiply it all out, and then dig into its eigenvalues, eigenvectors, and singular values so I can calculate the condition number. If that condition number comes out above 5.0, I need to scale the matrix by exactly 1 over that number to stabilize it, then check again to make sure it’s under 5. After that I want to switch into the eigenvector basis of the scaled matrix, project my [1, 2, 3] vector onto the top eigenvector, take the dot product with the original [1, 2, 3], and finish by finding the rank and determinant of the scaled matrix.  \n\nCould you walk me through all the key results—every intermediate matrix (sum, inverse, etc.), the eigen- and singular-value details, the original and (if needed) adjusted condition numbers with the exact scaling factor, the basis-transformed matrix, the projection vector, the dot product, plus the final rank and determinant—so I’ve got real data to back up my write-up?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_paper_search_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m knee-deep in a little side project on named entity recognition for my thesis and hitting a wall. I’d love to pick a really lightweight transformer—something under about 2 GB so it doesn’t swallow my laptop—and it has to be full open-license so I can share everything. Then I want to use a “classic” NER dataset with plenty of examples to give my results some weight. On top of that, I’m curious how many recent papers actually mention whichever dataset I choose—you know, to prove it’s still a popular benchmark. Finally, it’d be amazing to play around with a live demo in the browser so I can sanity-check my setup. \n\nCan you walk me through your top recommendations? I’m after the model name/ID, its license type and file size, the dataset name/ID with total example count, a ballpark of how often it’s been cited in the past few months, plus a link to an interactive demo. Really need real numbers and solid sources—I can’t bring vague guesses to my advisor!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_paper_search_002",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got to throw together a quick proof-of-concept sentiment tool for COVID-19 clinical trial reports by next week and I’m a bit stuck on the kickoff steps. Basically, I want to pick a few popular pre-trained sentiment models from the usual public hubs, compare how big they are on disk versus how many documents they can process per second, then pick the one that gives me the best speed-to-size trade-off.  \n\nNext, I need to pull together at least 2,000 trial-report texts from open datasets and supplement that with about five real COVID clinical-trial papers from the past three months—if the curated feeds don’t have enough, I’ll have to dive into preprint servers to top up. Once I’ve preprocessed everything into a mini-corpus, I want to spin up a simple web demo that can handle batch uploads and show live sentiment metrics.\n\nIn the end, I need a clear summary I can show my team:  \n• Which model I picked (with its size and throughput)  \n• Total number of data examples I’m working with  \n• How many papers made it into the corpus  \n• A ranking of the candidate models by their speed-to-size ratio  \n• A sketch of the demo’s key features/components  \n\nCould you help me pull together all those numbers and outline the final setup with real, evidence-backed figures? I really need concrete stats to convince everyone this has legs.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "national_parks_weather_data_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to plan a quick three-day hiking and camping getaway sometime in the next week, and I can’t decide between parks in Northern California or down in Oregon. Ideally I’d like places that for sure have both trails and campsites open, zero closure alerts or hazards, and generally cool, dry weather—not something that turns into a mudfest or bakes me alive. It’d also be cool if there’s a ranger talk or small event going on, just to mix up the evenings. \n\nCould you help me narrow it down to the top three parks that meet all that? For each spot, I need to know what campground options are actually available, any active alerts to watch out for, the 7-day forecast in the closest town (so I can see which day is driest), and the average daytime high so I can rank them from coolest to warmest. I really need concrete numbers and facts—no guesses—so I can pick the best one with confidence.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "national_parks_weather_data_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m planning a three-day hiking and camping trip through Utah’s three biggest parks that let you both sleep under the stars and hit some great trails. For each one, I’d love to know:\n\n• Any alerts or advisories I should watch out for  \n• Which campgrounds are really worth booking (top two, ideally)  \n• What events or ranger programs are happening in the next week  \n• The visitor center hours and whether they’ve got indoor exhibits—just in case it pours  \n• A simple three-day weather snapshot for the nearest town so I can pick my dry-day hikes  \n\nAt the end, I’d like a quick recommendation: if it looks like rain, point me to indoor visitor center options; if it’s clear, suggest the three best hiking events to join. Oh, and please give me each park’s official name and code so I can double-check details when I book. I really need solid numbers and dates—can’t just go on gut feelings here. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "unit_converter_math_mcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to forecast the heating and cooling load for my office next week—my boss wants hard numbers. We keep the inside at 22 °C, the exterior wall area is 500 m² with a U-value of 0.35 W/(m²·K), and the seven-day temperature outlook (starting tomorrow) is 68 °F, 70 °F, 75 °F, 80 °F, 85 °F, 75 °F and 65 °F. I’m not sure how to turn those Fahrenheit readings into Celsius, figure out the daily temperature differences, calculate the heat flow in kW, then get the kWh for a full 24 hours each day, and finally sum it up for the week, find the average per day, convert that total into megajoules and Btu, and even estimate the cost at US $0.12 per kWh. Could you walk me through all that and give me a day-by-day breakdown (outside °C, ΔT, Q̇ in kW, daily kWh) plus a weekly summary of total kWh, average daily kWh, total in MJ, total in Btu, and total cost? I really need solid figures to show my manager—no guesswork, just concrete numbers.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "unit_converter_math_mcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on a hot-water pumping system and my boss is breathing down my neck for all the numbers. We’ve got water coming in at 50 °F and it needs to leave at 120 °F, and we’re looking at flow rates of 150, 200, and 250 gallons per minute. I need to see those temperatures in °C, convert the gpm figures into cubic meters per second, and turn the water density (1 g/cm³) into kg/m³. From there, I want to calculate the mass flow, use Cp = 4.186 kJ/(kg·K) to get the heat duty in kW, then convert that to horsepower. Once we have the three horsepower numbers, I’d like the average, median, and maximum so I can decide whether one pump will do or if I really need two in parallel (anything above 2 HP means two). After that, I need the daily energy use in kWh for each case, the cost over 30 days at $0.10 per kWh, and the average monthly cost across all three. And just to be sure, could you cross-check the 200 gpm scenario by converting its monthly kWh figure into BTU? I really need every intermediate value—temperature conversions, ΔT, volumetric and mass flows, heat duties, horsepower, energy use, costs, plus the pump recommendation—so I can back it all up with solid data.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "game_trends_reddit_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m prepping our next gaming newsletter and the boss wants a quick but solid rundown of which titles are going to crush it over the coming week on both Steam and the Epic store—bonus points if any are currently free or about to be. Could you dig into Steam’s hot trends, top sellers, and player counts, figure out the handful of games that really stand out when you weight those metrics, and then see which of those also show up as trending or freebies on Epic? I’d love to land on three final picks that bridge both platforms—or if we come up short, swap in the next best one that’s free on Epic. Also, it’d be great to cross-check against a general trending feed just to catch any odd gaps. Once we’ve got our trio, can you pull the top threads from each game’s subreddit (or fallback to r/gaming if they’re quiet), grab a few key comments, and give me a quick sentiment snapshot for each? I need it in a neat format I can drop straight into our tool—and it really has to be backed by real numbers and actual chatter, since I’ll need to show my editor the proof. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "game_trends_reddit_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on a little side project to spot games that are huge on social hype but aren’t really selling or being played nearly as much—and I want to focus on the past week. You know how some titles suddenly shoot up the trending list on the big PC storefronts but then their sales rank or concurrent player count barely budges? I’d love to pull together all those trending picks, check their actual sales rank and player-count rank to come up with a simple “hype-vs-real” gap score, and tag any that happen to be free deals. Then, I want to zero in on the top three biggest mismatches and see how often each one pops up in the main gaming discussion community—counting how many hot threads mention them. For the single game that gets the most chatter, could you grab the most popular thread ID and pull about 20 comments (going down a few reply levels) so I can see what folks are saying? In the end, I need a clear breakdown for each of the three—name, where it trended, hype rank, sales rank, player rank, gap score, free-yes/no, mention count—and for that buzziest title include the top thread ID plus its comment snippet. I really need solid numbers and actual sources from the last seven days—no vague guesses—so I can back this up.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_unit_converter_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a little two-joint robot arm for my project and honestly I’m getting stuck on all the math. The first hinge sits at exactly 45° with a 12-inch link, and the second swings to –30° on an 8-inch link. I know I have to switch those angles into radians and turn the inches into meters, then build two Z-axis rotation matrices, multiply them together, and pack everything into a 4×4 homogeneous transform. For my offset I’m using t = [0.3048 + 0.7071 * 0.2032, 0 + 0.7071 * 0.2032, 0]. After that I’d like to check RᵀR against the identity and see if any entry exceeds 1e-6—if it does I’ve heard a QR tweak might fix it. Beyond that I need to pull an orthonormal basis from the corrected rotation, shoot an external force F = [5, –3, 2] N onto the first basis vector, find the dot with the original F, cross it with gravity G = [0, 0, –9.81], and even get the directional derivative of U = m·g·z (with m=5 kg and g=9.81 m/s²) along that projection. I really need all the actual numbers—R1, R2, R12, the full T12, the tiny error matrix, the determinant, Q/R if you do the QR, the basis vectors, F_proj, the dot and cross results, plus the derivative—because I’ve got to present this with solid data next week, not hand-wavy estimates.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_unit_converter_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m racing against the clock on a little rocket‐nozzle simulation and the units just aren’t playing nice. I logged the stagnation temperature at 518 °F, the throat diameter reads 16 inches, the flow deflection is 45°, and I’ve got about 5 000 Btu of total energy input—my code only wants SI, so I need those in Kelvin, meters, radians and kilojoules. \n\nOnce I’ve got those, I’d like to build a 4×4 transform that rotates by that angle and shifts by half the diameter, then apply a physical scaling on the temperature and energy axes. After multiplying them, I need to check if the determinant is unity (volume-preserving); if it isn’t, figure out the fourth-root scale factor to force det=1 and show me the before/after. Then I want to dig into the linear algebra: the inverse of that final matrix, its eigenvalues/eigenvectors, the full SVD (U, S, Vᵀ), an orthonormal basis for its column space, how the matrix looks in that new basis, and its rank.\n\nOn top of that, I have two 3-component vectors built from those converted scalars—v₁ = [T_K, E_kJ, 0] and v₂ = [E_kJ, T_K, 0]—and I’d like their dot product, cross product, and the projection of v₁ onto v₂. Then, for some symbolic crunching, consider f(x,y,z)=x·y·z: give me ∇f and the directional derivative along the unit vector [1,1,1]. Also take F=[x y, y z, z x], compute its curl and divergence at the point [1,2,3], and give me the Laplacian of f(x,y,z). \n\nFinally, I need a quick 3D plot of the field F_plot=[z, –y, x] over x,y,z in [–1,1] with an 8×8×8 grid so I can stick it in my slides. Could you run through all of that and give me the exact converted numbers, the raw and any scaled matrices, det values (before/after) plus the scale factor if applied, the inverse, eigen stuff, U/S/Vᵀ, basis vectors, change-of-basis form, rank, the vector-operation results, the symbolic derivatives, and the plot? I really need hard numbers and visuals—no vague descriptions—so I can show my team real data. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_paper_search_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m gearing up for a talk on CRISPR and its off-target editing issues, and I’m not convinced the main Wikipedia page is completely up to date. Could you peek at the off-target section there and let me know what it currently says? Then dive into the latest research—say a handful of recent papers from major preprint servers and journals over the past few months—and pull together about five key takeaways from the wiki plus roughly five papers per source. For the top two preprints, grab their PDFs and write up about 150 words each on how they detect or prevent off-target cuts. After that, compare those methods to what the wiki lists and flag three genuinely new techniques that aren’t mentioned yet. Finally, wrap it all into a single report that shows:\n\n- the current wiki summary  \n- five main facts it covers  \n- the list of papers you found  \n- the six 150-word method summaries  \n- the three novel approaches  \n- and your suggestions for updating the article\n\nI really need concrete data and solid evidence—no vague opinions—so I can confidently revise that entry.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "wikipedia_paper_search_003",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m prepping a big briefing on CRISPR-Cas9 for my lab and my advisor keeps asking for more than just the usual Wikipedia overview. Here’s what I’m hoping you can help me with:\n\nI’d like a concise, roughly 150-word plain-English primer on how CRISPR-Cas9 works—just the five or so most essential facts someone needs to know. Then, depending on whether that basic page even mentions “clinical applications,” I want you to dig into what’s been popping up in the last six months. If there is a clinical section, focus on recent trials; if not, pivot to structural or mechanistic studies. Aim for about eight papers total—two or so from each source—summarizing for each one: what they did, sample size, core results, any glaring limitations, and actual dates so I know it’s fresh. \n\nAfter that, please line up at least three clear spots where the new studies either back up, extend, or flat-out contradict those five key wiki facts. And to wrap it all up, give me three concrete next-step questions or leads for further reading. Really need hard data and solid dates—can’t walk into my advisor’s office with just vague claims. Does that make sense?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "reddit_dex_paprika_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a quick deep-dive on ETH and how its biggest liquidity spots are behaving versus what people are buzzing about online. First, I want to make sure I’m looking at the official Ethereum token on mainnet. Then could you find the three ETH pools moving the most USD volume right now and pull their daily 24-hour price/volume figures over the past week, plus roughly fifty of the latest swap/add/remove events for each? At the same time, grab the five hottest threads from r/ethereum and r/cryptocurrency, then dive into the three most engaging posts in each (with a handful of comments). Finally, line up any days when those pool volumes or transaction counts spike with peaks in Reddit chatter. I really need hard numbers and a clear breakdown of on-chain metrics, social buzz, and any patterns that suggest the two are linked—can you help me nail that down?\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "reddit_dex_paprika_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a DeFi briefing for my trading desk and they’ve been fixated on a few liquidity pools everyone keeps linking in r/cryptocurrency. What I’d love is:\n\nSome high-level health stats on the DEX ecosystem and a quick list of which blockchains it covers, then a scan of the current top 20 hot threads on r/cryptocurrency to spot up to three unique pool page URLs. For each pool address found, can you:\n\n- Double-check it really maps to a live pool on one of the supported chains  \n- Pull its latest total volume and liquidity figures  \n- Fetch its daily price history for the past 30 days and compute the average daily volume  \n- Grab the ten most recent swap/add/remove events  \n- See how it ranks by volume against the top five pools on that same network  \n- And even bring back the first three comments from the original Reddit post for context  \n\nIdeally I’d get back a tidy JSON array where each entry has: network ID, pool address, volume_usd, liquidity_usd, avg_daily_volume_usd, recent_tx_count, rank_among_top5, plus a short summary of those top comments. I really need solid numbers here—no guesswork—so I can show the team hard data in our next meeting.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_weather_data_national_parks_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey there—I’m gearing up for a quick three-day camping getaway to Yosemite from San Jose and, to be honest, I’m feeling a bit swamped by all the options and details. I’d love to zero in on the three best campgrounds that actually have real comforts—think showers, drinking water, maybe even Wi-Fi—are definitely open on my dates and aren’t under any alerts or closures right now. \n\nOnce I’ve got that shortlist, can you help me figure out roughly how far and how long it takes to drive from San Jose to each of those spots? I’m planning to settle into one as my “base camp,” so for that primary site it’d be great to know the nearest visitor center’s hours and exactly how to get there—like turn-by-turn directions, plus the distance and travel time. Also, what’s the elevation at that main campground? \n\nSince I want to pack smart, I really need a solid three-day weather outlook for Yosemite—nothing vague, just the highs, lows and general conditions for the next few days. And, just in case I run out of snacks or cooking supplies, is there a grocery or convenience store within about five kilometers of that first campground? \n\nI can’t just wing this trip, so any real numbers or solid reference points you can dig up would be awesome—no vague guesses, please. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "google_maps_weather_data_national_parks_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m trying to plan a week-long hiking and camping loop that starts and ends in Denver, and I’m hoping you can really nerd out with me on the details. I want to hit a few of the best parks in Colorado, Utah or Wyoming that have both solid trails and campgrounds, then narrow it down to the three closest ones by drive time so I’m not losing half my day on the road. From there, I’d love a day-by-day agenda for the next seven days that not only tells me which park I’m at and when, but also flags any active alerts or if there’s more than a 50% chance of rain that day (so we could switch things around if it looks dicey). \n\nOn top of that, I need to know what the visitor center hours are, where I can actually secure a campsite or catch an event, plus a quick weather snapshot each morning and night. If there’s a nearby town or landmark, I want to know about hotels in, say, a 20 km radius too—just in case I decide to splurge one night. And for each driving leg, could you give me the distance, drive time, a rough idea of elevation change, and turn-by-turn directions? I really need actual numbers backed up by real data—no hand-wavy guesses—because I’m sharing this with friends who expect concrete facts. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_paper_search_wikipedia_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a project where I need to pick the very best news‐article classifier out there right now—specifically the one built for that 4-category news dataset (world, sports, business, tech). My boss wants me to find a publicly available, open-source model that has the highest F1 score, and then see if any fresh paper from the last three months has pushed the bar another 5 percentage points higher. \n\nIf a recent research write-up really beats the community model by at least 5 points in F1, I’d like to know what architectural tweak or training trick they used so I can apply it to the top model we found. If not, we’ll just roll with that open-source champion as is. Also, I need a quick, plain-English refresher on what a micro-averaged F1 score actually means and how it’s calculated—got to explain it clearly to stakeholders. \n\nCould you dig into this for me, pull together the model ID and its reported F1, track down any paper from roughly the past three months with its own F1, compare them, and then recommend next steps? Really need solid numbers and clear references so I’m not just guessing. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "hugging_face_paper_search_wikipedia_003",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on a little side project where I need a solid German→English translation model, and I’ve heard the Helsinki team has some of the best open-source options—probably around five main candidates. I’d love to figure out which one actually tops the leaderboard in terms of BLEU score on the model hub, then dig into the team’s original pre-print to see what BLEU they reported there and exactly which test set they used. I’m also a bit fuzzy on how translation quality is typically measured—could you pull out three key facts about evaluation metrics from that big online encyclopedia article on machine translation? And one more thing: are there any community-run live demos for the model that wins? I’d like to know what language pairs they support and whether they mention any real-time latency numbers. I’m putting together a report for my manager, so I really need the exact BLEU figures, test-set names, and solid source references—no just gut feelings. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_call_for_papers_wikipedia_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey there! I’m working on a project to build a real-time pandemic outbreak detector, and I want to see what cutting-edge machine learning tricks have popped up in the last three months. Would you mind digging up about the top five preprint studies from the usual archives plus at least three peer-reviewed papers (if any of the archives don’t have enough, maybe grab a few extras via Google Scholar)? Then could you read through them and give me roughly a 150-word summary of each paper’s main algorithmic idea? Once you’ve got those, I’d love a list of the distinct ML approaches they’re using, a quick encyclopedia-style blurb on each technique, and a heads-up on any conferences or workshops in the next week to month where these methods will be featured. I really need concrete, source-backed details—no high-level fluff—so I can show solid evidence to my team. Thanks!",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "paper_search_call_for_papers_wikipedia_002",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m prepping for a journal club talk on CRISPR gene editing and keep hearing about new ways to predict Cas9 off-target effects with machine learning. I’ve been hopping between preprint archives, a big biomedical literature database and academic search engines, but I’m not confident I’ve caught all the important methods. Could you pull together roughly twenty of the most recent papers—get the full texts where you can and give me about a 150-word summary of each one’s off-target prediction approach (models, key features, that sort of thing)? For the ones that only have abstracts available, just boil down the methodology in around a hundred words. Once that’s done, let me know which algorithms (deep nets, random forests, etc.) keep popping up across multiple studies and which show up only once. Then I’d love a roughly 200-word overview from Wikipedia’s “Off-target Effects” section so I can frame the background. And finally, are there any CRISPR or genome-editing conferences coming up in the next three months with calls for papers mentioning off-target prediction or machine learning? Just send me their names, dates, and any topic descriptions they list. I really need real numbers, citations or links—no guesswork—since I’ll have to defend everything in front of the group.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_fruityvice_biomcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m looking after a 60-year-old woman who has type 2 diabetes, high blood pressure and high cholesterol, and I’m trying to pull together a full picture of her cardiometabolic and nutritional status—but I’m not totally confident I’ve got it all right. She’s roughly 80 kg and 165 cm tall, so I want to know her BMI and body surface area. For her kidney function, her creatinine is 1.2 mg/dL and cystatin C is 1.1 mg/L—do you think we should use the 2021 CKD-EPI creatinine-cystatin C equation to get her eGFR? And then I’d like a Cockcroft-Gault estimate of her creatinine clearance too.\n\nOn top of that, I need to figure out her 10-year risk of cardiovascular disease—she’s 60, female, total cholesterol is 240 mg/dL, HDL is 40 mg/dL, systolic blood pressure around 150 mmHg, she’s diabetic, a current smoker, already on antihypertensives and a statin. I’m thinking PREVENT might be appropriate, but I need that percentage so I can decide if she really belongs on high-intensity statin therapy per the latest AHA/ACC thresholds.\n\nWhile we’re crunching scores, could you also work out her CHA₂DS₂-VASc? She’s got hypertension and diabetes, no heart failure, no prior stroke or vascular disease, and of course she’s female. I’d also like to correct her serum sodium—measured at 138 mEq/L with a glucose of 250 mg/dL—and adjust her calcium, which is 8.0 mg/dL when albumin is 2.5 g/dL.\n\nI’ve been asked to set her maintenance IV fluid rate by the 4-2-1 rule for an 80 kg patient, and to convert her current prednisone dose of 5 mg/day into a dexamethasone equivalent. Finally, for her diet, I want to recommend a heart-healthy, low-glycemic plan—could you pull the nutrition facts for one medium apple and one medium banana?\n\nIn the end, I really need a concise summary with all the hard numbers—BMI, BSA, eGFR, creatinine clearance, CVD risk percent, statin recommendation, CHA₂DS₂-VASc score, corrected sodium and calcium, fluid rate, steroid conversion and the apple/banana nutrition info—so I can justify everything to my team with solid data, not just gut feeling.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_fruityvice_biomcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a care plan for a 70-year-old woman who has atrial fibrillation, type 2 diabetes and stage 3 CKD, and I’m a bit stuck on how to personalize both her blood thinner and her pain meds. I’ve read that the CYP2C9*3 variant—especially rs1057910—can really change how much warfarin people need; could you dig up the detailed info on that polymorphism?  \n\nHer labs show a serum creatinine of 1.4 mg/dL and cystatin C of 1.5 mg/L. Using those values, what would her eGFR be if you ran the CKD-EPI equation with both creatinine and cystatin C? And if you plug her into Cockcroft-Gault (she’s 70 years old, weighs 70 kg and is 63 inches tall), what creatinine clearance do you get? Also, what would her ideal body weight and adjusted body weight be for dosing purposes?  \n\nAssuming her eGFR comes in under 45 mL/min/1.73 m2, I’d plan to drop both her warfarin and oxycodone doses by about 25%. To justify that, I also need her stroke risk scored using CHA₂DS₂-VASc (she’s 70, female, has hypertension and diabetes, but no CHF, prior stroke or vascular disease).  \n\nOn the pain side, she’s on oxycodone 5 mg three times a day—how many milligram morphine equivalents is that per day? And for her IV maintenance fluids, if you use the 4-2-1 rule on a 70 kg patient, what infusion rate does that translate to in mL/hour?  \n\nFinally, I want to know if there are any Phase 4 trials looking at genotype-guided warfarin dosing in afib—maybe something like NCT01830000 or a similar study—and ideally I’d like to see the full protocol for the top hit. Oh, and because she’s big on nutrition, could you tell me how much vitamin C is in a typical orange?  \n\nI really need hard numbers and solid references for all of this—can’t slide into rounds with just gut feelings.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_huge_icons_wikipedia_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a little side project at my company where I’m using React to build a digital showcase for the Met’s Egyptian Art collection. I need to feature three objects that have good images—if you can’t find enough under the broad “Egyptian Art” label, feel free to focus on some famous sarcophagi instead. For each piece, I’d love the official title and classification, a crisp intro (around 150–200 words max), plus about five key tidbits or facts. It’d also be great to pair each artifact with one or two icons that match its classification—if nothing obvious shows up, just grab some generic museum or artifact icons. Finally, could you include a short React code snippet that demonstrates how to feed this data into a component? And please make sure everything is pulled straight from the Met’s own collection metadata or equally solid sources, since I’ll need real records to back up my demo. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "metropolitan_museum_huge_icons_wikipedia_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m building an interactive gallery page for an art history class and want to feature about five Impressionist paintings from the Met. I’m honestly a bit lost on where to start: I figure I need to find the European Paintings section on their website, grab its ID, and then hunt down Impressionism works that actually have images. For each painting, I’d love to pull together its title, image URL, the artist’s name, and what medium they used. Then I’d like a short Wikipedia bio snippet that specifically mentions why they’re considered Impressionists—maybe three solid facts, or at least a flag if it doesn’t come up. On top of that, I want to pair each medium with a small icon and get the React code snippet so I can drop it straight into my app. Could you wrap all of that into a clean JSON bundle I can import? I really need real, sourced info, not guesses, since I’m presenting next week.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_biomcp_math_mcp_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m in the middle of a little side project trying to pin down whether the p53–MDM2 feedback loop in cancer cells really settles down or blows up. I’d love to see a concrete example from the literature—maybe grab one of the top papers from the last six months on TP53 and MDM2, pull its PMID and abstract snippet, and check if they describe the p53→MDM2 activation as “strong” (i.e. a coefficient above 1) or “weak” (1 or below). \n\nHere’s what I’ve sketched out so far: I’ve got a 2×2 Jacobian matrix J = [ [–0.5, –0.7], [1.2, –0.3] ]. If that paper says “strong,” I want to bump every entry by 10% (scale by 1.1); otherwise knock them back by 10% (scale by 0.9). Then I need the eigenvalues and right eigenvectors of the scaled J to see if all the real parts are negative (stable) or not (unstable). \n\nOn top of that, I’m curious about the column space—getting an orthonormal basis for J’s columns and then rewriting J in that new basis. Finally, take an initial state vector v = [1, 1], project it onto the first eigenvector you found, and compute the directional derivative of my Lyapunov function f(x,y) = –0.5 x² – 0.3 y² along that projected direction (as a unit vector). \n\nCan you walk me through all those numbers—PMID and abstract quote, the scaled matrix, its eigenvalues/eigenvectors, stability verdict, the orthonormal basis, J in the new basis, projection coordinates, and the directional derivative value? I really need hard data and solid references, not just hand-waving, so I can show my PI the actual sources and calculations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "scientific_computing_biomcp_math_mcp_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’ve been banging my head trying to pull together some solid figures for my boss’s presentation next week on BRAF expression in skin, lung and colon tissue. I grabbed the covariance numbers and stuck them into a 3×3 matrix—1.5, 1.2, 0.8 in the first row; 1.2, 1.8, 0.9 in the second; and 0.8, 0.9, 1.1 in the third—and then fetched the gene’s length, which turned out to be exactly 190,489 base pairs. \n\nNow I’m stuck figuring out whether that matrix is singular (so I need its determinant), and if it’s safe to scale every entry by 190,489 right in place. After that, I’d really like to see the Q and R pieces from a QR decomposition, the singular values from an SVD, and an orthonormal basis so I can rewrite the scaled matrix in that new basis. I also need its eigenvalues and eigenvectors, and—just to round it all off—the directional derivative of f(x,y,z) = x**2 + y*z + z**2 along the first orthonormal vector. \n\nCould you walk me through all of those numbers? I need every result spelled out clearly—no hand-wavy summaries—so I’ve got the hard data to show.\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_wikipedia_fruityvice_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working on getting pre-op clearance for a 65-year-old woman who’s due for an elective hip replacement, and I’m a bit swamped trying to tie together all her numbers and risk scores so I can make the right calls on meds and timing. She’s 85 kg and about 165 cm tall (roughly 65 inches), so I want to know her BMI, BSA and what her ideal versus adjusted body weight would be. Her serum creatinine is 1.2 mg/dL and cystatin C is 1.3 mg/L—could you run Cockcroft-Gault and CKD-EPI both with and without cystatin C and let me know if they differ by more than 5 mL/min/1.73 m² (and if so, which value I should use for dosing)? She’s also got sodium of 130 mEq/L with glucose 280 mg/dL, plus calcium 8.2 mg/dL and albumin 2.8 g/dL (normal albumin 4.0), so I need corrected sodium and calcium, too. On the liver side she has bilirubin 2.0 mg/dL, albumin 2.8 g/dL, INR 1.5, slight ascites and grade 1 encephalopathy—what’s her Child-Pugh and MELD-3.0 (sodium 132 mEq/L, not on dialysis)? Metabolically, her fasting insulin is 18 µIU/mL and glucose 150 mg/dL—can you get her HOMA-IR? For cardiovascular risk I’d like her 10-year Framingham score (age 65, TC 220 mg/dL, HDL 50 mg/dL, SBP 145 mmHg on treatment, smoker, female) and a PREVENT 10-year CVD risk using TC 220 mmol/L, HDL 50 mmol/L, SBP 145 mmHg, diabetic, current smoker, on antihypertensives, not on statins, plus whichever eGFR we decide. If PREVENT is more than 2% higher than Framingham, could you summarize the top three differences between those two models? While you’re at it, what are her CHA₂DS₂-VASc (she’s 65, female, hypertension, vascular disease, diabetes) and Revised Cardiac Risk Index (high-risk surgery, on insulin) scores, and a Wells score for PE given her upcoming surgery? I also need her QTc by Bazett’s formula (QT 400 ms, HR 78 bpm), total daily MME if she’s on oxycodone 10 mg four times a day, and a prednisone-to-dexamethasone equivalent for 20 mg of prednisone. Finally, if that PREVENT risk is above 20%, could you pull the top five high-intensity statin therapy recommendations from Wikipedia? I really need the actual numbers and a few brief interpretation notes so I can present solid, evidence-based planning to the team.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "medical_calculator_wikipedia_fruityvice_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’m working up a 68-year-old man and could use some help pulling together all his numbers and guideline info. He’s got a serum creatinine of 1.5 mg/dL and cystatin C of 1.2 mg/L, so I want to see his eGFR by both the creatinine-only and the creatinine-cystatin equations, then choose the lower one if they differ by more than 5 mL/min/1.73 m² (or average them if they’re close). His sodium is 130 mEq/L but his glucose is about 300 mg/dL, and his calcium is 8.0 mg/dL with albumin at 2.5 g/dL—so I need the corrected values for those. Next, I’d like two 10-year cardiovascular risk estimates: one using his total cholesterol 5.5 mmol/L (213 mg/dL), HDL 1.0 mmol/L (39 mg/dL), treated systolic BP 140 mmHg, no diabetes, non-smoker, on antihypertensives but not on statins, and our chosen eGFR; and the Framingham model with the same age, lipids, BP (treated), and smoking status. If both risks exceed 20%, I need about a 150-word summary of primary prevention statin guidelines. He also has non-valvular atrial fibrillation, so with his CHA₂DS₂-VASc factors (68 years, male, no CHF, yes hypertension, no prior stroke, no vascular disease, no diabetes) I need that score—and if it’s ≥ 2, a 150-word summary of stroke prevention management. Could you package everything into JSON—each eGFR, the selected eGFR, corrected sodium and calcium, the two risk outputs, the CHA₂DS₂-VASc score, and any guideline text that gets triggered? I really need the hard numbers and concise guideline excerpts to share with my team. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nasa_data_google_maps_wikipedia_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m putting together a quick impact rundown for our Arctic monitoring outpost up around 68.4° N, 133.7° W and need to know if anything big has happened in the last week. Did any solar flares above roughly M5 erupt, and if so, were there full-halo ejections that sparked geomagnetic storms hitting a Kp of 6 or more? I’d also love to see what our satellite shots showed over that exact spot—basically a cloud-cover score for when those storms arrived. While you’re at it, can you tell me the human-readable name for that location, then find the nearest research stations within about 50 km, pick the top two by rating, and give me their names and addresses? Finally, could you wrap up with a short (around 200 words) background on coronal mass ejections from a reliable source? Really need the hard numbers and solid references here—my boss won’t accept vague takeaways. Thanks!\n\nPlease ensure all findings are supported by concrete data and verifiable sources. I need specific numbers and evidence, not generalizations.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "nasa_data_google_maps_wikipedia_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve got a bit of a weird ask—my team wants a one-week space-weather and astro-hazard rundown specifically for New York City, and I need to pull together a bunch of data to make it convincing.\n\nFirst, I’d love to feature NASA’s Astronomy Picture of the Day plus any new natural-color Earth photos they’ve released. Then, can you glance at the list of near-Earth asteroids coming by over the next seven days and flag any that swing within about 500,000 km? For those, I need their size estimates and how fast they’re moving.\n\nOn the solar side, what geomagnetic storms, solar flares, and CMEs have been reported in the past week? And do any of those look like they could spark an aurora this far south—maybe check Wikipedia’s Aurora Borealis entry to understand the conditions and grab the first few paragraphs for context.\n\nMeanwhile, I also need to map out emergency shelters around the city center—start with a 5 km radius for places open now with at least a 3-star rating; if there aren’t five, stretch it to 10 km—and get names, addresses, ratings, plus driving distances and times for the top five.\n\nLast piece: snag the most recent Landsat-8 image tile over NYC (roughly a 0.05° box) so we’ve got a current view of the ground. Can you package all of that into a clear, data-driven summary with real URLs, exact distances, dates, and other hard numbers? I really need solid evidence and sources—no guesstimates—because I’m presenting this to leadership next week.",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "openapi_explorer_paper_search_hugging_face_000",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "Hey, I’ve been working on a project that ties together an AI chat service API and a code-hosting API, and I’m kind of lost in all their auth setups. I see mentions of API keys, bearer tokens, OAuth flows, and I can’t quite tell which method each one really uses or where there might be gaps if I try to standardize our security layer. \n\nCould you look into both and give me a clear comparison of their auth schemes—what they share, what’s unique to each, and where one might offer OAuth2 that the other doesn’t (or vice versa)? \n\nThen, based on what you find, I’d like to dive into some academic best practices: if there’s an OAuth2 flow in the code-hosting API that the chat API lacks, point me to three recent papers on OAuth2 security; otherwise, send over three studies on API key security. I’d need the titles and abstracts so I can actually read up on them.\n\nFinally, I’m considering bolting on some ML-driven security checks—can you find a couple of machine-learning models focused on API security and give me a quick rundown of their capabilities? \n\nI really need solid evidence—real paper abstracts, model details, concrete info—because I’ll be presenting this to my boss. Does that make sense?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
-  },
-  {
-    "task_id": "openapi_explorer_paper_search_hugging_face_001",
-    "category": "single_server",
-    "server_count": 0,
-    "available_servers": [],
-    "task_description": "I’m working on a project that ties together two external services—one for AI features and one for code hosting—and my boss wants a thorough health check on their published API docs. I’m not totally confident the schemas are error-free or that every endpoint is using the right kind of authentication (API key vs. OAuth2), and I’ve heard there are some new best practices floating around in both academic papers and community guides. \n\nCould you take a careful look at each service’s official API description, surface any validation glitches or security-scheme oddities—like endpoints that aren’t actually protected by OAuth when they should be—and then see how those issues line up with the latest OAuth2 recommendations from a handful of recent research papers plus a well-known community-maintained guideline? I’d love a concise breakdown of:\n\n- What errors or warnings you find in each spec\n- Which operations are missing or misconfiguring OAuth2\n- The top security recommendations from the academic side\n- The key dos and don’ts from the community guide\n- A clear set of action items for us to fix all the mismatches\n\nI really need concrete examples and sources—quotable snippets or direct references—so I can justify every point when I report back. Does that make sense?",
-    "conversation_history": [],
-    "correct_tool_call": null,
-    "expected_answer": ""
+    "task_id": "mcp_001",
+    "category": "single_tool",
+    "server_count": 3,
+    "available_servers": [
+      {
+        "name": "memory",
+        "description": "Memory server with knowledge graph capabilities",
+        "tools": [
+          {
+            "name": "add_memory",
+            "description": "Add a new memory to the knowledge graph",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "content"
+              ]
+            }
+          },
+          {
+            "name": "search_memories",
+            "description": "Search through memories",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "query"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "fetch",
+        "description": "Server for fetching web content",
+        "tools": [
+          {
+            "name": "fetch_text",
+            "description": "Fetch text content from a URL",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "max_length": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "filesystem",
+        "description": "File system operations",
+        "tools": [
+          {
+            "name": "read_file",
+            "description": "Read a file from the filesystem",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "task_description": "Remember that the user's favorite color is blue.",
+    "conversation_history": [],
+    "correct_tool_call": {
+      "server_name": "memory",
+      "tool_name": "add_memory",
+      "arguments": {
+        "content": "The user's favorite color is blue"
+      }
+    },
+    "expected_answer": "I've remembered that your favorite color is blue."
+  },
+  {
+    "task_id": "mcp_002",
+    "category": "two_server_selection",
+    "server_count": 2,
+    "available_servers": [
+      {
+        "name": "memory",
+        "description": "Memory server with knowledge graph capabilities",
+        "tools": [
+          {
+            "name": "add_memory",
+            "description": "Add a new memory to the knowledge graph",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "content"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "fetch",
+        "description": "Server for fetching web content",
+        "tools": [
+          {
+            "name": "fetch_text",
+            "description": "Fetch text content from a URL",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "task_description": "Fetch the content from https://example.com and save it to memory.",
+    "conversation_history": [],
+    "correct_tool_call": {
+      "server_name": "fetch",
+      "tool_name": "fetch_text",
+      "arguments": {
+        "url": "https://example.com"
+      }
+    },
+    "expected_answer": "I've fetched the content from https://example.com."
+  },
+  {
+    "task_id": "mcp_003",
+    "category": "multiple_tools_one_server",
+    "server_count": 1,
+    "available_servers": [
+      {
+        "name": "filesystem",
+        "description": "File system operations",
+        "tools": [
+          {
+            "name": "read_file",
+            "description": "Read a file from the filesystem",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ]
+            }
+          },
+          {
+            "name": "write_file",
+            "description": "Write content to a file",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "content"
+              ]
+            }
+          },
+          {
+            "name": "search_files",
+            "description": "Search for files matching a pattern",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "pattern": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "pattern"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "task_description": "Search for all Python files in the project directory.",
+    "conversation_history": [],
+    "correct_tool_call": {
+      "server_name": "filesystem",
+      "tool_name": "search_files",
+      "arguments": {
+        "pattern": "*.py"
+      }
+    },
+    "expected_answer": "I found all Python files in the project directory."
+  },
+  {
+    "task_id": "mcp_004",
+    "category": "complex_argument_construction",
+    "server_count": 1,
+    "available_servers": [
+      {
+        "name": "github",
+        "description": "GitHub API operations",
+        "tools": [
+          {
+            "name": "create_issue",
+            "description": "Create a new issue in a repository",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "assignees": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "title",
+                "body"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "task_description": "Create a bug report for the login page timeout issue. Assign it to john and label it as 'bug' and 'high-priority'.",
+    "conversation_history": [],
+    "correct_tool_call": {
+      "server_name": "github",
+      "tool_name": "create_issue",
+      "arguments": {
+        "title": "Login page timeout issue",
+        "body": "Users are experiencing timeouts on the login page.",
+        "labels": [
+          "bug",
+          "high-priority"
+        ],
+        "assignees": [
+          "john"
+        ]
+      }
+    },
+    "expected_answer": "I've created a bug report for the login page timeout issue and assigned it to john."
+  },
+  {
+    "task_id": "mcp_005",
+    "category": "no_tool_needed",
+    "server_count": 2,
+    "available_servers": [
+      {
+        "name": "memory",
+        "description": "Memory server with knowledge graph capabilities",
+        "tools": [
+          {
+            "name": "add_memory",
+            "description": "Add a new memory to the knowledge graph",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "content"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "fetch",
+        "description": "Server for fetching web content",
+        "tools": [
+          {
+            "name": "fetch_text",
+            "description": "Fetch text content from a URL",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "task_description": "Tell me a joke about cats.",
+    "conversation_history": [],
+    "correct_tool_call": null,
+    "expected_answer": "Why don't cats play poker in the jungle? Too many cheetahs!"
   }
 ]
