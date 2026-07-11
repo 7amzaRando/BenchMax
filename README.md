@@ -23,7 +23,7 @@
 ---
 
 <p align="center">
-  <img src="Project-Icon.png" alt="BenchMax Logo" width="80">
+  <img src="Icon.png" alt="BenchMax Logo" width="80">
 </p>
 
 ## Overview
