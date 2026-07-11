@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.lm_studio.client import LMStudioClient
-from backend.sandbox.bfcl_checker import ast_checker, Language
+from backend.sandbox.bfcl_checker import ast_checker, Language, multi_turn_simplified_checker
 
 logger = logging.getLogger(__name__)
 
@@ -210,20 +210,22 @@ class BFCLBenchmark(BaseBenchmark):
         ]
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        """Evaluates function call generation using AST-based scoring."""
+        if sample.get("multi_turn"):
+            return await self._evaluate_multi_turn(sample, params, model_name)
+        return await self._evaluate_single_turn(sample, params, model_name)
+
+    async def _evaluate_single_turn(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         question = sample["question"]
         category = sample.get("category", "unknown")
         functions = sample.get("function", [])
         expected_answer = sample.get("answer", [])
         task_id = sample.get("id", f"bfcl_{sample.get('index', 'unknown')}")
 
-        # Build system prompt with function schemas
         system_prompt = self._build_function_prompt(functions)
-        
-        # Run inference using LM Studio client  
+
         generation = await self.client.generate_completion(
             prompt=system_prompt + "\n\n" + question,
-            system_prompt=None,  # Already included in prompt
+            system_prompt=None,
             temperature=params.get("temperature", 0.7),
             max_completion_tokens=params.get("max_completion_tokens"),
             stop_tokens=params.get("stop_tokens"),
@@ -234,23 +236,18 @@ class BFCLBenchmark(BaseBenchmark):
 
         raw_response = generation["raw_response"]
 
-        # Strip markdown code fences before JSON parsing
         extracted = raw_response.strip()
         cleaned = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', extracted)
         cleaned = cleaned.strip()
 
-        # Try to extract JSON
         actual_calls = _extract_bfcl_json(cleaned)
         if actual_calls is None:
-            # Try with original (unfenced) text too
             actual_calls = _extract_bfcl_json(extracted)
 
         if actual_calls is None:
             actual_calls = []
 
-        # Score using official BFCL AST checker
-        if category == "irrelevance" or not expected_answer:
-            # Irrelevance: model should abstain
+        if category in ("irrelevance", "live_irrelevance") or not expected_answer:
             correct = len(actual_calls) == 0
             score_data = {
                 "ast_score": 1.0 if correct else 0.0,
@@ -282,10 +279,10 @@ class BFCLBenchmark(BaseBenchmark):
                 score_data = {
                     "ast_score": 0.0,
                     "refusal_detected": False,
-                    "error_message": f"Official checker error: {e}",
+                    "error_message": f"Checker error: {e}",
                 }
 
-        result = {
+        return {
             "prompt": system_prompt + "\n\n" + question,
             "raw_response": raw_response,
             "extracted_code": json.dumps(actual_calls),
@@ -295,10 +292,104 @@ class BFCLBenchmark(BaseBenchmark):
             "ttft": generation.get("ttft", 0.0),
             "thinking_tokens": generation.get("thinking_tokens", 0),
             "response_tokens": generation.get("response_tokens", 0),
-            **score_data
+            "scoring_details": score_data,
         }
 
-        return result
+    async def _evaluate_multi_turn(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
+        question_turns = sample.get("question", [])
+        ground_truth = sample.get("answer", [])
+        category = sample.get("category", "multi_turn_base")
+        involved_classes = sample.get("involved_classes", [])
+        initial_config = sample.get("initial_config", {})
+        excluded_function = sample.get("excluded_function", "")
+        missed_function = sample.get("missed_function", "")
+
+        system_prompt = "You have access to the following system classes and methods.\n"
+        for cls_name in involved_classes:
+            system_prompt += f"\n- {cls_name}: Available for file system and data operations.\n"
+        if initial_config:
+            system_prompt += f"\nInitial state: {json.dumps(initial_config)}\n"
+        system_prompt += "\nRespond with a JSON array of function calls, e.g. [{\"name\": \"cd\", \"arguments\": {\"folder\": \"documents\"}}]"
+
+        all_turns_output = []
+        raw_responses = []
+        total_elapsed = 0.0
+        total_tps = 0.0
+        total_ttft = 0.0
+        total_thinking = 0
+        total_response_tokens = 0
+        conversation_history = []
+
+        for turn_idx, turn in enumerate(question_turns):
+            user_msg = turn[0]["content"] if isinstance(turn, list) and turn else str(turn)
+
+            prompt_parts = [system_prompt]
+            if conversation_history:
+                prompt_parts.append("\nConversation so far:")
+                for entry in conversation_history:
+                    prompt_parts.append(f"\nUser: {entry['user']}")
+                    if entry["model_calls"]:
+                        prompt_parts.append(f"Assistant: {json.dumps(entry['model_calls'])}")
+            prompt_parts.append(f"\n\nNew request: {user_msg}")
+            full_prompt = "\n".join(prompt_parts)
+
+            generation = await self.client.generate_completion(
+                prompt=full_prompt,
+                system_prompt=None,
+                temperature=params.get("temperature", 0.7),
+                max_completion_tokens=params.get("max_completion_tokens"),
+                stop_tokens=params.get("stop_tokens"),
+                model_name=model_name,
+            )
+
+            raw_response = generation["raw_response"]
+            raw_responses.append(raw_response)
+
+            extracted = raw_response.strip()
+            cleaned = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', extracted)
+            cleaned = cleaned.strip()
+            turn_calls = _extract_bfcl_json(cleaned)
+            if turn_calls is None:
+                turn_calls = _extract_bfcl_json(extracted)
+            if turn_calls is None:
+                turn_calls = []
+
+            all_turns_output.append(turn_calls)
+            conversation_history.append({"user": user_msg, "model_calls": turn_calls})
+
+            total_elapsed += generation.get("elapsed_time", 0.0)
+            total_tps += generation.get("tps", 0.0)
+            total_ttft += generation.get("ttft", 0.0)
+            total_thinking += generation.get("thinking_tokens", 0)
+            total_response_tokens += generation.get("response_tokens", 0)
+
+        result_check = multi_turn_simplified_checker(
+            model_turns=all_turns_output,
+            ground_truth_turns=ground_truth,
+            test_category=category,
+            excluded_function=excluded_function,
+            missed_function=missed_function,
+        )
+        correct = result_check["valid"]
+
+        return {
+            "prompt": json.dumps({"turns": question_turns, "system": system_prompt}),
+            "raw_response": json.dumps(raw_responses),
+            "extracted_code": json.dumps(all_turns_output),
+            "correct": correct,
+            "error_message": result_check.get("error_message") if not correct else None,
+            "elapsed_time": total_elapsed,
+            "tps": total_tps / max(len(question_turns), 1),
+            "ttft": total_ttft / max(len(question_turns), 1),
+            "thinking_tokens": total_thinking,
+            "response_tokens": total_response_tokens,
+            "scoring_details": {
+                "multi_turn": True,
+                "checker_result": result_check,
+                "per_turn_output": all_turns_output,
+                "categories": [category],
+            },
+        }
 
     def _build_function_prompt(self, functions: List[Dict]) -> str:
         """Convert function schemas to a structured prompt"""

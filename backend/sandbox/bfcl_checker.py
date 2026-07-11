@@ -23,6 +23,8 @@ def ast_checker(
     test_category: str,
     model_name: str,
 ) -> Dict[str, Any]:
+    if "multi_turn" in test_category:
+        return {"valid": False, "error": ["Use multi_turn_simplified_checker for multi-turn cases"], "error_type": "wrong_checker"}
     if "parallel" in test_category:
         return _parallel_function_checker_no_order(func_description, model_output, possible_answer, model_name)
     elif "multiple" in test_category:
@@ -159,6 +161,129 @@ def _simple_function_checker(func_description, model_output, possible_answer, mo
             return {"valid": False, "error": [f"Optional param {param} not provided"], "error_type": "missing_optional"}
 
     return {"valid": True, "error": []}
+
+
+def _parse_func_call_string(call_str: str) -> dict | None:
+    m = re.match(r"(\w+)\s*\((.*)\)", call_str.strip())
+    if not m:
+        return None
+    name = m.group(1)
+    args_str = m.group(2).strip()
+    args = {}
+    if args_str:
+        for pair in re.split(r",\s*(?=[a-zA-Z_])", args_str):
+            pair = pair.strip()
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip("'\"")
+                args[k] = v
+    return {"name": name, "arguments": args}
+
+
+def multi_turn_simplified_checker(
+    model_turns: list[list[dict]],
+    ground_truth_turns: list[list[str]],
+    test_category: str,
+    excluded_function: str | list = "",
+    missed_function: dict | str = "",
+) -> dict:
+    if not model_turns:
+        return {"valid": False, "error_message": "No model output provided"}
+    if not ground_truth_turns:
+        return {"valid": False, "error_message": "No ground truth provided"}
+
+    parsed_all_gt = []
+    for gt_turn in ground_truth_turns:
+        parsed_gt = []
+        for gt_str in gt_turn:
+            parsed = _parse_func_call_string(gt_str)
+            if parsed:
+                parsed_gt.append(parsed)
+        parsed_all_gt.append(parsed_gt)
+
+    missed_func_by_turn = {}
+    if isinstance(missed_function, dict):
+        for k, v in missed_function.items():
+            turn_num = int(k)
+            if isinstance(v, list):
+                missed_func_by_turn[turn_num] = v
+            else:
+                missed_func_by_turn[turn_num] = [v]
+
+    excluded_funcs = excluded_function if isinstance(excluded_function, list) else ([excluded_function] if excluded_function else [])
+
+    for turn_idx, model_calls in enumerate(model_turns):
+        gt_calls = parsed_all_gt[turn_idx] if turn_idx < len(parsed_all_gt) else []
+        this_turn_missed = missed_func_by_turn.get(turn_idx, [])
+
+        if not gt_calls:
+            if model_calls:
+                return {
+                    "valid": False,
+                    "error_message": f"Turn {turn_idx}: Model called functions when it should abstain",
+                    "failed_turn": turn_idx,
+                }
+            continue
+
+        model_names = []
+        for mc in model_calls:
+            if isinstance(mc, dict):
+                model_names.append(mc.get("name", ""))
+            elif isinstance(mc, str):
+                parsed = _parse_func_call_string(mc)
+                model_names.append(parsed["name"] if parsed else mc)
+            else:
+                model_names.append(str(mc))
+        gt_names = [gt["name"] for gt in gt_calls]
+
+        for mc in model_calls:
+            if isinstance(mc, dict):
+                mc_name = mc.get("name", "")
+                mc_args = mc.get("arguments", {})
+            elif isinstance(mc, str):
+                parsed = _parse_func_call_string(mc)
+                if parsed:
+                    mc_name = parsed["name"]
+                    mc_args = parsed["arguments"]
+                else:
+                    mc_name = mc
+                    mc_args = {}
+            else:
+                mc_name = str(mc)
+                mc_args = {}
+
+            if mc_name in excluded_funcs:
+                return {
+                    "valid": False,
+                    "error_message": f"Turn {turn_idx}: Model called excluded function '{mc_name}'",
+                    "failed_turn": turn_idx,
+                }
+
+            if mc_name not in gt_names and mc_name not in this_turn_missed:
+                return {
+                    "valid": False,
+                    "error_message": f"Turn {turn_idx}: Unexpected function '{mc_name}' called",
+                    "failed_turn": turn_idx,
+                }
+
+        for gt_name in gt_names:
+            if gt_name in this_turn_missed:
+                if gt_name in model_names:
+                    return {
+                        "valid": False,
+                        "error_message": f"Turn {turn_idx}: Model should have missed function '{gt_name}' but called it",
+                        "failed_turn": turn_idx,
+                    }
+                continue
+            if gt_name not in model_names:
+                return {
+                    "valid": False,
+                    "error_message": f"Turn {turn_idx}: Expected function '{gt_name}' not called",
+                    "failed_turn": turn_idx,
+                }
+
+    return {"valid": True, "error_message": ""}
 
 
 def _parallel_function_checker_no_order(func_descriptions, model_output, possible_answers, model_name):

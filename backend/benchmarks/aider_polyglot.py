@@ -20,6 +20,8 @@ RUST_DIR = RUNTIMES_DIR / "rust_standalone" / "rust-1.97.0-x86_64-pc-windows-msv
 RUSTC_BIN = RUST_DIR / "rustc" / "bin"
 CARGO_BIN = RUST_DIR / "cargo" / "bin"
 GCC_BIN = RUNTIMES_DIR / "w64devkit" / "w64devkit" / "bin"
+W64DEVKIT_ROOT = RUNTIMES_DIR / "w64devkit"
+CATCH2_INCLUDE = RUNTIMES_DIR / "include"
 JARS_DIR = RUNTIMES_DIR / "jars"
 NODE_MODULES = RUNTIMES_DIR / "node_pkg" / "node_modules"
 
@@ -39,9 +41,8 @@ LANGUAGE_CONFIGS = {
     },
     "javascript": {
         "test_cmd": lambda src_name, tmpdir: [
-            "node", "--experimental-vm-modules",
-            os.path.join(NODE_MODULES, ".bin", "jest"),
-            "--no-coverage", "--passWithNoTests",
+            os.path.join(NODE_MODULES, ".bin", "jest.cmd"),
+            "--no-coverage",
         ],
         "env": {"NODE_PATH": str(NODE_MODULES)},
     },
@@ -114,10 +115,13 @@ def _run_cpp_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
     exe_path = os.path.join(tmpdir, "test.exe")
 
     try:
+        cpp_env = os.environ.copy()
+        cpp_env["PATH"] = str(GCC_BIN) + os.pathsep + cpp_env.get("PATH", "")
         r = subprocess.run(
             [gxx, "-std=c++20", "-DEXERCISM_RUN_ALL_TESTS", "-DEXERCISM_TEST_SUITE", "-DCATCH_CONFIG_MAIN",
+             f"-I{W64DEVKIT_ROOT / 'include'}", f"-I{CATCH2_INCLUDE}",
              "-o", exe_path, test_path],
-            cwd=tmpdir, capture_output=True, text=True, timeout=60,
+            cwd=tmpdir, capture_output=True, text=True, timeout=60, env=cpp_env,
         )
         if r.returncode != 0:
             return {"success": False, "stdout": r.stdout, "stderr": r.stderr, "error": f"g++ compile failed: {r.stderr[:500]}"}
@@ -127,7 +131,9 @@ def _run_cpp_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
         return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
 
     try:
-        r = subprocess.run([exe_path], cwd=tmpdir, capture_output=True, text=True, timeout=30)
+        cpp_env = os.environ.copy()
+        cpp_env["PATH"] = str(GCC_BIN) + os.pathsep + cpp_env.get("PATH", "")
+        r = subprocess.run([exe_path], cwd=tmpdir, capture_output=True, text=True, timeout=30, env=cpp_env)
         return {
             "success": r.returncode == 0,
             "stdout": (r.stdout or "")[:5000],
@@ -255,8 +261,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
             write_file(rel_path, content)
 
         if lang == "javascript":
-            extra = extra_files
-            if "package.json" not in extra:
+            if "package.json" not in (extra_files or {}):
                 write_file("package.json", json.dumps({
                     "name": "aider-polyglot-js",
                     "private": True,
@@ -264,12 +269,12 @@ class AiderPolyglotBenchmark(BaseBenchmark):
                         "transform": {"^.+\\.jsx?$": "babel-jest"},
                     },
                 }))
-            if "babel.config.js" not in extra:
+            if "babel.config.js" not in (extra_files or {}):
                 write_file("babel.config.js",
                            "module.exports = { presets: ['@babel/preset-env'] };\n")
 
         if lang == "go":
-            has_mod = any(k.endswith("go.mod") for k in (extra_files or {}) or [])
+            has_mod = any(k.endswith("go.mod") for k in (extra_files or {}))
             if not has_mod:
                 write_file("go.mod", "module aider_polyglot\n\ngo 1.22\n")
 

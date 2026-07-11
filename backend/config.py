@@ -16,7 +16,7 @@ BENCHMARKS = [
     ("BigCodeBench — Coding, 1,140 questions",           "BigCodeBench"),
     ("BigCodeBench-Hard — Coding, 148 questions",        "BigCodeBench-Hard"),
     ("BFCL — Function Calling, 4,696 questions",         "BFCL"),
-    ("MCP-Bench — MCP Tool Calling, 5 questions (bundled)", "MCP-Bench"),
+    ("MCP-Bench — MCP Tool Calling, 104 tasks (56 Single-Server, 30 Two-Server, 18 Three-Server)", "MCP-Bench"),
     ("Safety & Refusal — Uncensor + OR-Bench, 2,250 questions", "Safety"),
     ("LongBench-v2 — Long-Context QA, 503 questions",          "LongBench-v2"),
     ("Aider Polyglot — Code Editing, 225 questions",           "Aider Polyglot"),

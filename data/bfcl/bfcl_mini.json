@@ -39,7 +39,8 @@
           "unit": "units"
         }
       }
-    ]
+    ],
+    "multi_turn": false
   },
   {
     "id": "simple_python_1",
@@ -70,7 +71,8 @@
           "number": 5
         }
       }
-    ]
+    ],
+    "multi_turn": false
   },
   {
     "id": "simple_python_2",
@@ -112,7 +114,8 @@
           "z": 0
         }
       }
-    ]
+    ],
+    "multi_turn": false
   },
   {
     "id": "simple_python_3",
@@ -155,7 +158,8 @@
           "c": 2
         }
       }
-    ]
+    ],
+    "multi_turn": false
   },
   {
     "id": "simple_python_4",
@@ -198,6 +202,7 @@
           "c": 5
         }
       }
-    ]
+    ],
+    "multi_turn": false
   }
 ]
