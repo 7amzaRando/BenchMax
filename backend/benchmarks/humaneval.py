@@ -10,7 +10,6 @@ from backend.sandbox.safe_executor import check_correctness_humaneval
 logger = logging.getLogger(__name__)
 
 class HumanEvalBenchmark(BaseBenchmark):
-    requires_docker = False
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):
         super().__init__(db, client, quick_test)
@@ -109,7 +108,7 @@ class HumanEvalBenchmark(BaseBenchmark):
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         """
-        Runs completions against the local LLM and sends code to Docker for execution.
+        Runs completions against the local LLM and executes code via safe_executor.
         """
         prompt = sample["prompt"]
         entry_point = sample["entry_point"]

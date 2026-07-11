@@ -27,7 +27,6 @@ If applicable, add screenshots or server logs (from `app.log`).
 - OS: [e.g. Windows 11]
 - Python version: [e.g. 3.11.15]
 - BenchMax version: [e.g. alpha 0.3.0]
-- Docker installed? [Yes / No]
 - LM Studio version: [e.g. 0.3.12]
 
 **Additional context**

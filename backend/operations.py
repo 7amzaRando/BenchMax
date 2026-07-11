@@ -18,7 +18,7 @@ import httpx
 from sqlalchemy import text as sa_text
 from sqlalchemy.orm import joinedload
 
-from backend.config import ROOT, EXE_DIR, BENCHMARKS, BENCH_NAMES, DATASETS, PROVIDER_PRESETS, DOCKER_BENCHMARKS
+from backend.config import ROOT, EXE_DIR, BENCHMARKS, BENCH_NAMES, DATASETS, PROVIDER_PRESETS
 from backend.database import SessionLocal, Run, Result, init_db
 from backend.telemetry.monitor import get_system_metrics
 
@@ -398,104 +398,8 @@ def _scan_datasets() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-_build_state_lock = threading.Lock()
-_build_state = {"running": False, "lines": [], "images": {}, "exit_code": None}
-
-
-def _run_build_background():
-    """Run build script in a background thread, streaming output line by line."""
-    import subprocess as _sp
-    script = ROOT / "scripts" / "build_docker_images.py"
-    log_path = ROOT / "records" / "docker_build.log"
-    try:
-        log_file = open(log_path, "w", encoding="utf-8")
-    except Exception as e:
-        with _build_state_lock:
-            _build_state.clear()
-            _build_state["running"] = False
-        logger.error(f"Failed to open build log file: {e}")
-        return
-    with _build_state_lock:
-        _build_state.clear()
-        _build_state["running"] = True
-        _build_state["lines"] = []
-        _build_state["images"] = {}
-        _build_state["exit_code"] = None
-    try:
-        proc = _sp.Popen(
-            [sys.executable, str(script)],
-            stdout=_sp.PIPE, stderr=_sp.STDOUT,
-            text=True, bufsize=1,
-        )
-        for line in iter(proc.stdout.readline, ""):
-            line = line.rstrip()
-            log_file.write(line + "\n")
-            log_file.flush()
-            with _build_state_lock:
-                _build_state["lines"].append(line)
-                for pattern, status in [("[OK]", "ok"), ("[SKIP]", "skip"), ("[ERROR]", "failed"), ("[FAIL]", "failed")]:
-                    if pattern in line:
-                        parts = line.split()
-                        for p in parts:
-                            if p.startswith("benchmax-"):
-                                _build_state["images"][p] = status
-        proc.wait()
-        exit_code = proc.returncode
-        done_line = f"Build exited with code {exit_code}"
-    except Exception as e:
-        done_line = f"Build error: {e}"
-        exit_code = 1
-    finally:
-        log_file.write(done_line + "\n")
-        log_file.close()
-        with _build_state_lock:
-            _build_state["running"] = False
-            _build_state["lines"].append(done_line)
-            _build_state["exit_code"] = exit_code
-
-
-def start_build():
-    """Kick off background Docker build. Returns immediately."""
-    with _build_state_lock:
-        if _build_state.get("running"):
-            return "Build already in progress"
-    thread = threading.Thread(target=_run_build_background, daemon=True)
-    thread.start()
-    return "Build started"
-
-
-def get_build_state():
-    """Return snapshot of build state for SSE/API consumption."""
-    with _build_state_lock:
-        return dict(_build_state)
-
-
-def _build_images() -> tuple[str, str | None]:
-    """Legacy synchronous build (kept for fallback)."""
-    script = ROOT / "scripts" / "build_docker_images.py"
-    if not script.exists():
-        return ("Build script not found.", None)
-    log_path = ROOT / "records" / "docker_build.log"
-    try:
-        result = subprocess.run(
-            [sys.executable, str(script)],
-            capture_output=True, text=True, timeout=300,
-        )
-        output = result.stdout + "\n" + result.stderr
-        with open(log_path, "w", encoding="utf-8") as f:
-            f.write(output)
-        return (output, str(log_path))
-    except subprocess.TimeoutExpired:
-        msg = "Docker build timed out after 300s"
-        with open(log_path, "w", encoding="utf-8") as f:
-            f.write(msg)
-        return (msg, str(log_path))
-    except Exception as e:
-        return (f"Build error: {e}", None)
-
-
-def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFrame, list, dict, str]:
-    """Hits /v1/models (simple list) and /api/v0/models (metadata: context length, quantization), merges them, and checks Docker availability."""
+def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFrame, list, dict]:
+    """Hits /v1/models (simple list) and /api/v0/models (metadata: context length, quantization) and merges them."""
     from backend.lm_studio.client import LMStudioClient
     metadata = {}
     error_msg = ""
@@ -526,18 +430,7 @@ def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFram
         choices = []
         error_msg = str(e)
 
-    docker_status = ""
-    try:
-        from backend.sandbox.docker_executor import DockerExecutor
-        de = DockerExecutor()
-        if de.is_available():
-            docker_status = "✅ Docker available"
-        else:
-            docker_status = "❌ Docker unavailable"
-    except Exception:
-        docker_status = "❌ Docker unavailable"
-
-    return status, df, choices, metadata, docker_status
+    return status, df, choices, metadata
 
 
 def trigger_run(
@@ -663,17 +556,11 @@ def _run_model_queue_in_thread(
     """
     Loops through (model, benchmarks) pairs: loads model via LM Studio API, runs all benchmarks
     sequentially, then unloads model. Checks halt at 3 points (between models, after load, between
-    benchmarks). Checks Docker availability upfront. Captures instance_id from load response for unload.
+    benchmarks). Captures instance_id from load response for unload.
     """
     import httpx as _httpx
 
     client = _make_client(api_url, api_key)
-    docker_available = False
-    try:
-        from backend.sandbox.docker_executor import DockerExecutor
-        docker_available = DockerExecutor().is_available()
-    except Exception:
-        docker_available = False
 
     with _model_queue_lock:
         _model_queue_state["queue_id"] = queue_id
@@ -784,12 +671,6 @@ def _run_model_queue_in_thread(
                     bench = _instantiate_benchmark(bn, db2, client, quick_test)
                     if not bench:
                         run_rec.status = "FAILED"
-                        db2.commit()
-                        continue
-
-                    if bench.requires_docker and not docker_available:
-                        run_rec.status = "FAILED"
-                        run_rec.current_index = -1
                         db2.commit()
                         continue
 

@@ -5,13 +5,9 @@ import logging
 import multiprocessing
 import os
 import platform
-import shutil
-import signal
-import subprocess
 import sys
 import tempfile
 import threading
-import time
 import unittest
 import types
 from typing import Dict, Any, List
@@ -74,53 +70,7 @@ def _create_tempdir():
 
 def _reliability_guard():
     faulthandler.disable()
-
-    import builtins
-    builtins.exit = None
-    builtins.quit = None
-
     os.environ["OMP_NUM_THREADS"] = "1"
-
-    os.kill = None
-    os.system = None
-    os.putenv = None
-    os.remove = None
-    os.removedirs = None
-    os.rmdir = None
-    os.fchdir = None
-    os.setuid = None
-    os.fork = None
-    os.forkpty = None
-    os.killpg = None
-    os.rename = None
-    os.renames = None
-    os.truncate = None
-    os.replace = None
-    os.unlink = None
-    os.fchmod = None
-    os.fchown = None
-    os.chmod = None
-    os.chown = None
-    os.chroot = None
-    os.lchflags = None
-    os.lchmod = None
-    os.lchown = None
-    os.getcwd = None
-    os.chdir = None
-
-    shutil.rmtree = None
-    shutil.move = None
-    shutil.chown = None
-
-    subprocess.Popen = None
-
-    __builtins__["help"] = None
-
-    sys.modules["ipdb"] = None
-    sys.modules["joblib"] = None
-    sys.modules["resource"] = None
-    sys.modules["psutil"] = None
-    sys.modules["tkinter"] = None
 
 
 def _unsafe_execute_humaneval(
@@ -132,12 +82,6 @@ def _unsafe_execute_humaneval(
     result_container: list,
 ):
     with _create_tempdir():
-        import os as _os
-        import shutil as _shutil
-        rmtree = _shutil.rmtree
-        rmdir = _os.rmdir
-        chdir = _os.chdir
-
         _reliability_guard()
 
         check_program = f"{prompt}{completion}\n{test_suite}\ncheck({entry_point})"
@@ -153,10 +97,6 @@ def _unsafe_execute_humaneval(
         except BaseException as e:
             result_container.append(f"failed: {e}")
 
-        _shutil.rmtree = rmtree
-        _os.rmdir = rmdir
-        _os.chdir = chdir
-
 
 def _unsafe_execute_bigcodebench(
     entry_point: str,
@@ -167,12 +107,6 @@ def _unsafe_execute_bigcodebench(
     details_container: list,
 ):
     with _create_tempdir():
-        import os as _os
-        import shutil as _shutil
-        rmtree = _shutil.rmtree
-        rmdir = _os.rmdir
-        chdir = _os.chdir
-
         _reliability_guard()
 
         module_name = "__test__"
@@ -183,7 +117,7 @@ def _unsafe_execute_bigcodebench(
             "__package__": None,
             "__doc__": None,
             "sys": sys,
-            "os": _os,
+            "os": os,
         })
 
         try:
@@ -211,10 +145,6 @@ def _unsafe_execute_bigcodebench(
         except BaseException as e:
             details_container.append(str(e))
             result_container.append("failed")
-
-        _shutil.rmtree = rmtree
-        _os.rmdir = rmdir
-        _os.chdir = chdir
 
 
 def check_correctness_humaneval(

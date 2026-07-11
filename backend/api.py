@@ -13,13 +13,13 @@ from backend.operations import (
     load_recent_runs, load_leaderboard, delete_leaderboard_entry,
     clear_all_history, load_cross_comparison, export_results, export_batch_results,
     export_telemetry, export_all_history, generate_diff,
-    _build_images, _scan_datasets, install_dataset, install_all_missing,
+    _scan_datasets, install_dataset, install_all_missing,
     update_context_window, update_ctx_warning,
     _load_hf_token, _save_hf_token,
     save_lb_api_key, load_lb_settings, sync_to_online_leaderboard,
     poll, get_batch_start_time, get_active_batch_id, _batch_queue,
     start_model_queue, get_model_queue_state, halt_model_queue, skip_current_model,
-    start_build, get_build_state, get_stats, download_runtimes,
+    get_stats, download_runtimes,
 )
 from backend import operations
 from backend.config import BENCHMARKS, BENCH_NAMES, PROVIDER_PRESETS, DATASETS, ROOT
@@ -99,7 +99,7 @@ def _gr_update(**kwargs):
 @router.post("/connect")
 def api_connect(req: ConnectRequest):
     try:
-        status_str, models_df, model_choices, metadata, docker_status = connect_lm_studio(req.api_url, req.api_key)
+        status_str, models_df, model_choices, metadata = connect_lm_studio(req.api_url, req.api_key)
         models = _df_to_dict(models_df)
         choices = model_choices if isinstance(model_choices, list) else []
         selected = choices[0] if choices else None
@@ -109,7 +109,6 @@ def api_connect(req: ConnectRequest):
             "choices": choices,
             "selected": selected,
             "metadata": metadata,
-            "docker_status": docker_status,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -121,53 +120,6 @@ def api_get_metadata():
         "benchmarks": BENCHMARKS,
         "bench_names": BENCH_NAMES,
     }
-
-@router.get("/docker/status")
-def api_docker_status():
-    from backend.sandbox.docker_executor import DockerExecutor
-    ex = DockerExecutor()
-    ok = ex.is_available()
-    images = ex.get_available_images() if ok else {}
-    built = sum(1 for v in images.values() if v)
-    return {"available": ok, "images": images, "built_count": built}
-
-@router.post("/docker/build")
-def api_build_images():
-    try:
-        msg = start_build()
-        return {"message": msg}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/docker/build/stream")
-async def api_build_stream(request: Request):
-    async def event_generator():
-        seen = 0
-        while True:
-            if await request.is_disconnected():
-                break
-            state = get_build_state()
-            lines = state.get("lines", [])
-            new_lines = lines[seen:]
-            for l in new_lines:
-                evt_type = "log"
-                if l.startswith("[OK]") or l.startswith("[SKIP]"):
-                    evt_type = "image"
-                elif l.startswith("[ERROR]") or l.startswith("[FAIL]"):
-                    evt_type = "error"
-                elif "exited with code" in l:
-                    evt_type = "done"
-                yield f"event: {evt_type}\ndata: {json.dumps({'text': l})}\n\n"
-                seen += 1
-            if not state.get("running"):
-                # Yield one more with images summary
-                images = state.get("images", {})
-                if images:
-                    yield f"event: summary\ndata: {json.dumps(images)}\n\n"
-                yield f"event: done\ndata: {json.dumps({'text': 'Build complete', 'exit_code': state.get('exit_code')})}\n\n"
-                break
-            await asyncio.sleep(0.1)
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @router.get("/datasets")
 def api_scan_datasets():

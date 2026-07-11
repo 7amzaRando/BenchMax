@@ -34,7 +34,6 @@ def resolve_data_file(caller_file: str, filename: str) -> str | None:
     return None
 
 class BaseBenchmark(ABC):
-    requires_docker: bool = False
     _dataset_cache: Dict[str, Any] = {}
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):
@@ -66,7 +65,7 @@ class BaseBenchmark(ABC):
         return data
 
     def cleanup(self) -> None:
-        """Override to release resources (e.g. Docker containers) after benchmark finishes."""
+        """Override to release resources after benchmark finishes."""
         pass
 
     async def run_evaluation(self, run_id: int, params: Dict[str, Any]) -> None:
@@ -88,19 +87,6 @@ class BaseBenchmark(ABC):
 
         run.status = "RUNNING"
         self.db.commit()
-
-        if self.requires_docker:
-            from backend.sandbox.docker_executor import DockerExecutor
-            if not DockerExecutor().is_available():
-                error_msg = (
-                    "Docker daemon is not running. "
-                    "This benchmark requires Docker. "
-                    "Start Docker Desktop and try again."
-                )
-                logger.error(error_msg)
-                run.status = "FAILED"
-                self.db.commit()
-                return
 
         dataset = self.load_dataset()
         run.total_samples = len(dataset)
@@ -246,8 +232,7 @@ class BaseBenchmark(ABC):
             self.db.commit()
             logger.info(f"Benchmark run {run_id} completed successfully.")
         finally:
-            if self.requires_docker:
-                self.cleanup()
+            self.cleanup()
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
         """Generate a textual diff. Override per benchmark for richer HTML views."""

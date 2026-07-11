@@ -7,7 +7,6 @@ from backend.sandbox.safe_executor import check_correctness_bigcodebench
 logger = logging.getLogger(__name__)
 
 class BigCodeBenchBenchmark(BaseBenchmark):
-    requires_docker = False
 
     def __init__(self, db, client, quick_test=False, hard=False):
         super().__init__(db, client, quick_test)

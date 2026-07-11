@@ -72,7 +72,7 @@ class CodingSpeedTestBenchmark(BaseBenchmark):
     """Coding speed benchmark (5 prompts, ~300 tokens each).
 
     Tests raw code generation speed — functions, scripts, regex patterns,
-    and data structures. No Docker execution — correct is always True.
+    and data structures. correct is always True.
     """
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):

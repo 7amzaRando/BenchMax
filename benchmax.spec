@@ -97,7 +97,6 @@ a = Analysis(
         'sqlalchemy',
         'sqlalchemy.ext.declarative',
         'pandas',
-        'docker',
         'psutil',
         'GPUtil',
         'numpy',
@@ -129,7 +128,7 @@ a = Analysis(
         'backend.benchmarks.speed_test',
         'backend.benchmarks.truthfulqa',
         'backend.lm_studio.client',
-        'backend.sandbox.docker_executor',
+
         'backend.telemetry.monitor',
     ],
     hookspath=[],

@@ -11,13 +11,11 @@ logger = logging.getLogger(__name__)
 class LiveBenchBenchmark(BaseBenchmark):
     """
     6-category meta-benchmark:
-    - MCQ (regex A-D), math (extract number via AIME answer parser), code (Docker unit test),
+    - MCQ (regex A-D), math (extract number via AIME answer parser), code (safe_executor),
       language (string match), data (string match), instruction (rule-based IFEval CHECKERS).
-    Only the code category requires Docker.
     """
     def __init__(self, db, client, quick_test=False):
         super().__init__(db, client, quick_test)
-        self.requires_docker = False
 
     def load_dataset(self) -> List[Dict[str, Any]]:
         filename = "livebench_mini.json" if self.quick_test else "livebench_full.json"
@@ -44,7 +42,7 @@ class LiveBenchBenchmark(BaseBenchmark):
         # Math — extract integer via AIME answer parser, compare to expected value
         elif category == "math":
             prompt = f"{sample['question']}\n\nThink step by step, then provide your final answer as 'Answer: N' where N is the integer."
-        # Coding — Docker sandbox with unittest suite injected after model-generated code
+        # Coding — safe_executor with unittest suite injected after model-generated code
         elif category == "coding":
             code_prompt = sample.get("prompt", "")
             test_suite = sample.get("test", "")
