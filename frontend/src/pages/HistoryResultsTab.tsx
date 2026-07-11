@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 
-export default function HistoryResultsTab({ onRerun, activeTab }: { onRerun?: (model: string, benchmark: string, params: any) => void; activeTab?: string }) {
+export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKey }: { onRerun?: (model: string, benchmark: string, params: any) => void; activeTab?: string; historyRefreshKey?: number }) {
   const [runs, setRuns] = useState<api.HistoryEntry[]>([])
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null)
   const [runDetails, setRunDetails] = useState<api.RunDetails | null>(null)
@@ -24,8 +24,6 @@ export default function HistoryResultsTab({ onRerun, activeTab }: { onRerun?: (m
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [historyFilter, setHistoryFilter] = useState('')
   const [exportFormat, setExportFormat] = useState<'CSV' | 'JSON'>('CSV')
-  const [stats, setStats] = useState<any>(null)
-
   const sortedRuns = useMemo(() => {
     const sorted = [...runs].sort((a, b) => {
       const va = a[sortColumn as keyof api.HistoryEntry] ?? ''
@@ -56,12 +54,33 @@ export default function HistoryResultsTab({ onRerun, activeTab }: { onRerun?: (m
   }
 
   useEffect(() => { loadRuns() }, [])
+  useEffect(() => { if (activeTab === 'history') loadRuns() }, [activeTab])
+  useEffect(() => { loadRuns() }, [historyRefreshKey])
 
   async function loadRuns() {
     try { const data = await api.loadHistory(); setRuns(data.runs || []) } catch { console.warn('Failed to load history') }
   }
 
-  useEffect(() => { api.getStats().then(setStats).catch(() => { console.warn('Failed to get stats') }) }, [])
+  const stats = useMemo(() => {
+    const total = filteredRuns.length
+    const completed = filteredRuns.filter(r => r.Status === 'COMPLETED').length
+    const totalTokens = filteredRuns.reduce((sum, r) => sum + (r['Total Tokens'] || 0), 0)
+    const benchmarks = [...new Set(filteredRuns.map(r => r.Benchmark))]
+    const models = [...new Set(filteredRuns.map(r => r.Model))]
+    let bestAcc = 0, bestModel = '—', bestBench = '—'
+    for (const r of filteredRuns) {
+      const acc = parseFloat((r.Accuracy || '0%').replace(/[^0-9.-]/g, ''))
+      if (!isNaN(acc) && acc > bestAcc) { bestAcc = acc; bestModel = r.Model; bestBench = r.Benchmark }
+    }
+    return {
+      total_runs: total,
+      completed_runs: completed,
+      total_tokens_generated: totalTokens,
+      benchmarks_run: benchmarks,
+      models_tested: models,
+      best_accuracy: { model: bestModel, benchmark: bestBench, accuracy: bestAcc || '—' },
+    }
+  }, [filteredRuns])
 
   async function loadDetails(runId: number) {
     setSelectedRunId(runId)
@@ -118,7 +137,7 @@ export default function HistoryResultsTab({ onRerun, activeTab }: { onRerun?: (m
           </div>
           <div className="px-3 py-2 rounded-lg bg-card/60 border border-border/60">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Best Accuracy</div>
-            <div className="font-mono text-sm mt-0.5">{stats.best_accuracy?.accuracy || '—'}</div>
+            <div className="font-mono text-sm mt-0.5">{stats.best_accuracy?.accuracy === '—' ? '—' : `${stats.best_accuracy?.accuracy}%`}</div>
           </div>
         </div>
       )}

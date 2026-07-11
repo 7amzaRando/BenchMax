@@ -1475,6 +1475,26 @@ def install_all_missing(hf_token: str = "") -> str:
     return "\n".join(results) if results else "All datasets already installed."
 
 
+def download_runtimes() -> str:
+    script = ROOT / "scripts" / "setup_runtimes.py"
+    if not script.exists():
+        return "Setup script not found: scripts/setup_runtimes.py"
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script)],
+            capture_output=True, text=True, timeout=300,
+        )
+        output = (result.stdout + "\n" + result.stderr).strip()
+        if result.returncode == 0:
+            return "Runtimes installed successfully."
+        else:
+            return f"Installation failed:\n{output[:500]}"
+    except subprocess.TimeoutExpired:
+        return "Installation timed out (300s). Some runtimes may be large; try again."
+    except Exception as e:
+        return f"Error: {e}"
+
+
 def update_context_window(model_id: str, metadata: dict) -> str:
     if not model_id:
         return "N/A"

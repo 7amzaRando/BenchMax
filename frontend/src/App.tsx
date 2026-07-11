@@ -40,6 +40,8 @@ function AppContent() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [pendingRerun, setPendingRerun] = useState<{ model: string; benchmark: string; params: any } | null>(null)
   const prevBatchIdRef = useRef<string | null>(null)
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
+  const refreshHistory = useCallback(() => setHistoryRefreshKey(k => k + 1), [])
 
   useEffect(() => {
     const html = document.documentElement
@@ -289,11 +291,11 @@ function AppContent() {
           </TabsContent>
 
           <TabsContent forceMount value="history">
-            <HistoryResultsTab onRerun={handleRerun} activeTab={activeTab} />
+            <HistoryResultsTab onRerun={handleRerun} activeTab={activeTab} historyRefreshKey={historyRefreshKey} />
           </TabsContent>
 
           <TabsContent forceMount value="leaderboard">
-            <LeaderboardTab />
+            <LeaderboardTab onDelete={refreshHistory} />
           </TabsContent>
         </Tabs>
       </main>

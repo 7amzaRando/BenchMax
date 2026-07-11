@@ -91,3 +91,11 @@ test_*.py
 !test_benchmark.py
 !test_client.py
 !test_bfcl_quick.py
+
+# Old README (superseded by README.md)
+README-Old.md
+
+# Implementation plan (superseded by PROJECT_STATE.md)
+implementation_plan.md
+
+

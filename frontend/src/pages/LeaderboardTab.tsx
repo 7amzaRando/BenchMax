@@ -27,7 +27,7 @@ const COLS: { key: keyof api.LeaderboardEntry; label: string; sortable: boolean 
   { key: 'Date', label: 'Date', sortable: true },
 ]
 
-export default function LeaderboardTab() {
+export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) {
   const [entries, setEntries] = useState<api.LeaderboardEntry[]>([])
   const [sortCol, setSortCol] = useState<keyof api.LeaderboardEntry>('Accuracy')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -98,6 +98,7 @@ export default function LeaderboardTab() {
     try {
       const data = await api.deleteLeaderboardEntry(runId)
       setEntries(data.leaderboard || [])
+      onDelete?.()
     } catch { console.warn('Failed to delete leaderboard entry') }
   }
 

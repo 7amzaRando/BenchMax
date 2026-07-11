@@ -27,30 +27,28 @@ interface Props {
   clearPendingRerun?: () => void
 }
 
-const DOCKER_BENCHMARKS = ['HumanEval', 'BigCodeBench', 'BigCodeBench-Hard', 'LiveBench', 'Aider Polyglot']
-
-const BENCHMARK_INFO: Record<string, { description: string; docker: boolean; count: string }> = {
-  'HumanEval':        { description: 'Code generation tests (164 problems)', docker: false, count: '164' },
-  'MMLU-Pro':          { description: 'Massive Multitask Language Understanding (12,032 questions)', docker: false, count: '12,032' },
-  'IFEval':            { description: 'Instruction Following Evaluation (541 prompts)', docker: false, count: '541' },
-  'AIME':              { description: 'American Invitational Math Exam (90 questions)', docker: false, count: '90' },
-  'BigCodeBench':      { description: 'BigCode programming benchmark (1,140 questions)', docker: false, count: '1,140' },
-  'BigCodeBench-Hard': { description: 'Hard subset of BigCodeBench (148 questions)', docker: false, count: '148' },
-  'BFCL':              { description: 'Berkeley Function Calling Leaderboard (~3,678 questions)', docker: false, count: '~3,678' },
-  'MCP-Bench':         { description: 'MCP Tool Calling benchmark (~200 questions)', docker: false, count: '~200' },
-  'Safety':            { description: 'Safety & Refusal — Uncensor + OR-Bench (~125 questions)', docker: false, count: '~125' },
-  'LongBench-v2':      { description: 'Long-context QA benchmark (503 questions)', docker: false, count: '503' },
-  'Aider Polyglot':    { description: 'Multi-language code editing benchmark (225 problems)', docker: false, count: '225' },
-  'MMMU-Pro':          { description: 'Multimodal MCQ benchmark (~1,700 questions)', docker: false, count: '~1,700' },
-  'LiveBench':         { description: '6-category meta-benchmark (1,436 questions, 23 sub-tasks)', docker: false, count: '1,436' },
-  'BenchMax Personal': { description: 'Composite BMS benchmark (100 questions, 5 dimensions)', docker: false, count: '100' },
-  'BenchMax Lite':     { description: 'All-round MCQ benchmark (50 questions)', docker: false, count: '50' },
-  'BenchMax Code':     { description: 'Coding MCQ benchmark (100 questions)', docker: false, count: '100' },
-  'BenchMax Reason':   { description: 'Reasoning MCQ benchmark (100 questions)', docker: false, count: '100' },
-  'Writing Speed Test':{ description: 'Creative writing & RP speed test (5 prompts)', docker: false, count: '5' },
-  'Coding Speed Test': { description: 'Code generation speed test (5 prompts)', docker: false, count: '5' },
-  'BenchMax Tectonic': { description: '300-question composite benchmark (5 categories)', docker: false, count: '300' },
-  'TruthfulQA':        { description: 'Truthfulness evaluation MCQ (817 questions)', docker: false, count: '817' },
+const BENCHMARK_INFO: Record<string, { description: string; count: string }> = {
+  'HumanEval':        { description: 'Code generation tests (164 problems)', count: '164' },
+  'MMLU-Pro':          { description: 'Massive Multitask Language Understanding (12,032 questions)', count: '12,032' },
+  'IFEval':            { description: 'Instruction Following Evaluation (541 prompts)', count: '541' },
+  'AIME':              { description: 'American Invitational Math Exam (90 questions)', count: '90' },
+  'BigCodeBench':      { description: 'BigCode programming benchmark (1,140 questions)', count: '1,140' },
+  'BigCodeBench-Hard': { description: 'Hard subset of BigCodeBench (148 questions)', count: '148' },
+  'BFCL':              { description: 'Berkeley Function Calling Leaderboard (~3,678 questions)', count: '~3,678' },
+  'MCP-Bench':         { description: 'MCP Tool Calling benchmark (~200 questions)', count: '~200' },
+  'Safety':            { description: 'Safety & Refusal — Uncensor + OR-Bench (~125 questions)', count: '~125' },
+  'LongBench-v2':      { description: 'Long-context QA benchmark (503 questions)', count: '503' },
+  'Aider Polyglot':    { description: 'Multi-language code editing benchmark (225 problems)', count: '225' },
+  'MMMU-Pro':          { description: 'Multimodal MCQ benchmark (~1,700 questions)', count: '~1,700' },
+  'LiveBench':         { description: '6-category meta-benchmark (1,436 questions, 23 sub-tasks)', count: '1,436' },
+  'BenchMax Personal': { description: 'Composite BMS benchmark (100 questions, 5 dimensions)', count: '100' },
+  'BenchMax Lite':     { description: 'All-round MCQ benchmark (50 questions)', count: '50' },
+  'BenchMax Code':     { description: 'Coding MCQ benchmark (100 questions)', count: '100' },
+  'BenchMax Reason':   { description: 'Reasoning MCQ benchmark (100 questions)', count: '100' },
+  'Writing Speed Test':{ description: 'Creative writing & RP speed test (5 prompts)', count: '5' },
+  'Coding Speed Test': { description: 'Code generation speed test (5 prompts)', count: '5' },
+  'BenchMax Tectonic': { description: '300-question composite benchmark (5 categories)', count: '300' },
+  'TruthfulQA':        { description: 'Truthfulness evaluation MCQ (817 questions)', count: '817' },
 }
 
 export default function RunBenchmarkTab({ connection, setConnection, activeRunId, setActiveRunId, activeBatchId, setActiveBatchId, runStatus, pendingRerun, clearPendingRerun }: Props) {
@@ -174,8 +172,6 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
   const filteredBenches = benchmarks.filter(b =>
     b.label.toLowerCase().includes(benchSearch.toLowerCase())
   )
-
-  const needsDocker = DOCKER_BENCHMARKS.some(b => selectedBenchmark.includes(b))
 
   function getQuantization(modelId: string): string {
     const m = connection.metadata?.[modelId]
@@ -359,7 +355,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
                         <label key={b.name} className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${selectedBatchBenches.includes(b.name) ? 'bg-primary/20 text-primary' : 'hover:bg-accent/10'}`} title={info?.description || b.label}>
                           <input type="checkbox" checked={selectedBatchBenches.includes(b.name)} onChange={e => { if (e.target.checked) setSelectedBatchBenches(prev => [...prev, b.name]); else setSelectedBatchBenches(prev => prev.filter(x => x !== b.name)) }} className="rounded" />
                           <span className="truncate">{b.label}</span>
-                          {info?.docker && <span className="text-[10px] px-1 py-0.5 rounded bg-blue-900/30 text-blue-300 border border-blue-700/40 leading-none">Docker</span>}
+                          {info?.description && <span className="truncate text-muted-foreground">{info.description}</span>}
                         </label>
                       )
                     })}
@@ -374,13 +370,6 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
             <input type="checkbox" checked={quickTest} onChange={e => setQuickTest(e.target.checked)} className="rounded" />
             Quick test (5 questions per benchmark)
           </label>
-
-          {/* Docker warning */}
-          {mode === 'single' && needsDocker && (
-            <div className="text-xs px-3 py-2 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30 flex items-center gap-2">
-              <span>⚠️</span> This benchmark requires Docker
-            </div>
-          )}
 
           {/* Advanced toggle */}
           <div className="border-t border-border pt-3">

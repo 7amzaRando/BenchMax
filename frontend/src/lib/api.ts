@@ -18,7 +18,6 @@ export interface ConnectResult {
   choices: string[];
   selected: string | null;
   metadata: Record<string, any>;
-  docker_status: string;
 }
 
 export function connectLMStudio(apiUrl: string, apiKey: string = '') {
@@ -30,45 +29,6 @@ export function connectLMStudio(apiUrl: string, apiKey: string = '') {
 
 export function getConnectionMetadata() {
   return fetchJson<{ providers: Record<string, any>; benchmarks: [string, string][]; bench_names: string[]; context_length?: number; max_context_length?: number }>('/connect/metadata');
-}
-
-export function getDockerStatus() {
-  return fetchJson<{ available: boolean; images: Record<string, boolean>; built_count: number }>('/docker/status');
-}
-
-export function buildDockerImages() {
-  return fetchJson<{ message: string }>('/docker/build', { method: 'POST' });
-}
-
-export type BuildEventType = 'log' | 'image' | 'error' | 'done' | 'summary';
-
-export interface BuildEvent {
-  type: BuildEventType;
-  data: any;
-}
-
-export function connectBuildStream(
-  onEvent: (evt: BuildEvent) => void,
-  onDone: () => void,
-): () => void {
-  const es = new EventSource('/api/docker/build/stream');
-
-  es.addEventListener('log', (e: MessageEvent) => onEvent({ type: 'log', data: JSON.parse(e.data) }));
-  es.addEventListener('image', (e: MessageEvent) => onEvent({ type: 'image', data: JSON.parse(e.data) }));
-  es.addEventListener('error', (e: MessageEvent) => onEvent({ type: 'error', data: JSON.parse(e.data) }));
-  es.addEventListener('done', (e: MessageEvent) => {
-    onEvent({ type: 'done', data: JSON.parse(e.data) });
-    es.close();
-    onDone();
-  });
-  es.addEventListener('summary', (e: MessageEvent) => onEvent({ type: 'summary', data: JSON.parse(e.data) }));
-
-  es.onerror = () => {
-    es.close();
-    onDone();
-  };
-
-  return () => es.close();
 }
 
 export interface DatasetEntry {
@@ -252,6 +212,7 @@ export interface HistoryEntry {
   'Avg TPS': string;
   'Avg TTFT': string;
   'Avg Tokens': number;
+  'Total Tokens': number;
   Duration?: string;
   Batch?: string;
   Created: string;
@@ -468,6 +429,10 @@ export interface StatsData {
     benchmark: string;
     accuracy: number;
   };
+}
+
+export function downloadRuntimes() {
+  return fetchJson<{ status: string }>('/runtimes/download', { method: 'POST' });
 }
 
 export function getStats() {

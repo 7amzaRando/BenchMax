@@ -19,7 +19,7 @@ from backend.operations import (
     save_lb_api_key, load_lb_settings, sync_to_online_leaderboard,
     poll, get_batch_start_time, get_active_batch_id, _batch_queue,
     start_model_queue, get_model_queue_state, halt_model_queue, skip_current_model,
-    start_build, get_build_state, get_stats,
+    start_build, get_build_state, get_stats, download_runtimes,
 )
 from backend import operations
 from backend.config import BENCHMARKS, BENCH_NAMES, PROVIDER_PRESETS, DATASETS, ROOT
@@ -634,6 +634,15 @@ def api_providers():
 def api_benchmarks():
     benchmarks = [{"label": b[0], "name": b[1]} for b in BENCHMARKS]
     return {"benchmarks": benchmarks}
+
+@router.post("/runtimes/download")
+def api_download_runtimes():
+    try:
+        status = download_runtimes()
+        return {"status": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/stats")
 def api_get_stats():

@@ -4,6 +4,13 @@ from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.benchmarks.ifeval_official import instructions_registry
 
+import nltk
+for _pkg in ["punkt", "punkt_tab"]:
+    try:
+        nltk.data.find(f"tokenizers/{_pkg}")
+    except LookupError:
+        nltk.download(_pkg, quiet=True)
+
 logger = logging.getLogger(__name__)
 
 

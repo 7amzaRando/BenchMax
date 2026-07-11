@@ -34,46 +34,23 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
   const { toast } = useToast()
   const [connecting, setConnecting] = useState(false)
   const [connectError, setConnectError] = useState('')
-  const [dockerAvailable, setDockerAvailable] = useState(false)
-  const [dockerBuilding, setDockerBuilding] = useState(false)
-  const [dockerBuildDone, setDockerBuildDone] = useState(false)
-  const [dockerBuildMessage, setDockerBuildMessage] = useState('')
-  const [dockerBuildLog, setDockerBuildLog] = useState('')
-  const [dockerNotifs, setDockerNotifs] = useState<{ id: number; text: string; variant: 'ok' | 'skip' | 'failed' }[]>([])
-  const notifId = useRef(0)
   const hfTokenRef = useRef('')
-  const buildCleanupRef = useRef<(() => void) | null>(null)
-
-  const addNotif = useCallback((text: string, variant: 'ok' | 'skip' | 'failed') => {
-    const id = ++notifId.current
-    setDockerNotifs(prev => [...prev.slice(-4), { id, text, variant }])
-    setTimeout(() => setDockerNotifs(prev => prev.filter(n => n.id !== id)), 5000)
-  }, [])
   const [datasets, setDatasets] = useState<api.DatasetEntry[]>([])
   const [datasetsLoading, setDatasetsLoading] = useState(false)
   const [installingAll, setInstallingAll] = useState(false)
   const [installingSingle, setInstallingSingle] = useState<Set<string>>(new Set())
   const [hfToken, setHfToken] = useState('')
   const [exitMsg, setExitMsg] = useState('')
+  const [runtimesLoading, setRuntimesLoading] = useState(false)
   const mountedRef = useRef(true)
 
   useEffect(() => {
     return () => {
       mountedRef.current = false
-      if (buildCleanupRef.current) {
-        buildCleanupRef.current()
-      }
     }
   }, [])
 
   useEffect(() => {
-    api.getDockerStatus().then(r => {
-      if (!mountedRef.current) return
-      setDockerAvailable(r.available)
-      if (r.built_count > 0) setDockerBuildDone(true)
-    }).catch(() => {
-      if (mountedRef.current) setDockerAvailable(false)
-    })
     api.getHfToken().then(r => {
       if (mountedRef.current) setHfToken(r.token ?? '')
     }).catch(() => console.warn('Failed to load HF token'))
@@ -84,12 +61,6 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
     setConnectError('')
     try {
       await onConnect()
-      api.getDockerStatus().then(r => {
-        if (mountedRef.current) {
-          setDockerAvailable(r.available)
-          if (r.built_count > 0) setDockerBuildDone(true)
-        }
-      }).catch(() => console.warn('Failed to check Docker status'))
     } catch (e: any) {
       let msg = e?.message ?? 'Connection failed'
       if (!msg.startsWith('❌')) msg = '❌ ' + msg
@@ -124,88 +95,6 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
     }
   }
 
-  const [dockerShowLog, setDockerShowLog] = useState(false)
-
-  async function handleBuildDocker() {
-    if (dockerBuildDone) {
-      if (!dockerBuildLog) setDockerBuildLog('All images already built. Click again to show/hide log.')
-      setDockerShowLog(prev => !prev)
-      return
-    }
-    setDockerBuilding(true)
-    setDockerBuildLog('')
-    setDockerBuildMessage('')
-    setDockerNotifs([])
-    setDockerShowLog(true)
-    try {
-      const res = await api.buildDockerImages()
-      if (res.message === 'Build already in progress') {
-        setDockerBuildLog('Build already in progress from another tab.')
-        setDockerBuilding(false)
-        return
-      }
-      buildCleanupRef.current = api.connectBuildStream(
-        (evt) => {
-          if (!mountedRef.current) return
-          if (evt.type === 'log') {
-            setDockerBuildLog(prev => prev + evt.data.text + '\n')
-          } else if (evt.type === 'image') {
-            const txt = evt.data.text ?? ''
-            if (txt.startsWith('[OK]')) {
-              const img = txt.replace('[OK]', '').trim().split(' ')[0]
-              addNotif(`Built ${img}`, 'ok')
-              setDockerBuildMessage(`✓ Built ${img}`)
-              toast({ title: "Docker Build", description: `Built ${img} successfully`, variant: "success" })
-            } else if (txt.startsWith('[SKIP]')) {
-              const img = txt.replace('[SKIP]', '').trim().split(' ')[0]
-              addNotif(`${img} already exists`, 'skip')
-              setDockerBuildMessage(`${img} already exists`)
-            }
-          } else if (evt.type === 'error') {
-            addNotif('Build failed for an image', 'failed')
-            setDockerBuildMessage('✗ Build failed for an image — check the log')
-            toast({ title: "Docker Build Failed", description: "Check log for details", variant: "error" })
-          } else if (evt.type === 'done') {
-            api.getDockerStatus().then(s => {
-              if (!mountedRef.current) return
-              setDockerAvailable(s.available)
-              if (s.built_count > 0) setDockerBuildDone(true)
-            })
-            setDockerBuilding(false)
-            if (buildCleanupRef.current) {
-              buildCleanupRef.current()
-              buildCleanupRef.current = null
-            }
-            const code = evt.data?.exit_code
-            if (code === 0) {
-              setDockerBuildMessage('✓ All Docker images built successfully')
-              toast({ title: "Docker Build Complete", description: "All images built successfully", variant: "success" })
-            } else if (code === undefined || code === null) {
-              setDockerBuildMessage('✓ Build complete')
-              toast({ title: "Docker Build Complete", description: "Build complete", variant: "success" })
-            } else {
-              setDockerBuildMessage(`✗ Build finished with errors (exit code ${code})`)
-              toast({ title: "Docker Build Finished", description: `Finished with code ${code}`, variant: "warning" })
-            }
-          }
-        },
-        () => {
-          if (mountedRef.current) {
-            setDockerBuilding(false)
-            setDockerBuildDone(true)
-          }
-          buildCleanupRef.current = null
-        },
-      )
-    } catch (e: any) {
-      if (mountedRef.current) {
-        setDockerBuildLog(e?.message ?? 'Build failed')
-        setDockerBuilding(false)
-      }
-      buildCleanupRef.current = null
-    }
-  }
-
   function onProviderChange(label: string) {
     const p = PROVIDERS.find(x => x.label === label)
     if (!p) return
@@ -214,6 +103,18 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
       apiUrl: p.url,
       apiKey: p.needsKey ? prev.apiKey : '',
     }))
+  }
+
+  async function handleDownloadRuntimes() {
+    setRuntimesLoading(true)
+    try {
+      const result = await api.downloadRuntimes()
+      toast({ title: 'Runtimes', description: result.status })
+    } catch (e: any) {
+      toast({ title: 'Runtimes Error', description: e?.message ?? 'Failed', variant: 'error' })
+    } finally {
+      if (mountedRef.current) setRuntimesLoading(false)
+    }
   }
 
   async function handleExit() {
@@ -293,56 +194,6 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
             {connectError && <div className="text-sm px-3 py-2 rounded-md bg-red-500/10 text-red-600 dark:text-red-300 border border-red-500/50">{connectError}</div>}
             {!connection.connected && !connectError && !connecting && <span className="text-sm text-muted-foreground">Not connected</span>}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle>Docker</CardTitle>
-          <CardDescription>Container runtime for code benchmarks</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Badge variant={dockerAvailable ? 'default' : 'destructive'}>
-              {dockerAvailable ? 'Available' : 'Unavailable'}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBuildDocker}
-              disabled={dockerBuilding}
-            >
-              {dockerBuilding ? 'Building...' : 'Build Local Images'}
-            </Button>
-          </div>
-          {dockerNotifs.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {dockerNotifs.map(n => (
-                <span key={n.id} className={
-                  'text-xs px-2 py-1 rounded-full border ' +
-                  (n.variant === 'ok' ? 'bg-emerald-900/40 text-emerald-300 border-emerald-700' :
-                   n.variant === 'skip' ? 'bg-amber-900/40 text-amber-300 border-amber-700' :
-                   'bg-red-900/40 text-red-300 border-red-700')
-                }>
-                  {n.variant === 'ok' ? '\u2713 ' : n.variant === 'skip' ? '\u2192 ' : '\u2717 '}
-                  {n.text}
-                </span>
-              ))}
-            </div>
-          )}
-          {dockerBuildMessage && (
-            <div className={
-              'text-sm px-3 py-2 rounded-md border ' +
-              (dockerBuildMessage.startsWith('✓')
-                ? 'bg-emerald-900/30 text-emerald-300 border-emerald-800 dark:text-emerald-300 text-emerald-700 dark:border-emerald-800 border-emerald-300'
-                : 'bg-red-900/30 text-red-300 border-red-800 dark:text-red-300 text-red-700 dark:border-red-800 border-red-300')
-            }>
-              {dockerBuildMessage}
-            </div>
-          )}
-          {dockerShowLog && (
-            <pre className="text-xs text-muted-foreground bg-black/20 p-2 rounded max-h-48 overflow-y-auto whitespace-pre-wrap border border-border leading-relaxed">{dockerBuildLog || '(no log)'}</pre>
-          )}
         </CardContent>
       </Card>
 
@@ -440,6 +291,18 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
           {!datasetsLoading && datasets.length === 0 && (
             <p className="text-sm text-muted-foreground">Click "Refresh Status" to view dataset status.</p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle>Runtimes</CardTitle>
+          <CardDescription>Download portable runtimes for Aider Polyglot (Go, Rust, GCC, Java, Node)</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-3">
+          <Button variant="outline" onClick={handleDownloadRuntimes} disabled={runtimesLoading}>
+            {runtimesLoading ? 'Downloading...' : 'Download Runtimes'}
+          </Button>
         </CardContent>
       </Card>
 
