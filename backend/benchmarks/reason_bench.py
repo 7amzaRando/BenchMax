@@ -26,6 +26,9 @@ class BenchMaxReasonBenchmark(BaseBenchmark):
             raise FileNotFoundError("Neither full nor mini dataset found for BenchMax Reason")
         return self._load_json_cached(self.dataset_path)
 
+    def _score_exact(self, response: str, answer: str) -> bool:
+        return answer.strip().lower() in response.lower()
+
     def _score_free_form(self, response: str, answer: str) -> bool:
         if not answer.strip():
             return False
@@ -33,7 +36,13 @@ class BenchMaxReasonBenchmark(BaseBenchmark):
         if not keywords:
             return False
         resp_lower = response.lower()
-        return sum(1 for k in keywords if k in resp_lower) >= len(keywords) * 0.5
+        return all(k in resp_lower for k in keywords)
+
+    def _get_scorer(self, qtype: str):
+        return {
+            "free_form": self._score_free_form,
+            "exact": self._score_exact,
+        }.get(qtype, self._score_free_form)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         gen = await self.client.generate_completion(
@@ -45,7 +54,9 @@ class BenchMaxReasonBenchmark(BaseBenchmark):
             model_name=model_name,
         )
         raw = gen.get("raw_response", "")
-        correct = self._score_free_form(raw, sample.get("answer", ""))
+        qtype = sample.get("type", "free_form")
+        scorer = self._get_scorer(qtype)
+        correct = scorer(raw, sample.get("answer", ""))
 
         return {
             "prompt": sample["prompt"],

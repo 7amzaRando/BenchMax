@@ -2,352 +2,351 @@
   {
     "task_id": "lite_code_01",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `heavy_light_decompose` that takes a tree represented by `n` nodes (0-indexed), a list of undirected `edges` (length n-1), a list `values` of node weights, and a list `queries` where each query is either (\"path_max\", u, v) to query the maximum node weight on the path from u to v, or (\"update\", u, val) to set node u's weight to val. Implement Heavy-Light Decomposition with a segment tree over the base array and return a list of results for each path_max query.",
-    "answer": "def heavy_light_decompose(n, edges, values, queries)"
+    "type": "mcq",
+    "prompt": "You need to answer range minimum queries on a static array of 10^7 elements with no updates between queries. Which approach achieves the optimal combination of preprocessing time, query time, and memory usage?\n\nA. Sparse table: O(n log n) preprocessing, O(1) query, O(n log n) memory\nB. Segment tree: O(n) preprocessing, O(log n) query, O(4n) memory\nC. Fenwick tree: O(n) preprocessing, O(log n) query, O(n) memory\nD. Cartesian tree with +-1 RMQ and LCA: O(n) preprocessing, O(1) query, O(4n) memory\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_02",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `distinct_substrings` that takes a string `s` consisting of lowercase English letters and returns the number of distinct substrings of `s`. Build a suffix automaton (SAM) where each state has a `link`, `length`, and `next` dict. Process characters one by one, extending the automaton and counting distinct substrings as the sum over all states of (state.length - state.link.length).",
-    "answer": "def distinct_substrings(s)"
+    "type": "mcq",
+    "prompt": "For finding a maximum matching in a bipartite graph with |V| vertices and |E| edges, which algorithm has the best worst-case time complexity?\n\nA. Hopcroft-Karp: O(|E| sqrt(|V|))\nB. Dinic on unit-capacity flow network: O(|E| sqrt(|V|))\nC. Hungarian algorithm: O(|V|^3)\nD. Ford-Fulkerson with DFS: O(|E| * max_flow)\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_03",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `schedule_stages` that takes an integer `stages`, an integer `resources`, a list `costs` of length stages (resource cost per stage), a list `profits` of length stages (profit per stage), and an integer `capacity` (total resources available). Each stage requires `costs[i]` resources and yields `profits[i]` profit, but stages must be scheduled in order and each stage can be run at most once. Use multi-stage DP with a rolling array (O(stages × capacity)) to return the maximum total profit achievable.",
-    "answer": "def schedule_stages(stages, resources, costs, profits, capacity)"
+    "type": "mcq",
+    "prompt": "You are given a directed graph with both positive and negative edge weights but no negative cycles. Which single-source shortest-path algorithm should you use?\n\nA. Dijkstra with Fibonacci heap: O(|E| + |V| log |V|)\nB. Bellman-Ford: O(|V| * |E|)\nC. Floyd-Warshall: O(|V|^3)\nD. Dial algorithm (bounded Dijkstra): O(|E| + |V| * max_weight)\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
   },
   {
     "task_id": "lite_code_04",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `lazy_segment_tree` that takes an integer `n` (initial array length, all zeros), and a list `operations`. Each operation is either (\"range_add\", l, r, val) to add val to all elements in [l, r), or (\"range_sum\", l, r) to return the sum of elements in [l, r). Implement a segment tree with lazy propagation using two arrays (`tree` and `lazy`), supporting point updates from range_add and range queries in O(log n) each. Return a list of results for each range_sum operation.",
-    "answer": "def lazy_segment_tree(n, operations)"
+    "type": "mcq",
+    "prompt": "Given a suffix array of a string of length n, which algorithm computes the longest common prefix (LCP) array in O(n) time?\n\nA. Kasai algorithm\nB. Manber-Myers LCP computation\nC. Ukkonen online suffix tree construction\nD. Z-algorithm on the reversed suffix array\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_05",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `dinic_max_flow` that takes an integer `n` (number of nodes), a list `edges` where each edge is (u, v, cap), an integer `source`, and an integer `sink`. Implement Dinic's algorithm: build adjacency with reverse edges, run BFS to compute level graph, then DFS (using iterators to avoid re-traversal) to send blocking flow. Return the maximum flow value as an integer.",
-    "answer": "def dinic_max_flow(n, edges, source, sink)"
+    "type": "mcq",
+    "prompt": "You need to maintain a dynamic set of intervals and answer stabbing queries: given a point x, find all intervals that contain x. Which data structure achieves O(log n + k) query time (k = number of reported intervals) and O(n log n) build time?\n\nA. Interval tree (augmented BST storing max endpoint in each subtree)\nB. Segment tree with interval lists stored per node\nC. Binary indexed tree over coordinate-compressed endpoints\nD. Sparse table of interval endpoints\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_06",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `z_match` that takes two strings `text` and `pattern`. Implement the Z-algorithm: construct the combined string P + '$' + T, compute the Z-array where Z[i] is the length of the longest common prefix between the string and its suffix starting at i. Then find all starting indices in `text` where `pattern` occurs. Return a list of start positions (0-indexed) in increasing order.",
-    "answer": "def z_match(text, pattern)"
+    "type": "mcq",
+    "prompt": "Which of the following algorithms constructs the suffix array of a string of length n in O(n) worst-case time?\n\nA. SA-IS (Suffix Array Induced Sorting)\nB. Prefix doubling algorithm\nC. Manber-Myers algorithm with radix sort\nD. Difference cover modulo 3 (DC3) algorithm\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_07",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `implicit_treap` that takes a list `initial` and a list `operations`. Each operation is either (\"reverse\", l, r) to reverse the subarray [l, r], or (\"sum\", l, r) to compute the sum of subarray [l, r]. Implement an implicit treap (randomized BST) where each node stores value, subtree sum, size, and a reverse flag. Use merge and split operations with lazy propagation. Return a list of results for each sum operation.",
-    "answer": "def implicit_treap(initial, operations)"
+    "type": "mcq",
+    "prompt": "Which of the following suffix array construction algorithms is NOT asymptotically optimal (does NOT achieve O(n) time)?\n\nA. SA-IS (Suffix Array Induced Sorting)\nB. DC3 (Difference Cover Modulo 3)\nC. Prefix doubling method\nD. Kaerkkaeinen-Sanders algorithm\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "lite_code_08",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `scc_tarjan` that takes an integer `n` and a list of directed `edges` (u, v). Implement Tarjan's strongly connected components algorithm using a 1-indexed stack, discovy indices, low-link values, and an on-stack boolean array. Perform DFS from each unvisited node. Return a list of SCCs, where each SCC is a list of node indices, sorted by their first discovy order.",
-    "answer": "def scc_tarjan(n, edges)"
+    "type": "mcq",
+    "prompt": "Regarding the suffix automaton of a string of length n over an alphabet of size sigma, which statement is correct?\n\nA. The online construction runs in O(n) amortized time producing at most 2n - 1 states\nB. The number of transitions is bounded by n * sigma and construction is O(n * sigma)\nC. The suffix automaton has exactly n + 1 states for any string\nD. The suffix link tree of the automaton is isomorphic to the suffix tree of the same string\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_code_09",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `min_cost_flow` that takes an integer `n` (nodes), a list `edges` where each edge is (u, v, capacity, cost), an integer `source`, an integer `sink`, and an integer `flow_needed`. Implement the successive shortest augmenting path algorithm for min-cost max-flow. Use potentials (Johnson's) and Dijkstra with a priority queue to find the cheapest augmenting path each iteration, updating the flow along parent edges. Return the minimum cost to send `flow_needed` units, or -1 if impossible.",
-    "answer": "def min_cost_flow(n, edges, source, sink, flow_needed)"
+    "type": "mcq",
+    "prompt": "For computing the longest common subsequence (LCS) of two strings A (length n) and B (length m) with n >= m, which approach achieves the best space complexity without increasing asymptotic time beyond O(nm)?\n\nA. Two-row DP: O(nm) time, O(m) space\nB. Hirschberg divide-and-conquer: O(nm) time, O(min(n,m)) space\nC. Hunt-Szymanski: O((n+m) log sigma) expected time\nD. Four-Russians bit-parallel: O(nm / w) time with word-level parallelism\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
   },
   {
     "task_id": "lite_code_10",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `max_line_value` that takes a list `lines` where each line is (m, b) representing y = m*x + b, and a list `x_queries` of integers. For each x in x_queries, find the maximum value of m*x + b over all lines. Implement the Li Chao segment tree (convex hull trick) where each node of a segment tree over the x-range stores the dominant line at its segment midpoint. Add lines recursively and query in O(log R) per query. Return a list of maximum values.",
-    "answer": "def max_line_value(lines, x_queries)"
+    "type": "mcq",
+    "prompt": "Which statement about the relationship between the suffix tree and the suffix automaton of the same string is FALSE?\n\nA. The suffix automaton of a string is isomorphic to the suffix tree of the reversed string\nB. Both the suffix tree and suffix automaton can be built in O(n) time\nC. The suffix tree can be constructed from the suffix array and LCP array in O(n) time\nD. The suffix automaton always has strictly fewer edges than the suffix tree for the same string\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "D"
   },
   {
     "task_id": "lite_code_11",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `aho_corasick` that takes a string `text`, a list `patterns` of strings, and returns a dict mapping each pattern to its list of start positions (0-indexed) in `text`. Build the Aho-Corasick automaton: construct a trie of patterns with failure links (BFS), then process the text character by character, traversing the automaton and following output links to record all matches at each position.",
-    "answer": "def aho_corasick(text, patterns)"
+    "type": "mcq",
+    "prompt": "In the context of the traveling salesman problem on a complete undirected graph satisfying the triangle inequality, which statement is correct?\n\nA. Christofides algorithm provides a 3/2-approximation in polynomial time\nB. The nearest-neighbor heuristic guarantees a 2-approximation in O(n^2) time\nC. The minimum spanning tree heuristic (double MST) gives a 2-approximation\nD. Both A and C are correct\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "D"
   },
   {
     "task_id": "lite_code_12",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `manacher` that takes a string `s` and returns the number of all palindromic substrings (including single characters). Implement Manacher's algorithm: build a transformed string with separators (e.g., '|' between characters), maintain center and rightmost palindrome boundary, and compute the palindrome radius array in O(n). Use the radii to count distinct palindromic substrings efficiently.",
-    "answer": "def manacher(s)"
+    "type": "mcq",
+    "prompt": "For computing strongly connected components (SCCs) of a directed graph with |V| vertices and |E| edges, which is true?\n\nA. Kosaraju algorithm runs in O(|V| + |E|) using two DFS passes on G and its transpose\nB. Tarjan algorithm runs in O(|V| + |E|) using a single DFS pass with low-link values\nC. Both A and B are correct\nD. The optimal worst-case SCC decomposition requires O(|E| log |V|)\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "lite_code_13",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `crt_garner` that takes two lists of equal length: `remainders` and `moduli`, representing the system x ≡ remainders[i] (mod moduli[i]) where all moduli are pairwise coprime. Implement Garner's algorithm: compute the solution as x = Σ (r[i] * M[i] * inv(M[i] mod m[i])) mod M, where M is the product of all moduli. Use extended Euclidean algorithm for modular inverses. Return the smallest non-negative solution as an integer.",
-    "answer": "def crt_garner(remainders, moduli)"
+    "type": "mcq",
+    "prompt": "You need to find the k-th order statistic in an unsorted array of n elements. Which algorithm provides O(n) deterministic worst-case time?\n\nA. Quickselect with random pivot: O(n) expected, O(n^2) worst case\nB. Median of medians (BFPRT algorithm): O(n) worst case\nC. Building a heap and extracting k times: O(n + k log n)\nD. Introselect: O(n) average with introsort fallback\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
   },
   {
     "task_id": "lite_code_14",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `longest_repeating` that takes a string `s` and returns the longest substring that appears at least twice without overlapping. Build a suffix array using the doubling algorithm (O(n log n)) and compute the LCP (longest common prefix) array using Kasai's algorithm (O(n)). Scan the LCP array for the maximum value where the corresponding suffixes do not overlap. Return the substring, or empty string if none exists.",
-    "answer": "def longest_repeating(s)"
+    "type": "mcq",
+    "prompt": "In the context of integer multiplication, which correctly describes the asymptotic complexity of the state-of-the-art algorithm?\n\nA. Schoenhage-Strassen: O(n log n log log n)\nB. Karatsuba: O(n^1.585)\nC. FFT-based multiplication: O(n log n) for practical n\nD. Harvey-Hoeven (2022): O(n log n) for n-bit integers\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "D"
   },
   {
     "task_id": "lite_code_15",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `blossom_match` that takes an integer `n` and an undirected edge list `edges`. Implement Edmonds' Blossom algorithm for maximum matching in general (non-bipartite) graphs. Use a BFS to find augmenting paths, contracting odd cycles (blossoms) into supernodes when encountered, and lifting the match back after augmentation. Return the maximum matching size as an integer.",
-    "answer": "def blossom_match(n, edges)"
+    "type": "mcq",
+    "prompt": "For computing the convex hull of n points in the plane, which algorithm achieves optimal O(n log n) worst-case time using only O(1) extra space beyond the input?\n\nA. Graham scan with stack: O(n log n) time, O(n) extra stack space\nB. Jarvis march (gift wrapping): O(nh) time where h = hull size\nC. Monotone chain (Andrew algorithm): O(n log n) time, O(1) extra space after sorting\nD. Chan algorithm: O(n log h) time, O(n) extra space\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "lite_knowledge_01",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "The Feigenbaum constant δ ≈ 4.669201609 appears as a universal ratio in which of the following mathematical phenomena?\nA. The ratio of successive intervals between bifurcation points in the logistic map period-doubling cascade\nB. The Hausdorff dimension of the boundary of the Mandelbrot set\nC. The best possible constant in the Hardy-Littlewood prime k-tuple conjecture\nD. The limiting distribution of eigenvalues in the Gaussian Unitary Ensemble\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "D"
+    "prompt": "In the AdS/CFT correspondence, the holographic entanglement entropy of a spatial region A on the CFT boundary is computed in the bulk AdS spacetime as:\n\nA. The area of the minimal surface homologous to A, divided by 4G_N\nB. The volume enclosed by the Ryu-Takayanagi surface anchored at partial A\nC. The expectation value of the Wilson loop around partial A\nD. The two-point function of twist operators inserted at the boundary of A\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_knowledge_02",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "What is the fundamental group π₁ of the real projective plane RP²?\nA. The trivial group containing only the identity\nB. The infinite cyclic group ℤ\nC. The cyclic group of order 2, ℤ₂\nD. The free product ℤ₂ * ℤ₂\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "C"
+    "prompt": "In homological algebra, the second cohomology group H^2(G, A) of a group G with coefficients in an abelian group A naturally classifies:\n\nA. Group extensions of G by A\nB. Central extensions of A by G\nC. Group representations G -> Aut(A)\nD. Automorphisms of A that commute with the G-action\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_knowledge_03",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the Lighthill-Whitham-Richards model of traffic flow, the Rankine-Hugoniot jump condition governs which aspect of the solution?\nA. The concavity of the fundamental diagram relating flow to density\nB. The propagation speed of a shock wave across a discontinuity in density\nC. The merge ratio at on-ramps under capacity constraints\nD. The softening of shocks through viscous regularization\n\nAnswer with the single letter A, B, C, or D.",
+    "prompt": "The canonical divisor K_X of a smooth projective algebraic curve X of genus g over an algebraically closed field has degree:\n\nA. g\nB. 2g - 2\nC. 2g\nD. g - 1\n\nAnswer with the single letter A, B, C, or D.",
     "answer": "B"
   },
   {
     "task_id": "lite_knowledge_04",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "The Kasner metric ds² = −dt² + Σ t^{2p_i} dx_i², where Σ p_i = 1 and Σ p_i² = 1, is an exact solution to Einstein's field equations in vacuum that describes which type of spacetime?\nA. A static spherically symmetric black hole geometry\nB. An isotropic homogeneous expanding universe\nC. An anisotropic homogeneous vacuum cosmology\nD. A cylindrical gravitational wave propagating at light speed\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "C"
+    "prompt": "The central charge c of the 2D Ising model at its critical point (the simplest non-trivial minimal model M(3,4)) equals:\n\nA. 1/2\nB. 1\nC. 0\nD. -2/5\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_knowledge_05",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which of the following statements correctly describes a quantum spin liquid (QSL) phase in condensed matter physics?\nA. It exhibits long-range ferromagnetic order at temperatures below its Curie point\nB. It hosts fractionalized spinon excitations and lacks magnetic long-range order even at absolute zero\nC. It is a superfluid phase of helium-3 that emerges at millikelvin temperatures\nD. It refers exclusively to one-dimensional spin chain systems with exact Bethe ansatz solutions\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "B"
+    "prompt": "The complex K-theory ring K^0(S^2) of the 2-sphere is isomorphic to which ring?\n\nA. Z\nB. Z oplus Z\nC. Z[x]/(x^2) where x = [H] - 1 has degree 1\nD. Z/2Z\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "lite_knowledge_06",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In homological algebra, what is the abelian group Ext¹(ℤ/2ℤ, ℤ/2ℤ) isomorphic to?\nA. ℤ/2ℤ\nB. The trivial group 0\nC. The infinite cyclic group ℤ\nD. ℤ/4ℤ\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "A"
+    "prompt": "The Shannon capacity of the 5-cycle graph C_5, a fundamental quantity in information theory, equals:\n\nA. log_2(5)\nB. sqrt(5)\nC. 2\nD. log_2(3)\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "B"
   },
   {
     "task_id": "lite_knowledge_07",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "What is the oxidation state of osmium in the compound K₂[OsO₂(OH)₄]?\nA. +4\nB. +2\nC. +8\nD. +6\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "D"
+    "prompt": "In loop quantum gravity, the area operator acting on spin network states has discrete eigenvalues proportional to:\n\nA. l_P^2 * sqrt(j(j+1)) where j is a half-integer\nB. l_P^2 * j^2 where j is an integer\nC. l_P^2 * j where j is a half-integer\nD. l_P^2 * j(j+1) where j is a half-integer\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_knowledge_08",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "The Zermelo navigation problem in differential geometry and optimal control seeks to determine:\nA. The shortest geodesic path between two points on a Riemannian manifold\nB. The time-minimizing path for a vessel moving at constant speed in a flowing medium\nC. The optimal rocket trajectory in a central gravitational field\nD. The brachistochrone curve under uniform gravity with friction\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "B"
+    "prompt": "The Kolmogorov-Sinai entropy of the Bernoulli shift B(1/2, 1/2) (independent fair coin flips) equals:\n\nA. 0\nB. 1\nC. log(2)\nD. infinity\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "lite_knowledge_09",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In information theory, the Landauer bound expresses which fundamental physical limit?\nA. The maximum rate of reliable communication over a noisy channel (Shannon limit)\nB. The minimum energy required to erase one bit of information at a given temperature\nC. The maximum compression ratio achievable by any lossless encoding scheme\nD. The minimum probability of error for binary hypothesis testing under Neyman-Pearson\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "B"
+    "prompt": "In the theory of minimal surfaces, the Weierstrass-Enneper parameterization represents a minimal surface in R^3 using:\n\nA. A pair of holomorphic functions (f, g) where the first fundamental form is derived from |f|^2 (1 + |g|^2)^2\nB. A single harmonic function whose level sets are geodesics\nC. The graph of a solution to the Monge-Ampere equation det(Hess(u)) = 0\nD. The exponential map from the unit disk with the Poincare metric\n\nAnswer with the single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "lite_knowledge_10",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Through analytic continuation of the Riemann zeta function, what is the value of ζ(−1)?\nA. −1/12\nB. −1/2\nC. 0\nD. 1\n\nAnswer with the single letter A, B, C, or D.",
+    "prompt": "In number theory, the Artin reciprocity law (class field theory) provides an explicit isomorphism between:\n\nA. The Galois group of an abelian extension L/K and the idele class group of K modulo norms\nB. The absolute Galois group of Q and the profinite completion of Z\nC. The Brauer group of a local field and Q/Z\nD. The ideal class group and the unit group of a number field\n\nAnswer with the single letter A, B, C, or D.",
     "answer": "A"
   },
   {
     "task_id": "lite_math_01",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the triple integral ∭_V x dV where V is the tetrahedron bounded by the coordinate planes x=0, y=0, z=0 and the plane x + y + z = 1. Give your answer as a simplified fraction.",
-    "answer": "1/24"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer solution x to the system of congruences:\nx = 1 (mod 2), x = 2 (mod 3), x = 3 (mod 5), x = 4 (mod 7), x = 5 (mod 11).\nUse the Chinese Remainder Theorem. Give your answer as a single integer.",
+    "answer": "1523"
   },
   {
     "task_id": "lite_math_02",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Compute 7^1000 modulo 13 using Fermat's little theorem. Give your answer as a single integer between 0 and 12.",
-    "answer": "9"
+    "type": "exact",
+    "prompt": "Determine the number of distinct real roots of the polynomial p(x) = x^5 - 5x + 2. Use calculus to find critical points and analyze sign changes. Give your answer as a single integer.",
+    "answer": "3"
   },
   {
     "task_id": "lite_math_03",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Use implicit differentiation to compute the slope of the tangent line to the elliptic curve y² = x³ − x + 1 at the point (1, 1). Give your answer as a simplified fraction.",
-    "answer": "1/2"
+    "type": "exact",
+    "prompt": "Evaluate the 2024th Fibonacci number modulo 5. Recall: F_0 = 0, F_1 = 1, F_{n+2} = F_{n+1} + F_n. Find the Pisano period of 5, then reduce the index modulo the period. Give your answer as a single integer between 0 and 4.",
+    "answer": "3"
   },
   {
     "task_id": "lite_math_04",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the sum Σ_{k=0}^{n} C(n, k)², where C(n,k) is the binomial coefficient. Give your answer in terms of a single binomial coefficient using standard notation.",
-    "answer": "C(2n,n)"
+    "type": "exact",
+    "prompt": "How many trailing zeros does the decimal representation of 1000! have? Count factors of 5 in the prime factorization: floor(1000/5) + floor(1000/25) + floor(1000/125) + floor(1000/625). Give your answer as a single integer.",
+    "answer": "249"
   },
   {
     "task_id": "lite_math_05",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A bag contains 5 red balls, 3 blue balls, and 2 green balls. Three balls are drawn without replacement. Compute the probability that all three balls drawn are of three different colors. Give your answer as a simplified fraction.",
-    "answer": "1/4"
+    "type": "exact",
+    "prompt": "Evaluate the infinite product: prod_{n=2}^{infinity} (1 - 1/n^2). Write the telescoping product as a limit of partial products. Give your answer as a simplified fraction a/b.",
+    "answer": "1/2"
   },
   {
     "task_id": "lite_math_06",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let z = f(x,y) where x = u² − v and y = u + v². Use the multivariable chain rule to compute ∂z/∂u at (u, v) = (1, 1). Give your answer as an integer.",
-    "answer": "2"
+    "type": "exact",
+    "prompt": "How many squares (of any orientation) can be formed using the lattice points of a 10 by 10 grid? Count axis-aligned and tilted squares. The total for an n by n grid is n^2(n^2 - 1)/12. Give your answer as a single integer.",
+    "answer": "825"
   },
   {
     "task_id": "lite_math_07",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let f: ℤ⁺ → ℤ⁺ be a function defined recursively by f(0) = 1 and f(n+1) = 3·f(n) − 4 for n ≥ 0. Find a closed form for f(n) and compute f(6). Give your answer as a single integer.",
-    "answer": "365"
+    "type": "exact",
+    "prompt": "Evaluate: integral_0^pi (x sin x) / (1 + cos^2 x) dx. Use the substitution u = pi - x, then evaluate the resulting integral. Express your answer as pi^2/k where k is an integer.",
+    "answer": "pi^2/4"
   },
   {
     "task_id": "lite_math_08",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Use Lagrange multipliers to find the maximum value of f(x,y) = xy subject to the constraint x² + y² = 8. Give your answer as a single integer.",
-    "answer": "4"
+    "type": "exact",
+    "prompt": "Compute the determinant of the 5 by 5 Vandermonde matrix with entries x_i = i for i = 1,2,3,4,5. The Vandermonde determinant is prod_{1 <= i < j <= n} (x_j - x_i). Give your answer as a single integer.",
+    "answer": "288"
   },
   {
     "task_id": "lite_math_09",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer solution x to the system of congruences: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7). Use the Chinese Remainder Theorem. Give your answer as a single integer.",
-    "answer": "23"
+    "type": "exact",
+    "prompt": "Evaluate: integral_0^{infinity} x^3 / (e^x - 1) dx. This integral appears in the Stefan-Boltzmann law. It equals Gamma(4) * zeta(4). Express your answer as pi^a / b where a,b are integers.",
+    "answer": "pi^4/15"
   },
   {
     "task_id": "lite_math_10",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the infinite sum Σ_{k=1}^{∞} 1/k². Give your answer in terms of π.",
-    "answer": "π²/6"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer n such that n = 7 (mod 24) and n = 13 (mod 35). Use the Chinese Remainder Theorem. Give your answer as a single integer.",
+    "answer": "223"
   },
   {
     "task_id": "lite_math_11",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let z = 1 + i where i² = −1. Compute z^2026 in the form a + bi where a and b are integers. Give your answer as a single integer (the value of a).",
-    "answer": "-2^1013"
+    "type": "exact",
+    "prompt": "Evaluate the double integral: integral_0^1 integral_0^1 |x - y| dy dx. Split the region at y = x. Give your answer as a simplified fraction a/b.",
+    "answer": "1/3"
   },
   {
     "task_id": "lite_math_12",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Express the Laplacian ∂²z/∂x² + ∂²z/∂y² in polar coordinates (r, θ), where x = r cos θ and y = r sin θ. Give your answer as a formula involving partial derivatives of z with respect to r and θ.",
-    "answer": "laplacian polar coordinates"
+    "type": "exact",
+    "prompt": "How many 6-digit positive integers (leading digit non-zero) have all distinct digits and are divisible by 5? Count cases ending in 0 and ending in 5 separately. Give your answer as a single integer.",
+    "answer": "28560"
   },
   {
     "task_id": "lite_math_13",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many ways can 8 indistinguishable balls be placed into 3 distinct boxes if each box must contain at least 2 balls? Use stars and bars. Give your answer as a single integer.",
-    "answer": "6"
+    "type": "exact",
+    "prompt": "Consider the 100 by 100 all-ones matrix J (every entry = 1). What is the geometric multiplicity of the eigenvalue 0? Find rank(J) then the nullspace dimension. Give your answer as a single integer.",
+    "answer": "99"
   },
   {
     "task_id": "lite_math_14",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the product Γ(1/2) × Γ(3/2) where Γ is the Gamma function. Give your answer in terms of π.",
-    "answer": "π/2"
+    "type": "exact",
+    "prompt": "Evaluate the contour integral: oint_C z^2 dz where C is the unit circle |z| = 1 traversed once counterclockwise. Use Cauchy's integral theorem. Give your answer as a single integer.",
+    "answer": "0"
   },
   {
     "task_id": "lite_math_15",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Given that x + y = 5 and x³ + y³ = 65, compute x² + y². Give your answer as a single integer.",
-    "answer": "17"
+    "type": "exact",
+    "prompt": "In how many ways can a convex regular 12-gon be triangulated using non-intersecting diagonals? This is the Catalan number C_10 = (1/11) * binom(20, 10). Give your answer as a single integer.",
+    "answer": "16796"
   },
   {
     "task_id": "lite_logic_01",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Five friends (Alice, Bob, Carol, Dave, Eve) each own a distinct pet (cat, dog, fish, bird, hamster) and each lives on a distinct floor (1 = bottom to 5 = top). Rules:\n(1) The fish owner lives on floor 5.\n(2) Bob owns the dog.\n(3) Carol lives on floor 3.\n(4) Dave does not own the cat.\n(5) The hamster is owned by the person who lives immediately above the cat owner.\n(6) Alice lives on floor 2.\n(7) Eve owns the bird.\n(8) The dog owner lives immediately below the fish owner.\nWho owns the cat? Give your answer as the person's first name only.",
-    "answer": "Alice"
+    "type": "exact",
+    "prompt": "Five people A, B, C, D, E are each either a knight (always truthful) or a knave (always lying).\nA says: 'Exactly 1 of us is a knight.'\nB says: 'Exactly 2 of us are knights.'\nC says: 'Exactly 3 of us are knights.'\nD says: 'Exactly 4 of us are knights.'\nE says: 'Exactly 5 of us are knights.'\n\nHow many knights are in the group? Give your answer as a single integer.",
+    "answer": "1"
   },
   {
     "task_id": "lite_logic_02",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Solve the classic cryptarithm: SEND + MORE = MONEY, where each distinct letter represents a distinct decimal digit (0-9) and leading digits S and M are non-zero. What is the digit represented by the letter D? Give your answer as a single integer.",
-    "answer": "7"
+    "type": "exact",
+    "prompt": "You have unlimited water and two jugs: a 5-gallon jug and a 3-gallon jug. You need exactly 4 gallons in the 5-gallon jug. An operation is: fill a jug completely, empty a jug completely, or pour water from one jug into the other until the source is empty or the destination is full. Starting with both empty, what is the minimum number of operations needed? Give your answer as a single integer.",
+    "answer": "6"
   },
   {
     "task_id": "lite_logic_03",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "On an island, knights always tell the truth and knaves always lie. You meet three people, A, B, and C.\nA says: 'B is a knave and C is a knight.'\nB says: 'A and C are both knights.'\nC says: 'Exactly one of us is a knight.'\nHow many knights are among the three? Give your answer as a single integer.",
-    "answer": "0"
+    "type": "exact",
+    "prompt": "Four people A, B, C, D sit in a circle. Each is either a knight (always truthful) or a knave (always lying).\nA says: 'B is a knave.'\nB says: 'C is a knave.'\nC says: 'D is a knave.'\nD says: 'A is a knave.'\n\nHow many knights are in the group? Give your answer as a single integer.",
+    "answer": "2"
   },
   {
     "task_id": "lite_logic_04",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "What is the next term in the sequence 0, 2, 10, 30, 68, 130, ? The terms follow a cubic polynomial with integer coefficients. Give the next term as a single integer.",
-    "answer": "222"
+    "type": "exact",
+    "prompt": "You have 12 identical-looking coins. One is counterfeit and differs only in weight (either heavier or lighter, you don't know which). You have a balance scale. What is the minimum number of weighings needed to guarantee identifying the counterfeit coin AND knowing whether it is heavier or lighter? Give your answer as a single integer.",
+    "answer": "3"
   },
   {
     "task_id": "lite_logic_05",
     "category": "Logic",
-    "type": "free_form",
-    "method": "The sequence is n³ - n²: 0, 2, 10, 30, 68, 130, 222 (n = 0 to 6). The term for n = 6 is 216 - 36 = 222.",
-    "prompt": "Six events (P, Q, R, S, T, U) must each be scheduled on a distinct day from Monday to Saturday (no weekends). Constraints:\n(1) Q must be exactly two days after P.\n(2) R cannot be on Monday, Wednesday, or Friday.\n(3) S must be scheduled immediately before T.\n(4) R must be at least one day before Q.\n(5) T is on Wednesday.\n(6) U is on Saturday.\n(7) No event is on Thursday.\nWhat day is event P on? Give your answer as the day name (e.g., Monday).",
-    "answer": "Monday"
-  },
-  {
-    "task_id": "lite_logic_06",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "A ferry can carry at most 2 animals per crossing. A wolf, goat, cabbage, dog, cat, and mouse need to cross a river. The wolf will eat the goat if left unsupervised; the dog will eat the cat; the cat will eat the mouse; and the goat will eat the cabbage. The ferry operator is always present during a crossing. What is the minimum number of crossings needed to get all six across safely? Give your answer as a single integer.",
-    "answer": "9"
-  },
-  {
-    "task_id": "lite_logic_07",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "Four people (W, X, Y, Z) play a round-robin tournament where each pair plays exactly once, and no game ends in a draw. The results table shows wins for each ordered pair (row beats column). From the clues below, determine the total wins of player Z.\nClues:\n(1) W beats exactly 2 opponents.\n(2) X loses to exactly 1 opponent.\n(3) Y beats Z.\n(4) Z loses to exactly 2 opponents.\n(5) No player loses to everyone.\nHow many wins does Z have? Give your answer as a single integer.",
-    "answer": "1"
-  },
-  {
-    "task_id": "lite_logic_08",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "Consider all 4-digit numbers where the digits are strictly increasing from left to right (e.g., 1234, 3679). How many such 4-digit numbers exist? Give your answer as a single integer.",
-    "answer": "126"
-  },
-  {
-    "task_id": "lite_logic_09",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "What is the minimum number of colors needed to color the vertices of a dodecahedron graph such that no two adjacent vertices share a color? Give your answer as a single integer.",
+    "type": "exact",
+    "prompt": "You have a 7-minute hourglass and an 11-minute hourglass. You may start and flip them at any time. You need to measure exactly 15 minutes. What is the minimum number of flips required? (Starting an hourglass counts as 1 flip.)\n\nHint: 15 = 11 + 11 - 7. Start both hourglasses. Note when the 7-minute glass runs out.\n\nGive your answer as a single integer.",
     "answer": "3"
   },
   {
-    "task_id": "lite_logic_10",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "You meet four people (A, B, C, D) where each is either a knight (always truthful) or a knave (always lying).\nA says: 'B is a knave.'\nB says: 'C is a knave.'\nC says: 'D is a knave.'\nD says: 'A is a knave.'\nHow many knights are in the group? Give your answer as a single integer.",
-    "answer": "2"
+    "task_id": "lite_ins_follow_01",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Perform these steps on the string 'abc123xyz':\n1. Replace each letter with the next letter (a->b, ..., z->a).\n2. Replace each digit d with (d + 5) mod 10.\n3. Reverse the entire string.\nOutput only the final string.",
+    "answer": "azy876dcb"
+  },
+  {
+    "task_id": "lite_ins_follow_02",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Starting from 100, apply these operations in order:\n1. Divide by 2.\n2. Subtract 10.\n3. Multiply by 3.\n4. Add 5.\n5. Divide by 5.\n6. Subtract 7.\n7. Multiply by 4.\nOutput only the final integer.",
+    "answer": "72"
+  },
+  {
+    "task_id": "lite_ins_follow_03",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Apply these steps to the word 'algorithm':\n1. Reverse the string.\n2. Caesar-shift each character forward by 3 positions (a->d, ..., z->c).\nOutput only the final string.",
+    "answer": "pkwulrojd"
+  },
+  {
+    "task_id": "lite_ins_follow_04",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Apply these steps:\n1. Count the letter 'e' (case-insensitive) in: 'The quick brown fox jumps over the lazy dog'.\n2. Multiply that count by 7.\n3. Add 3.\n4. Take the square root.\n5. Round down to the nearest integer.\n6. Multiply by 11.\nOutput only the final integer.",
+    "answer": "44"
+  },
+  {
+    "task_id": "lite_ins_follow_05",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Apply these steps to 'supercalifragilistic':\n1. Remove all consonants (keep only a, e, i, o, u) in their original order.\n2. Replace each vowel with the next vowel in the cycle (a->e, e->i, i->o, o->u, u->a).\nOutput only the final string.",
+    "answer": "aieoeooo"
   }
 ]

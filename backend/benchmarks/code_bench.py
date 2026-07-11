@@ -27,15 +27,27 @@ class BenchMaxCodeBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     def _score_code(self, response: str, answer: str) -> bool:
-        if not re.search(r'\bdef\s+\w+\s*\(', response):
+        ans = answer.strip()
+        func_name = ans.split("(")[0].strip() if "(" in ans else (ans.split()[0] if ans else "")
+        if not func_name:
             return False
-        if not answer.strip():
+        return bool(re.search(r'def\s+' + re.escape(func_name) + r'\s*\(', response))
+
+    def _score_mcq(self, response: str, answer: str) -> bool:
+        matches = re.findall(r'(?<!\w)([A-Z])(?!\w)', response)
+        if not matches:
             return False
-        keywords = [k.strip().lower() for k in answer.replace(",", " ").split() if len(k.strip()) > 2]
-        if not keywords:
-            return False
-        resp_lower = response.lower()
-        return sum(1 for k in keywords if k in resp_lower) >= len(keywords) * 0.5
+        return matches[-1] == answer
+
+    def _score_exact(self, response: str, answer: str) -> bool:
+        return answer.strip().lower() in response.lower()
+
+    def _get_scorer(self, qtype: str):
+        return {
+            "mcq": self._score_mcq,
+            "code": self._score_code,
+            "exact": self._score_exact,
+        }.get(qtype, self._score_code)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         gen = await self.client.generate_completion(
@@ -47,7 +59,9 @@ class BenchMaxCodeBenchmark(BaseBenchmark):
             model_name=model_name,
         )
         raw = gen.get("raw_response", "")
-        correct = self._score_code(raw, sample.get("answer", ""))
+        qtype = sample.get("type", "free_form")
+        scorer = self._get_scorer(qtype)
+        correct = scorer(raw, sample.get("answer", ""))
 
         return {
             "prompt": sample["prompt"],

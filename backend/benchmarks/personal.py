@@ -37,21 +37,23 @@ class BenchMaxPersonalBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     def _score_mcq(self, response: str, answer: str) -> bool:
-        matches = re.findall(r'(?<!\w)([A-D])(?!\w)', response)
+        matches = re.findall(r'(?<!\w)([A-Z])(?!\w)', response)
         if not matches:
             return False
         return matches[-1] == answer
 
     def _score_code(self, response: str, answer: str) -> bool:
-        if not re.search(r'\bdef\s+\w+\s*\(', response):
+        ans = answer.strip()
+        if ans.startswith("def "):
+            func_name = ans.split("(")[0].replace("def ", "").strip()
+        else:
+            func_name = ans.split("(")[0].strip() if "(" in ans else (ans.split()[0] if ans else "")
+        if not func_name:
             return False
-        if not answer.strip():
-            return False
-        keywords = [k.strip().lower() for k in answer.replace(",", " ").split() if len(k.strip()) > 2]
-        if not keywords:
-            return False
-        resp_lower = response.lower()
-        return sum(1 for k in keywords if k in resp_lower) >= len(keywords) * 0.5
+        return bool(re.search(r'def\s+' + re.escape(func_name) + r'\s*\(', response))
+
+    def _score_exact(self, response: str, answer: str) -> bool:
+        return answer.strip().lower() in response.lower()
 
     def _score_free_form(self, response: str, answer: str) -> bool:
         if not answer.strip():
@@ -60,7 +62,7 @@ class BenchMaxPersonalBenchmark(BaseBenchmark):
         if not keywords:
             return False
         resp_lower = response.lower()
-        return sum(1 for k in keywords if k in resp_lower) >= len(keywords) * 0.5
+        return all(k in resp_lower for k in keywords)
 
     def _score_function_call(self, response: str, answer: str) -> bool:
         return bool(re.search(r'\b' + re.escape(answer) + r'\b', response, re.IGNORECASE))
@@ -76,6 +78,7 @@ class BenchMaxPersonalBenchmark(BaseBenchmark):
             "free_form": self._score_free_form,
             "function_call": self._score_function_call,
             "safety": self._score_safety,
+            "exact": self._score_exact,
         }.get(qtype, self._score_free_form)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:

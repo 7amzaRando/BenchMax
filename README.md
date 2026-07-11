@@ -199,12 +199,12 @@ Model quantization (Q4_K_M, Q8_0, etc.) captured from API metadata and shown in 
 | **AIME** | Math reasoning | 90 | Multi-strategy integer extraction |
 | **BigCodeBench** | Code generation | 1,140 | `safe_executor` + unittest |
 | **BigCodeBench-Hard** | Code generation | 148 | Hard subset |
-| **BFCL** | Function calling | ~3,678 | Standalone AST checker (`bfcl_checker.py`) |
-| **MCP-Bench** | MCP tool selection | ~200 | Server + tool name + argument matching |
-| **Safety** | Refusal behaviour | ~125 | UncensorBench + OR-Bench keyword matching |
+| **BFCL** | Function calling | 4,696 | Standalone AST checker (`bfcl_checker.py`) |
+| **MCP-Bench** | MCP tool selection | 104 | Server + tool name + argument matching |
+| **Safety** | Refusal behaviour | 450 | UncensorBench + OR-Bench keyword matching |
 | **Aider Polyglot** | Code editing | 225 | 6 languages (Python/JS/Java/Go/Rust/C++) via subprocess + `.runtimes/` |
 | **LongBench-v2** | Long-context QA | 503 | MCQ letter extraction (A–D) |
-| **MMMU-Pro** | Multimodal vision | ~1,700 | Image + text MCQ w/ base64 PNG |
+| **MMMU-Pro** | Multimodal vision | 1,200 | Image + text MCQ w/ base64 PNG |
 | **LiveBench** | Meta-benchmark | 1,436 | 6 categories: MCQ, math, code, language, data, instruction |
 | **BenchMax Personal** | Composite BMS | 100 | 5-dimension weighted score (BMS out of 100) |
 | **BenchMax Lite** | All-round | 50 | 4 dimensions — Code/Knowledge/Math/Logic |
@@ -242,12 +242,18 @@ Model quantization (Q4_K_M, Q8_0, etc.) captured from API metadata and shown in 
 ### Source Build
 
 ```powershell
+# Requires: Python 3.11+, Node.js 18+
 git clone https://github.com/7amzaRando/BenchMax.git
 cd BenchMax
 python -m venv .venv
 .venv\Scripts\pip install -r backend\requirements.txt
+cd frontend
+npm install && npm run build
+cd ..
 .venv\Scripts\uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+> **Note:** Without the frontend build, the API endpoints will work but the browser UI at `http://localhost:8000` will not load. The frontend build step is required for the full SPA experience.
 
 ### Download Portable Runtimes (for Aider Polyglot)
 
@@ -293,7 +299,7 @@ streaming)  (SQLAlchemy)           for code benchmarks
 
 **Data flow:** User clicks Start → React POSTs `/api/run/start` → `trigger_run()` creates `Run` row (PENDING) → daemon thread calls `bench.run_evaluation()` → for each sample: check Run.status → `_check_repetition()` on client → `LMStudioClient.generate_completion()` → extract code → `safe_executor.check_correctness_*()` → write `Result` row → increment `Run.current_index`. React polls `/api/run/{id}/status` every 3s → renders UI.
 
-**Anti-loop Protection:** Three-layer detection (v2 — reliable). **Client** (`_check_repetition()`): (A) 200-char exact tail-in-body substring match, (B) adjacent SequenceMatcher(autojunk=False, ≥0.95), (C) 80-char fragment counting (≥5 occurrences). Stream aborted immediately via `break`. **Benchmark loop**: writes failed Result, increments index, continues. **UI**: poll injects "Repetition detected" warning.
+**Anti-loop Protection:** Three-layer detection (v2 — reliable). **Client** (`_check_repetition()`): (A) 200-char exact tail-in-body substring match, (B) adjacent SequenceMatcher(autojunk=False, ≥0.95), (C) 100-char fragment counting (≥5 occurrences). Stream aborted immediately via `break`. **Benchmark loop**: writes failed Result, increments index, continues. **UI**: poll injects "Repetition detected" warning.
 
 ---
 

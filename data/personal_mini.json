@@ -2,36 +2,36 @@
   {
     "task_id": "personal_code_1",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `segment_tree_lazy` that takes a list `arr` and a list of operations. Support two operations: 'update l r v' (add v to all elements in [l, r]) and 'query l r' (return sum of [l, r]). Build a segment tree with lazy propagation for range updates and range sum queries, both in O(log n). The function should execute all operations in order and return a list of query results.",
-    "answer": "def segment_tree_lazy"
-  },
-  {
-    "task_id": "personal_knowledge_1",
-    "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which of the following formal languages is recognized by a linear bounded automaton but NOT by a pushdown automaton?\nA) {aⁿbⁿ | n ≥ 0}\nB) {aⁿbⁿcⁿ | n ≥ 0}\nC) {wwᴿ | w ∈ {a,b}*}\nD) {aⁿ | n is prime}",
-    "answer": "B"
+    "prompt": "You are designing a concurrent LRU cache with O(1) amortized operations under high contention. Which synchronization strategy minimizes cache-line bouncing while preserving correctness?\nA) A single coarse-grained mutex protecting the entire hash map and doubly linked list\nB) A reader-writer lock allowing concurrent reads and exclusive writes\nC) Striped locking: partition the hash map into N independent shards, each with its own mutex and linked list, plus a global clock-based approximate LRU\nD) Lock-free hash map with a concurrent skip list for ordering, using CAS operations and hazard pointers\nE) A single mutex for writes plus RCU (Read-Copy-Update) for reads",
+    "answer": "C"
   },
   {
-    "task_id": "personal_if_1",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write exactly four sentences about concurrent data structures. The first and fourth sentences must each contain the word 'lock-free' exactly once. The second sentence must contain 'wait-free' and 'progress'. The third sentence must contain 'atomic'. Each sentence must be between 8 and 20 words. Number each sentence as '1.', '2.', '3.', '4.' at the start of its line. No other text before or after.",
-    "answer": "lock-free, wait-free, progress, atomic, concurrent, data, structures, sentences"
+    "task_id": "personal_code_2",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "Consider the problem of finding the minimum cut in an undirected graph with n vertices and m edges. Which statement about the Stoer-Wagner algorithm is correct?\nA) It runs in O(nm + n^2 log n) using a Fibonacci heap and always finds the global minimum cut with probability 1\nB) It repeatedly finds the s-t minimum cut using max-flow and contracts the two sides, running in O(n * MF(n,m)) where MF is the max-flow complexity\nC) It uses a deterministic global minimum cut algorithm based on successive vertex contractions, choosing the most-tightly-connected vertex at each step via a priority queue, achieving O(nm + n^2 log n) deterministic runtime\nD) It requires the graph to be directed and uses a randomized contraction algorithm with O(n^2 log^3 n) expected time",
+    "answer": "C"
   },
   {
-    "task_id": "personal_math_1",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer solution to the system of congruences: x ≡ 3 (mod 5), x ≡ 5 (mod 7), x ≡ 2 (mod 11). Apply the Chinese Remainder Theorem step by step. Output the solution as an integer followed by ' solution'.",
-    "answer": "68 solution Chinese remainder theorem congruences modular integer"
+    "task_id": "personal_code_3",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "For the problem of maintaining the median of a sliding window of size k over a stream, which data structure achieves O(log k) per operation in the worst case?\nA) A min-heap and a max-heap with lazy deletion, rebalancing when sizes differ by more than 1\nB) A balanced BST (e.g., AVL tree) storing all k elements with order-statistic queries\nC) A Fenwick tree over the compressed value range with point updates and prefix sum queries to find the median\nD) A segment tree with order statistics, updating by removing the outgoing element and inserting the incoming element\nE) Both A and B are correct approaches with O(log k) per operation",
+    "answer": "E"
   },
   {
-    "task_id": "personal_logic_1",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "There are five houses in a row, each painted a different color, inhabited by people of different nationalities, each drinking a different beverage, smoking a different brand, and keeping a different pet. Use these clues: (1) The Brit lives in the red house. (2) The Swede keeps dogs. (3) The Dane drinks tea. (4) The green house is immediately left of the white house. (5) The green house's owner drinks coffee. (6) The person who smokes Pall Mall keeps birds. (7) The owner of the yellow house smokes Dunhill. (8) The man living in the center house drinks milk. (9) The Norwegian lives in the first house. (10) The man who smokes Blends lives next to the cat owner. (11) The horse owner lives next to the Dunhill smoker. (12) The man who smokes Blue Master drinks root beer. (13) The German smokes Prince. (14) The Norwegian lives next to the blue house. (15) The Blends smoker has a neighbor who drinks water. Who owns the fish? Output the nationality in lowercase followed by ' owns the fish'.",
-    "answer": "German, owns, fish, zebra, puzzle, nationality, deduction, clues, logic"
+    "task_id": "personal_code_4",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "In the analysis of the Boruvka algorithm for minimum spanning tree, each iteration reduces the number of components by at least half. What is the tight worst-case time complexity when implemented with adjacency lists and union-find, for a graph with n vertices and m edges?\nA) O(m log n) — each of O(log n) iterations scans all edges\nB) O(m log n + n^2) — scanning edges plus component identification overhead\nC) O(m alpha(n) log n) — each iteration uses union-find for component checks\nD) O(m log n) if using a Fibonacci heap for finding the cheapest edge per component, else O(m log n) with binary heaps\nE) O(m log n) average case, O(nm) worst case when many components survive each iteration",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_code_5",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "When implementing the Bellman-Ford algorithm on a graph with n vertices and m edges, which modification correctly detects negative cycles reachable from the source while maintaining O(nm) worst-case complexity?\nA) Run n-1 relaxation passes over all edges, then run one more pass; any edge that relaxes in the nth pass indicates a reachable negative cycle\nB) Run n passes, then check if any distance is still decreasing after n+1 passes\nC) Initialize all distances to 0 instead of infinity, run n passes, then check for negative cycles by seeing if any distance continues to decrease\nD) Use a queue (SPFA variant) and count how many times each vertex is dequeued; if any vertex is dequeued n times, a negative cycle exists\nE) Both A and D are correct, but A has the simpler proof of correctness",
+    "answer": "E"
   }
 ]

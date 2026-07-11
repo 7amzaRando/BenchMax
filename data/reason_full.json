@@ -2,701 +2,701 @@
   {
     "task_id": "reason_math_01",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer n satisfying the system of congruences: n == 3 (mod 7), n == 5 (mod 11), n == 7 (mod 13). Use the Chinese Remainder Theorem. Output only the number.",
-    "answer": "423, CRT, congruence"
+    "type": "exact",
+    "prompt": "Find the number of integers between 1 and 10^6 inclusive that are NOT divisible by 2, 3, 5, or 7. Use inclusion-exclusion with four sets. Output only the number.",
+    "answer": "228571"
   },
   {
     "task_id": "reason_math_02",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the coefficient of x^5 in the binomial expansion of (1 - 2x)^12. Output only the integer (the coefficient, which may be negative).",
-    "answer": "-25344, coefficient, binomial"
+    "type": "exact",
+    "prompt": "A random permutation of the set {1, 2, 3, 4, 5, 6, 7} is chosen uniformly. What is the probability that no element is in its original position (a derangement)? Express as a simplified fraction. Output only the fraction.",
+    "answer": "103/280"
   },
   {
     "task_id": "reason_math_03",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many integers from 1 to 1000 inclusive are divisible by 2, 3, or 5? Apply the inclusion-exclusion principle. Output only the number.",
-    "answer": "734, inclusion, exclusion, divisible"
+    "type": "exact",
+    "prompt": "Let p = 7919 which is prime. Compute 2^p modulo p using Fermat's Little Theorem. Output only the number.",
+    "answer": "2"
   },
   {
     "task_id": "reason_math_04",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A fair six-sided die is rolled repeatedly until either a sum of 7 appears or a sum of 12 appears. What is the probability that the sum of 7 appears first? Express as a simplified fraction. Output only the fraction.",
-    "answer": "6/7, probability, Markov"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer n satisfying the system: n \u2261 2 (mod 3), n \u2261 3 (mod 5), n \u2261 2 (mod 7). Output only the number.",
+    "answer": "23"
   },
   {
     "task_id": "reason_math_05",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let a, b, c be positive real numbers with a + b + c = 1. Using the AM-GM inequality or otherwise, find the maximum possible value of ab + bc + ca. Output only the simplified fraction.",
-    "answer": "1/3, AM, GM, maximum"
+    "type": "exact",
+    "prompt": "Compute Euler's totient function \u03c6(2024) where 2024 = 2^3 \u00d7 11 \u00d7 23. Output only the number.",
+    "answer": "880"
   },
   {
     "task_id": "reason_math_06",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many distinct ways can you make exactly one dollar using pennies (1 cent), nickels (5 cents), dimes (10 cents), and quarters (25 cents)? Order of coins does not matter. Output only the number.",
-    "answer": "242, change, generating"
+    "type": "exact",
+    "prompt": "Find 7^2025 modulo 11 using Fermat's Little Theorem. Output only the number (0 through 10).",
+    "answer": "10"
   },
   {
     "task_id": "reason_math_07",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "For positive real numbers x and y, use the Cauchy-Schwarz inequality to find the minimum value of (x^2 + y^2)(1/x^2 + 1/y^2). Output only the number.",
-    "answer": "4, Cauchy, Schwarz, minimum"
+    "type": "exact",
+    "prompt": "How many ways can a set of 7 distinct elements be partitioned into exactly 3 non-empty unlabeled subsets? This is the Stirling number of the second kind S(7,3). Output only the number.",
+    "answer": "301"
   },
   {
     "task_id": "reason_math_08",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Compute 2^100000 modulo 7 using Fermat's Little Theorem. Output only the digit (0 through 6).",
-    "answer": "2, Fermat, modulo"
+    "type": "exact",
+    "prompt": "Evaluate the triple integral \u222b\u222b\u222b_E z dV where E is the region bounded by z = 0, z = x + y, and the triangle in the xy-plane with vertices (0,0), (1,0), (0,1). Output only the simplified fraction.",
+    "answer": "1/8"
   },
   {
     "task_id": "reason_math_09",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "In any group of 6 people, what is the smallest guaranteed size of a subset where every pair of people either all know each other or all are mutual strangers? This is given by Ramsey theory. Output only the number.",
-    "answer": "3, Ramsey, guaranteed"
+    "type": "exact",
+    "prompt": "How many elements of order exactly 12 does the group Z_12 \u00d7 Z_8 contain? An element (a,b) has order lcm(|a|,|b|). Output only the number.",
+    "answer": "24"
   },
   {
     "task_id": "reason_math_10",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "The nth Catalan number C_n counts the number of valid balanced parentheses expressions with n pairs. What is C_10 (the Catalan number for 10 pairs)? Output only the number.",
-    "answer": "16796, Catalan, parentheses"
+    "type": "exact",
+    "prompt": "Evaluate the sum \u03a3_{k=0}^{20} C(20,k) \u00d7 (-3)^k using the binomial theorem. Output only the number.",
+    "answer": "1048576"
   },
   {
     "task_id": "reason_math_11",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the telescoping infinite series: sum from n=1 to infinity of 1/(n(n+1)(n+2)). Express as a simplified fraction. Output only the fraction.",
-    "answer": "1/4, telescoping, series"
+    "type": "exact",
+    "prompt": "How many distinct 5-card poker hands contain exactly one pair (two cards of the same rank and three other cards all of different ranks)? Compute using combinations. Output only the number.",
+    "answer": "1098240"
   },
   {
     "task_id": "reason_math_12",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "At a party of 30 people, each person shakes hands with exactly 9 others. How many handshakes occur in total? Use the handshaking lemma. Output only the number.",
-    "answer": "135, handshakes, handshaking"
+    "type": "exact",
+    "prompt": "Compute 3^2046 modulo 7 using Fermat's Little Theorem. Output only the number (0 through 6).",
+    "answer": "1"
   },
   {
     "task_id": "reason_math_13",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Given that x^2 + xy + y^2 = 7, use Lagrange multipliers to find the maximum possible value of x^2 + y^2. Output only the number.",
-    "answer": "14, Lagrange, multiplier"
+    "type": "exact",
+    "prompt": "How many positive integers \u2264 1000 are perfect squares or perfect cubes? Use inclusion-exclusion. Output only the number.",
+    "answer": "38"
   },
   {
     "task_id": "reason_math_14",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "The word MATHEMATICS has M(2), A(2), T(2), H(1), E(1), I(1), C(1), S(1). How many distinct 5-letter strings can be formed using these letters? Output only the number.",
-    "answer": "13470, combinatorial, arrangements"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer n such that n! ends in exactly 100 zeros. Use the formula \u03a3\u230an/5^k\u230b = 100. Output only the number.",
+    "answer": "405"
   },
   {
     "task_id": "reason_math_15",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many non-negative integer solutions does x + y + z + w = 20 have? Use the stars and bars method. Output only the number.",
-    "answer": "1771, stars, bars"
+    "type": "exact",
+    "prompt": "Find the sum of all positive integers \u2264 1000 that are NOT divisible by 4 or 6. Compute by subtracting multiples of 4 and 6 from the total and adding back multiples of 12. Output only the number.",
+    "answer": "333666"
   },
   {
     "task_id": "reason_math_16",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A sequence is defined by a_1 = 1, a_2 = 3, and a_n = 2a_{n-1} + 3a_{n-2} for n >= 3. Find a_6. Output only the number.",
-    "answer": "243, recurrence"
+    "type": "exact",
+    "prompt": "Evaluate the telescoping series \u03a3_{n=1}^{\u221e} 1/(n^2 + 3n + 2). Express as a simplified fraction. Output only the fraction.",
+    "answer": "1/2"
   },
   {
     "task_id": "reason_math_17",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "In a single-elimination knockout tournament with 128 players, how many matches must be played to determine the champion? Output only the number.",
-    "answer": "127, tournament, elimination"
+    "type": "exact",
+    "prompt": "If A is a 3\u00d73 matrix with determinant 5, what is the determinant of 2A? Use the property det(cA) = c^n det(A). Output only the number.",
+    "answer": "40"
   },
   {
     "task_id": "reason_math_18",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "What is the units (ones) digit of 3^2024? Find the repeating cycle pattern of powers of 3 modulo 10. Output only the digit (0-9).",
-    "answer": "1, units, digit, cycle"
+    "type": "exact",
+    "prompt": "How many distinct arrangements of the letters in MISSISSIPPI have no two I's adjacent? M appears once, I appears 4 times, S appears 4 times, P appears twice. Output only the number.",
+    "answer": "7350"
   },
   {
     "task_id": "reason_math_19",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the number of ordered pairs of positive integers (x, y) such that 1/x + 1/y = 1/12. Transform to a Diophantine equation and count divisors. Output only the number.",
-    "answer": "15, Diophantine, divisors"
+    "type": "exact",
+    "prompt": "Solve for x: log_3(x) + log_3(x - 2) = 1. Use logarithm properties and solve the resulting quadratic. Output only the number.",
+    "answer": "3"
   },
   {
     "task_id": "reason_math_20",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the binomial sum: sum from k=0 to 10 of C(10,k) * 3^k. Apply the binomial theorem. Output only the number.",
-    "answer": "1048576, binomial, theorem"
+    "type": "exact",
+    "prompt": "A right circular cone has height 12 and base radius 5. Find its slant height. Output only the number.",
+    "answer": "13"
   },
   {
     "task_id": "reason_math_21",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A biased coin has probability 0.6 of landing heads. If the coin is flipped 10 times, what is the probability of getting exactly 7 heads? Round your answer to 3 decimal places. Output only the decimal.",
-    "answer": "0.215, binomial, probability"
+    "type": "exact",
+    "prompt": "A 5\u00d75 magic square contains the numbers 1 through 25 once each. What is the magic constant (the sum of every row, column, and main diagonal)? Output only the number.",
+    "answer": "65"
   },
   {
     "task_id": "reason_math_22",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer n such that n^2 - 1 is divisible by 24. Factor n^2 - 1 and reason about parity and modular arithmetic. Output only the number.",
-    "answer": "5, divisible, modular"
+    "type": "exact",
+    "prompt": "A committee of 4 must be selected from 10 people, but the chairperson must be included. In how many ways can this committee be formed? Output only the number.",
+    "answer": "840"
   },
   {
     "task_id": "reason_math_23",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many ways can 8 people be divided into 4 unordered pairs? This is the number of perfect matchings in a complete graph. Output only the number.",
-    "answer": "105, matching, pairs"
+    "type": "exact",
+    "prompt": "Compute the sum of the squares of the first 50 odd positive integers. Use the formula n(2n-1)(2n+1)/3 with n=50. Output only the number.",
+    "answer": "166650"
   },
   {
     "task_id": "reason_math_24",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many ways can a 2 by 12 rectangular board be tiled using 1 by 2 dominoes? This follows a Fibonacci-like recurrence. Output only the number.",
-    "answer": "233, domino, tiling, Fibonacci"
+    "type": "exact",
+    "prompt": "Two fair six-sided dice are rolled. What is the expected value of their sum? Output only the number.",
+    "answer": "7"
   },
   {
     "task_id": "reason_math_25",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Solve for x: 2^x + 2^{x+1} + 2^{x+2} = 448. Factor out 2^x and solve the resulting exponential equation. Output only the number.",
-    "answer": "6, exponential"
+    "type": "exact",
+    "prompt": "How many diagonals does a convex decagon (10-sided polygon) have? Use the formula n(n-3)/2. Output only the number.",
+    "answer": "35"
   },
   {
     "task_id": "reason_math_26",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Compute 5^1234 modulo 11 using Fermat's Little Theorem. Output only the digit (0 through 10).",
-    "answer": "9, Fermat, remainder"
+    "type": "exact",
+    "prompt": "How many ways are there to color each cell of a 3\u00d73 grid either black or white, considering all rotations as distinct? Output only the number.",
+    "answer": "512"
   },
   {
     "task_id": "reason_math_27",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Three distinct integers are chosen uniformly at random from the set {1, 2, ..., 20}. What is the probability that they form an arithmetic progression? Express as a simplified fraction. Output only the fraction.",
-    "answer": "3/38, arithmetic, progression"
+    "type": "exact",
+    "prompt": "A positive divisor of 2024 (where 2024 = 2^3 \u00d7 11 \u00d7 23) is chosen uniformly at random. What is the probability it is a multiple of 4? Express as a simplified fraction. Output only the fraction.",
+    "answer": "1/2"
   },
   {
     "task_id": "reason_math_28",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the limit: limit as x approaches 0 of (sin(3x) - 3x) / x^3. Use the Taylor series expansion of sin(3x). Output only the simplified fraction.",
-    "answer": "-9/2, Taylor, series, limit"
+    "type": "exact",
+    "prompt": "A committee of 5 people is chosen from 6 men and 4 women. What is the probability of selecting exactly 3 men? Express as a simplified fraction. Output only the fraction.",
+    "answer": "10/21"
   },
   {
     "task_id": "reason_math_29",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A particle starts at position 0 on a line. At each step it moves right by 1 with probability 0.7 or left by 1 with probability 0.3. After 10 steps, what is the probability the particle is at position 4? Round to 4 decimal places. Output only the decimal.",
-    "answer": "0.2668, random, walk, binomial"
+    "type": "exact",
+    "prompt": "Let f(x) = x^3 - 3x^2 + 2x + 1. Compute the derivative f'(x) evaluated at x = 2. Output only the number.",
+    "answer": "2"
   },
   {
     "task_id": "reason_math_30",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A simple graph has 6 vertices, each of degree 3. Using the handshaking lemma, how many edges does the graph have? Output only the number.",
-    "answer": "9, handshaking, edges"
+    "type": "exact",
+    "prompt": "How many 3-element subsets of {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} have their elements summing to exactly 15? Output only the number.",
+    "answer": "10"
   },
   {
     "task_id": "reason_math_31",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "For how many positive integers n is n^2 + 3n + 2 a prime number? Factor the expression and consider what makes a product prime. Output only the number.",
-    "answer": "0, prime, factorization"
+    "type": "exact",
+    "prompt": "Compute 5^400 modulo 8 by finding the cyclic pattern. Output only the number (0 through 7).",
+    "answer": "1"
   },
   {
     "task_id": "reason_math_32",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "What is the coefficient of x^4 in the Taylor series expansion of cos(x) about x = 0? Use the known Maclaurin series. Output only the simplified fraction.",
-    "answer": "1/24, Taylor, Maclaurin"
+    "type": "exact",
+    "prompt": "How many surjective (onto) functions exist from a set of 5 elements to a set of 3 elements? Use inclusion-exclusion. Output only the number.",
+    "answer": "150"
   },
   {
     "task_id": "reason_math_33",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "An investment of $100 earns 3% annual interest compounded continuously. How many years will it take for the investment to grow to $200? Use the formula A = Pe^(rt) and round to the nearest integer. Output only the number.",
-    "answer": "23, continuous, compounding"
+    "type": "exact",
+    "prompt": "Find the sum of all 4-digit palindromic numbers of the form abba where a is non-zero. Each such number equals 1001a + 110b. Output only the number.",
+    "answer": "499950"
   },
   {
     "task_id": "reason_math_34",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A disease has a prevalence of 1% in the population. A test is 99% sensitive (correctly identifies 99% of diseased individuals) and 99% specific (correctly identifies 99% of healthy individuals). If a randomly selected person tests positive, what is the probability they actually have the disease? Apply Bayes theorem. Round to 2 decimal places. Output only the decimal.",
-    "answer": "0.50, Bayes, conditional"
+    "type": "exact",
+    "prompt": "Evaluate sin^2(\u03c0/3) + cos^2(\u03c0/3). Output only the number.",
+    "answer": "1"
   },
   {
     "task_id": "reason_math_35",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "What is the minimum number of people that must be in a room to guarantee that at least three of them share the same birth month? Apply the pigeonhole principle. Output only the number.",
-    "answer": "25, pigeonhole, guarantee"
+    "type": "exact",
+    "prompt": "A bag contains 4 red and 6 blue balls. Two balls are drawn without replacement. What is the probability both are red? Express as a simplified fraction. Output only the fraction.",
+    "answer": "2/15"
+  },
+  {
+    "task_id": "reason_math_36",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "How many positive divisors does the number 720 = 2^4 \u00d7 3^2 \u00d7 5 have? Output only the number.",
+    "answer": "30"
+  },
+  {
+    "task_id": "reason_math_37",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "For the geometric series 3 + 6 + 12 + 24 + ... find the sum of the first 10 terms. Output only the number.",
+    "answer": "3069"
+  },
+  {
+    "task_id": "reason_math_38",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Find the rank of the 3\u00d73 matrix where every entry in row i, column j is i \u00d7 j. Specifically [[1,2,3],[2,4,6],[3,6,9]]. Output only the number.",
+    "answer": "1"
+  },
+  {
+    "task_id": "reason_math_39",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Find the sum of the reciprocals of all positive divisors of 6. Output only the number.",
+    "answer": "2"
+  },
+  {
+    "task_id": "reason_math_40",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the definite integral \u222b_0^\u03c0 sin(x) dx. Output only the number.",
+    "answer": "2"
+  },
+  {
+    "task_id": "reason_math_41",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Five cards are drawn from a standard 52-card deck. What is the probability of a flush (all five cards of the same suit)? Express as a simplified fraction. Output only the fraction.",
+    "answer": "33/16660"
+  },
+  {
+    "task_id": "reason_math_42",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Three distinct numbers are chosen uniformly from {1, 2, ..., 15}. What is the probability that their sum is divisible by 3? Express as a simplified fraction. Output only the fraction.",
+    "answer": "31/91"
+  },
+  {
+    "task_id": "reason_math_43",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the definite integral \u222b_1^2 (x^2 + 1/x^2) dx. Output only the simplified fraction.",
+    "answer": "17/6"
+  },
+  {
+    "task_id": "reason_math_44",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "How many positive integers less than 1000 are divisible by 7 but not by 3? Use the floor function and inclusion-exclusion. Output only the number.",
+    "answer": "95"
+  },
+  {
+    "task_id": "reason_math_45",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Ten distinct items are split into two unlabeled groups (empty groups are allowed). In how many distinct ways can this be done? Output only the number.",
+    "answer": "512"
+  },
+  {
+    "task_id": "reason_math_46",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "A biased six-sided die has P(1)=P(2)=P(3)=P(4)=0.1 and P(5)=P(6)=0.3. What is the expected value of a single roll? Output only the number.",
+    "answer": "4.3"
+  },
+  {
+    "task_id": "reason_math_47",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the limit: lim_{x\u21920} (e^x - 1 - x) / x^2. Use the Taylor series expansion for e^x. Output only the simplified fraction.",
+    "answer": "1/2"
+  },
+  {
+    "task_id": "reason_math_48",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "How many positive integers \u2264 200 are coprime to 200? Compute using Euler's totient function given 200 = 2^3 \u00d7 5^2. Output only the number.",
+    "answer": "80"
+  },
+  {
+    "task_id": "reason_math_49",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Find the area of the triangle with vertices at (0,0), (4,1), and (1,5). Use the determinant formula. Output only the simplified fraction.",
+    "answer": "19/2"
+  },
+  {
+    "task_id": "reason_math_50",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the sum \u03a3_{k=1}^{20} k \u00d7 2^k using the formula for arithmetico-geometric series. Output only the number.",
+    "answer": "39845890"
+  },
+  {
+    "task_id": "reason_math_51",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "A 5-digit number is formed by arranging the digits {1,2,3,4,5} without repetition, uniformly at random. What is the probability the number is even? Express as a simplified fraction. Output only the fraction.",
+    "answer": "2/5"
+  },
+  {
+    "task_id": "reason_math_52",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "How many distinct terms appear in the expansion of (x + y + z)^10 before combining like terms? Use stars and bars. Output only the number.",
+    "answer": "66"
+  },
+  {
+    "task_id": "reason_math_53",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate ln(1/e) + ln(e) + ln(e^2). Output only the number.",
+    "answer": "2"
+  },
+  {
+    "task_id": "reason_math_54",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "How many injective (one-to-one) functions exist from a set of 4 elements to a set of 7 elements? Output only the number.",
+    "answer": "840"
+  },
+  {
+    "task_id": "reason_math_55",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "A circle has equation x^2 + y^2 + 6x - 8y = 0. Find the radius by completing the square. Output only the number.",
+    "answer": "5"
+  },
+  {
+    "task_id": "reason_math_56",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "The Fibonacci sequence is defined by F_1 = 1, F_2 = 1, and F_n = F_{n-1} + F_{n-2} for n \u2265 3. Find F_8. Output only the number.",
+    "answer": "21"
+  },
+  {
+    "task_id": "reason_math_57",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "In how many distinct ways can 8 people sit around a circular table if rotations are considered identical but reflections are distinct? Output only the number.",
+    "answer": "5040"
+  },
+  {
+    "task_id": "reason_math_58",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the definite integral \u222b_0^2 (3x^2 - 4x + 1) dx. Output only the number.",
+    "answer": "2"
+  },
+  {
+    "task_id": "reason_math_59",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Evaluate the limit: lim_{n\u2192\u221e} (n^2 + n) / (2n^2 + 1). Output only the simplified fraction.",
+    "answer": "1/2"
+  },
+  {
+    "task_id": "reason_math_60",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Two fair six-sided dice are rolled. What is the probability their sum is exactly 10? Express as a simplified fraction. Output only the fraction.",
+    "answer": "1/12"
   },
   {
     "task_id": "reason_logic_01",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "On an island of knights (always tell truth) and knaves (always lie), five inhabitants A, B, C, D, E make statements. A says: 'Exactly 2 of us are knights.' B says: 'C is a knave and D is a knight.' C says: 'If A is a knave then D is a knave.' D says: 'The number of knights among us is not a prime number.' E says: 'Either B is a knight or C is a knave.' Determine how many knights there are. Output only the number (0-5).",
-    "answer": "3, knights, truth"
+    "type": "exact",
+    "prompt": "Three people A, B, C on an island of knights (always truth) and knaves (always lie). A says: 'B is a knight.' B says: 'A and C are the same type.' C says: 'B is a knave.' How many knights are there? Output only the number (0-3).",
+    "answer": "1"
   },
   {
     "task_id": "reason_logic_02",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You have four ropes. Each rope takes exactly 60 minutes to burn from end to end, but they burn at non-uniform rates (a rope of half the length does not necessarily burn in 30 minutes). You have a lighter. What is the minimum number of ropes you must use and simultaneously light at carefully chosen ends to measure exactly 15 minutes? You can light any rope at either or both ends. Output only the number of ropes needed.",
-    "answer": "2, ropes, burn"
+    "type": "exact",
+    "prompt": "Four people need to cross a bridge at night with one torch. Their crossing times are 1, 2, 5, and 10 minutes. At most two people can cross at a time, and when two cross together they travel at the slower person's pace. The torch must be carried back and forth. What is the minimum total time in minutes for all four to cross? Output only the number.",
+    "answer": "17"
   },
   {
     "task_id": "reason_logic_03",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "On a truth-teller/liar island, you meet 6 people. Each is either a knight (always truth) or knave (always lie). A says: 'There is exactly 1 knight among us.' B says: 'If C is a knight then D is a knave.' C says: 'E and F are the same type.' D says: 'A is a knave if and only if E is a knight.' E says: 'The number of knights is even.' F says: 'At least two of A, B, C are knaves.' How many knights are there? Output only the number.",
-    "answer": "4, knights, liars"
+    "type": "exact",
+    "prompt": "You have a 3-gallon jug and a 5-gallon jug with no markings, and an unlimited water supply. You need exactly 4 gallons in the 5-gallon jug. What is the minimum number of operations (fill a jug, empty a jug, or pour water from one jug to the other) required? Output only the number.",
+    "answer": "6"
   },
   {
     "task_id": "reason_logic_04",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You have 24 coins that appear identical. One coin is counterfeit and is either heavier or lighter than a genuine coin (you do not know which). Using a balance scale, what is the minimum number of weighings needed to guarantee identifying the counterfeit coin AND determining whether it is heavier or lighter? Output only the number.",
-    "answer": "3, weighings, balance"
+    "type": "exact",
+    "prompt": "Three prisoners will each receive a black or white hat. Each can see the other two hats but not their own. They must simultaneously guess their own hat color. They win if at least one guesses correctly and no one guesses incorrectly. What is the maximum probability of winning they can guarantee with an optimal strategy? Express as a simplified fraction. Output only the fraction.",
+    "answer": "3/4"
   },
   {
     "task_id": "reason_logic_05",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Consider the following 5x5 KenKen puzzle filled with numbers 1-5. Row 1: leftmost cell has cage sum 6 with neighbor to its right. Row 2: leftmost has product 20 with neighbor below. Row 3: first two cells have product 8. Additional constraints: each cage uses only cells in a straight line (adjacent horizontally or vertically). Can this puzzle be solved uniquely? You need to determine the value in the center cell (row 3, column 3). Output only the number (1-5).",
-    "answer": "3, KenKen, cage"
+    "type": "exact",
+    "prompt": "A says 'The number of knights among us is 1.' B says 'The number of knights among us is 2.' C says 'The number of knights among us is 3.' On an island of knights (always truth) and knaves (always lie), exactly one of them is telling the truth. How many knights are there? Output only the number (0-3).",
+    "answer": "1"
   },
   {
     "task_id": "reason_logic_06",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A truth-teller always tells the truth. A liar always lies. A normal can do either. You meet three people X, Y, Z. X says: 'Y is a normal.' Y says: 'Z is a liar.' Z says: 'X is not a normal.' From this, one of them must be a particular type. Determine the type of person Y. Output only: 'truth', 'liar', or 'normal'.",
-    "answer": "liar, truth, liar, normal"
+    "type": "exact",
+    "prompt": "A farmer must transport a wolf, a goat, and a cabbage across a river. The boat can carry the farmer and at most one item. The wolf will eat the goat if left alone together. The goat will eat the cabbage if left alone together. All items start on the same bank. What is the minimum number of one-way crossings required? Output only the number.",
+    "answer": "7"
   },
   {
     "task_id": "reason_logic_07",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "In a certain language, 'AB CD EF' means 'cat eats fish', 'CD GH IJ' means 'dog chases cat', 'KL AB MN' means 'fish swims fast'. What is the code for 'cat'? Output only the two-letter code in uppercase.",
-    "answer": "CD, code, decoding"
+    "type": "exact",
+    "prompt": "If 1+4=5, 2+5=12, 3+6=21, then what does 5+8 equal? Follow the pattern that each result equals a \u00d7 (b + 1). Output only the number.",
+    "answer": "45"
   },
   {
     "task_id": "reason_logic_08",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Ann, Bob, Carl, Dana, Eve, and Frank each have a different favorite color from {Red, Orange, Yellow, Green, Blue, Purple}. (1) Ann does not like Red or Blue. (2) Bob likes either Yellow or Green. (3) Carl dislikes Blue and Purple. (4) Dana likes either Red or Purple. (5) Eve likes either Green or Orange. (6) Frank likes either Yellow or Blue. Additionally, exactly one of the statements 1-6 is false, and the rest are true. Determine who likes Purple. Output only the name (Ann, Bob, Carl, Dana, Eve, or Frank).",
-    "answer": "Dana, constraint, satisfaction"
+    "type": "exact",
+    "prompt": "Four people A, B, C, D have different heights. A is taller than B. C is shorter than A. D is the shortest. B is taller than C. Who is the tallest? Output only the uppercase letter of the tallest person.",
+    "answer": "A"
   },
   {
     "task_id": "reason_logic_09",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A standard 9x9 Sudoku puzzle has a unique solution. In the first row, the numbers 1-9 appear in some order. The first row's third digit is the same as the second row's sixth digit. The first row's seventh digit is the same as the third row's second digit. The first row is the reverse of the second row. The third digit of the first row is 4. The sum of the first three digits of the first row is 12. The product of digits 4,5,6 of the first row is 210. What is the first digit of the first row? Output only the number (1-9).",
-    "answer": "5, Sudoku, deduction"
+    "type": "exact",
+    "prompt": "Start with the number 87. Reverse its digits and add: 87 + 78 = 165. Continue until a palindrome is reached. How many addition steps are needed? Output only the number.",
+    "answer": "4"
   },
   {
     "task_id": "reason_logic_10",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You have three doors. Behind one door is a car, behind the other two are goats. After you pick a door, the host (who knows what is behind each door) opens a different door revealing a goat. The host then offers you the chance to switch to the remaining unopened door. What is the probability of winning the car if you switch? Express as a simplified fraction. Output only the fraction.",
-    "answer": "2/3, Monty, Hall, conditional"
+    "type": "exact",
+    "prompt": "There are 100 lockers, all initially closed. Prisoner 1 toggles every locker. Prisoner 2 toggles every 2nd locker. Prisoner k toggles every k-th locker. After all 100 prisoners have acted, how many lockers are open? Output only the number.",
+    "answer": "10"
   },
   {
     "task_id": "reason_logic_11",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "In a race, six runners A, B, C, D, E, F finish in different positions. (1) A finishes ahead of B. (2) C finishes behind D but ahead of E. (3) F finishes ahead of A. (4) There are exactly two runners between B and D. (5) E finishes last. (6) B finishes ahead of C. Determine the position of runner F (1st, 2nd, 3rd, 4th, 5th, or 6th). Output only the ordinal word in lowercase.",
-    "answer": "first, ordering, ranking"
+    "type": "exact",
+    "prompt": "On an island of knights (always truth), knaves (always lie), and spies (can do either), you meet three people A, B, C. Each type appears exactly once. A says 'I am a spy.' B says 'I am a knight.' C says 'I am a knave.' Who is the spy? Output only the uppercase letter of the spy.",
+    "answer": "C"
   },
   {
     "task_id": "reason_logic_12",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Five houses in a row, each of a different color, occupied by people of different nationalities, each drinking a different beverage, smoking a different cigar brand, and keeping a different pet. Clues: The Brit lives in the red house. The Swede keeps dogs. The Dane drinks tea. The green house is immediately left of the white house. The green house owner drinks coffee. The person who smokes Pall Mall keeps birds. The yellow house owner smokes Dunhill. The center house occupant drinks milk. The Norwegian lives in the first house. The man who smokes Blends lives next to the cat keeper. The horse keeper lives next to the Dunhill smoker. The man who smokes Blue Master drinks beer. The German smokes Prince. The Norwegian lives next to the blue house. The man who smokes Blends has a neighbor who drinks water. Who keeps the fish? Output only the nationality.",
-    "answer": "German, Einstein, puzzle"
+    "type": "exact",
+    "prompt": "Find the missing number in the sequence: 2, 6, 12, 20, 30, 42, ?. The pattern follows n(n+1) for n starting at 1. Output only the number.",
+    "answer": "56"
   },
   {
     "task_id": "reason_logic_13",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You have a 7-minute hourglass and an 11-minute hourglass. You can flip any hourglass at any time (flipping takes zero time). What is the minimum total number of hourglass flips needed to measure exactly 15 minutes? Starting the timer begins when you first flip an hourglass. Output only the number.",
-    "answer": "3, hourglass, flips"
+    "type": "exact",
+    "prompt": "Three missionaries and three cannibals must cross a river. The boat holds at most two people. Cannibals must never outnumber missionaries on either bank. What is the minimum number of one-way crossings required? Output only the number.",
+    "answer": "11"
   },
   {
     "task_id": "reason_logic_14",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Consider the seven-segment display digits 0-9. Each digit lights up a specific set of segments (top, top-left, top-right, middle, bottom-left, bottom-right, bottom). For example, 8 uses all 7 segments, 0 uses 6 segments, etc. You see a sequence of digits where the number of lit segments alternates between odd and even. The first digit uses 7 segments. The second uses 5 segments. The third uses 6 segments. The fourth is the same digit as the second. The sum of the four digits is 24. What is the third digit? Output only the number (0-9).",
-    "answer": "0, seven, segment"
+    "type": "exact",
+    "prompt": "One hundred light bulbs are all initially off. Person 1 toggles all bulbs. Person 2 toggles bulbs 2, 4, 6, ... Person k toggles every k-th bulb. After 100 people, how many bulbs are on? Output only the number.",
+    "answer": "10"
   },
   {
     "task_id": "reason_logic_15",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A, B, C, D, E, F, G, H are eight people to be seated at a round table. (1) A must sit next to B. (2) C cannot sit next to D. (3) E must sit opposite F (with exactly 3 people between them on both sides of the circle). (4) G must sit two seats away from H on either side. Determine the minimum number of distinct seating arrangements that satisfy all constraints up to rotation. Is it 0, 1, 2, 4, or 8? Output only the number.",
-    "answer": "2, seating, constraints"
+    "type": "exact",
+    "prompt": "You have a 3-liter jug and a 5-liter jug with no markings. You may fill, empty, or pour between them. How many distinct integer liter amounts from 1 to 8 can you measure exactly? Since gcd(3,5)=1, you can measure every integer amount. Output only the number.",
+    "answer": "8"
   },
   {
     "task_id": "reason_logic_16",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A self-referential puzzle: Which statement is true? (A) Exactly 1 of these 4 statements is true. (B) Exactly 2 of these 4 statements are true. (C) Exactly 3 of these 4 statements are true. (D) Exactly 0 of these 4 statements are true. Determine which statement is true. Output only the uppercase letter of the true statement.",
-    "answer": "B, self, referential"
+    "type": "exact",
+    "prompt": "Find the 4-digit number ABCD where: digit A is one-third of digit B, digit C equals A plus B, and digit D equals twice digit A. All digits are between 0 and 9, and A is non-zero. Output only the 4-digit number.",
+    "answer": "2684"
   },
   {
     "task_id": "reason_logic_17",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "If all Flumpets are Grombles and some Grombles are Snizzles, and no Snizzle is a Wombat, which of the following conclusions is necessarily true? (a) Some Flumpets are Snizzles. (b) All Grombles are either Flumpets or Snizzles. (c) No Flumpet is a Wombat. (d) Some Wombats are Grombles. (e) None of the above. Output only the lowercase letter of the correct choice.",
-    "answer": "c, syllogism, categorical"
+    "type": "exact",
+    "prompt": "Two chests: one has treasure, one has a trap. Chest 1 says: 'At least one chest has treasure.' Chest 2 says: 'The other chest has a trap.' Exactly one inscription is true. Which chest has treasure? Output only the number 1 or 2.",
+    "answer": "1"
   },
   {
     "task_id": "reason_logic_18",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "What is the next term in the sequence: 2, 3, 5, 9, 17, 33, ? Output only the number.",
-    "answer": "65, sequence, pattern"
+    "type": "exact",
+    "prompt": "A clock reads exactly 3:15. What is the smaller angle in degrees between the hour hand and the minute hand? Output only the number.",
+    "answer": "7.5"
   },
   {
     "task_id": "reason_logic_19",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Five suspects A, B, C, D, E are questioned about a crime. Each makes a statement: A says 'B did it.' B says 'D did it.' C says 'I did not do it.' D says 'B is lying when he says I did it.' E says 'A is telling the truth.' Only one of them is guilty, and only three of the five statements are true. Who is guilty? Output only the uppercase letter of the guilty person.",
-    "answer": "C, deduction, guilty"
+    "type": "exact",
+    "prompt": "What number comes next in the look-and-say sequence: 1, 11, 21, 1211, 111221, ? Output only the number.",
+    "answer": "312211"
   },
   {
     "task_id": "reason_logic_20",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You have a 4x4 grid. Place the numbers 1, 2, 3, 4 in each row and column without repetition (like a mini Sudoku). The sum of the diagonal from top-left to bottom-right is 10. The sum of the anti-diagonal from top-right to bottom-left is 8. The top-left cell is 4. The top-right cell is 2. What number is in the bottom-left cell? Output only the number (1-4).",
-    "answer": "1, Latin, square, grid"
+    "type": "exact",
+    "prompt": "Find the three-digit number abc such that abc = a! + b! + c! where a, b, c are digits and a is non-zero. Output only the three-digit number.",
+    "answer": "145"
   },
   {
     "task_id": "reason_logic_21",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Three boxes are labeled 'Apples', 'Oranges', and 'Apples and Oranges'. All three labels are incorrect. You may reach into one box and take out one fruit, without looking inside the box. From which box should you take a fruit to be able to correctly deduce the content of all three boxes? Output only the label of that box: 'apples', 'oranges', or 'apples and oranges' all lowercase.",
-    "answer": "apples and oranges, mislabeled, deduction"
+    "type": "exact",
+    "prompt": "What letter comes next in the sequence: T, T, F, F, S, S, E, ? (Hint: first letters of the number words One, Two, Three, ...) Output only the uppercase letter.",
+    "answer": "N"
   },
   {
     "task_id": "reason_logic_22",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Consider the following code: symbols represent digits 0-9. If STAR + MOON = NIGHT, where each letter is a distinct digit, and STAR is a 4-digit number, find the digit represented by T. Output only the number (0-9).",
-    "answer": "8, cryptarithm, alphametic"
+    "type": "exact",
+    "prompt": "As I was going to St. Ives, I met a man with 7 wives. Each wife had 7 sacks. Each sack had 7 cats. Each cat had 7 kittens. How many total legs are among the man, his wives, the cats, and the kittens? (Humans have 2 legs, cats and kittens have 4 legs.) Output only the number.",
+    "answer": "10992"
   },
   {
     "task_id": "reason_logic_23",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A farmer has a wolf, a goat, a cabbage, and a dog. The farmer's boat can carry the farmer and at most one item. The wolf will eat the goat if left alone. The goat will eat the cabbage if left alone. The dog will attack the wolf if left alone with the wolf and no farmer. What is the minimum number of one-way crossings needed to transport all items and the farmer across the river safely? Output only the number.",
-    "answer": "9, river, crossing"
+    "type": "exact",
+    "prompt": "Five people P, Q, R, S, T have different ages. P is older than Q. R is younger than S. T is older than P. S is younger than Q. Who is the second youngest? Output only the uppercase letter.",
+    "answer": "S"
   },
   {
     "task_id": "reason_logic_24",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "You are on an island with three types: knights (always truth), knaves (always lie), and spies (can do either). You meet three people. A says: 'B is a spy.' B says: 'C is a knave.' C says: 'A is a knight.' If exactly one of them is a spy, who is the spy? Output only the uppercase letter of the spy.",
-    "answer": "A, spy, knights, knaves"
+    "type": "exact",
+    "prompt": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost? Output only the number.",
+    "answer": "5"
   },
   {
     "task_id": "reason_logic_25",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A digital clock shows hours and minutes in 24-hour format (00:00 to 23:59). How many times in a 24-hour period does the display show a palindrome (same forwards and backwards, ignoring the colon)? For example, 12:21 is a palindrome. Output only the number.",
-    "answer": "16, palindrome, clock"
+    "type": "exact",
+    "prompt": "How many times per day (24-hour period) do the hour and minute hands of a perfect clock form a 90-degree angle? Output only the number.",
+    "answer": "44"
   },
   {
     "task_id": "reason_logic_26",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "There are three bags. Bag A contains 3 red and 2 blue marbles. Bag B contains 2 red and 4 blue marbles. Bag C contains 1 red and 3 blue marbles. A bag is chosen at random, then a marble is drawn from it and it is red. What is the probability the marble came from Bag A? Express as a simplified fraction. Output only the fraction.",
-    "answer": "15/37, Bayes, probability"
+    "type": "exact",
+    "prompt": "Find the next number in the sequence: 9, 73, 241, 561, 1081, 1729, ? The pattern is (2n)^3 + (2n-1)^2 for n = 1,2,3,4,5,6. Output only the number.",
+    "answer": "2913"
   },
   {
     "task_id": "reason_logic_27",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A certain number when divided by 3 leaves remainder 1, when divided by 5 leaves remainder 2, when divided by 7 leaves remainder 3, and when divided by 11 leaves remainder 4. Find the smallest such positive integer. Output only the number.",
-    "answer": "418, Chinese, remainder"
+    "type": "exact",
+    "prompt": "Three boxes: one has two gold coins, one has two silver coins, one has one gold and one silver. You pick a box at random and draw a gold coin. What is the probability the other coin in that box is also gold? Express as a simplified fraction. Output only the fraction.",
+    "answer": "2/3"
   },
   {
     "task_id": "reason_logic_28",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Find the missing number in the sequence: 1, 4, 27, 256, ?, 46656. Identify the pattern. Output only the number.",
-    "answer": "3125, sequence, exponential"
+    "type": "exact",
+    "prompt": "A snail climbs 3 feet up a wall during the day and slips 2 feet down each night. How many days to reach the top of a 30-foot wall? Output only the number.",
+    "answer": "28"
   },
   {
     "task_id": "reason_logic_29",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "Alice, Bob, Carol, Dave, Eve each have different heights. (1) Alice is taller than Bob. (2) Carol is taller than Dave. (3) Eve is taller than Carol. (4) Bob is taller than Carol. (5) Dave is taller than Alice. Which one of these statements is false? Output only the number of the false statement (1, 2, 3, 4, or 5).",
-    "answer": "5, ordering, contradiction"
+    "type": "exact",
+    "prompt": "In a house, there are 6 people. Each person has 6 backpacks. Each backpack contains 6 cats. Each cat has 6 kittens. How many total legs are among the people, cats, and kittens? (Humans have 2 legs, cats and kittens have 4 legs.) Output only the number.",
+    "answer": "6060"
   },
   {
     "task_id": "reason_logic_30",
     "category": "Logic Puzzles",
-    "type": "free_form",
-    "prompt": "A man looks at a photograph and says: 'Brothers and sisters have I none, but that man's father is my father's son.' Who is the person in the photograph? Output only the relationship (e.g., 'son', 'father', 'brother', 'me').",
-    "answer": "son, riddle, relationship"
+    "type": "exact",
+    "prompt": "Consider the 3x3 grid of digits where each row and column contains 1,2,3 exactly once (a Latin square). The top-left entry is 1. The center entry is 2. The bottom-right entry is 3. The anti-diagonal (top-right to bottom-left) sums to 4. What is the top-right entry? Output only the number (1-3).",
+    "answer": "3"
   },
   {
     "task_id": "reason_data_01",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A hypothesis test for a population proportion yields a z-statistic of 2.33. Using the standard normal distribution, find the one-tailed p-value rounded to 4 decimal places. Output only the decimal.",
-    "answer": "0.0099, hypothesis, p-value"
+    "type": "exact",
+    "prompt": "A dataset contains: 5, 8, 12, 15, 20. Compute the sample standard deviation. Use the formula s = sqrt(SS/(n-1)) where SS is sum of squared deviations from the mean. Round to 3 decimal places. Output only the number.",
+    "answer": "5.874"
   },
   {
     "task_id": "reason_data_02",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "You are given a time series: 10, 14, 8, 12, 20, 18, 16, 22, 15, 13. Using a 3-period moving average, what is the smoothed value for time period 5 (the fifth observation)? Output only the number rounded to one decimal place.",
-    "answer": "13.3, moving, average, smoothing"
+    "type": "exact",
+    "prompt": "Find the sample standard deviation of: 2, 4, 6, 8, 10. Round to 3 decimal places. Output only the number.",
+    "answer": "3.162"
   },
   {
     "task_id": "reason_data_03",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A survey of 500 voters finds that 285 favor a policy. Construct a 95% confidence interval for the true proportion. The formula is p-hat plus or minus z* sqrt(p-hat(1-p-hat)/n). The margin of error is z* times the standard error. What is the lower bound of the interval? Round to 3 decimal places. Output only the decimal.",
-    "answer": "0.530, confidence, interval, proportion"
+    "type": "exact",
+    "prompt": "A student scores 85 on a test with mean 72 and standard deviation 8. Compute the z-score. Round to 3 decimal places. Output only the number.",
+    "answer": "1.625"
   },
   {
     "task_id": "reason_data_04",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A factory has two machines. Machine X produces 60% of items with a 2% defect rate. Machine Y produces 40% of items with a 5% defect rate. If a randomly chosen item is defective, what is the probability it came from Machine X? Apply Bayes theorem and round to 3 decimal places. Output only the decimal.",
-    "answer": "0.375, Bayes, defective"
+    "type": "exact",
+    "prompt": "A disease has prevalence 1%. A test is 99% sensitive and 99% specific. A randomly selected person tests positive. Using Bayes' theorem, what is the probability they have the disease? Round to 3 decimal places. Output only the decimal.",
+    "answer": "0.500"
   },
   {
     "task_id": "reason_data_05",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "The heights of adult women in a population follow a normal distribution with mean 163 cm and standard deviation 6 cm. What height marks the 90th percentile? Use z = 1.282 for the 90th percentile. Round to one decimal place. Output only the number.",
-    "answer": "170.7, percentile, normal"
+    "type": "exact",
+    "prompt": "A survey of 400 voters finds 60% support a policy. Construct a 95% CI for the true proportion. Using z*=1.96, what is the lower bound? Round to 3 decimal places. Output only the decimal.",
+    "answer": "0.552"
   },
   {
     "task_id": "reason_data_06",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A linear regression model is fit to 20 data points. The total sum of squares is 450 and the residual sum of squares is 90. Calculate the coefficient of determination R-squared. Output only the decimal rounded to 3 decimal places.",
-    "answer": "0.800, regression, R-squared"
+    "type": "exact",
+    "prompt": "In linear regression with 10 data points: sum x = 50, sum y = 100, sum xy = 600, sum x^2 = 300. Compute the slope b1 = (n*sum xy - sum x*sum y) / (n*sum x^2 - (sum x)^2). Output only the number.",
+    "answer": "2"
   },
   {
     "task_id": "reason_data_07",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "Consider the dataset: [2, 5, 7, 8, 10, 12, 15, 18, 20, 22, 25, 30]. Compute the five-number summary and find the interquartile range. The IQR is Q3 minus Q1. Output only the number.",
-    "answer": "13, quartile, IQR"
+    "type": "exact",
+    "prompt": "How many people must be sampled to estimate a population mean with margin of error 3 at 95% confidence? Population SD estimated at 10. Use n = (z*sigma/E)^2 with z=1.96. Round up to nearest integer. Output only the number.",
+    "answer": "43"
   },
   {
     "task_id": "reason_data_08",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A population grows according to the logistic model: dP/dt = 0.05 * P * (1 - P/1000). If the initial population is 200, what is the carrying capacity? Output only the number.",
-    "answer": "1000, logistic, carrying, capacity"
+    "type": "exact",
+    "prompt": "For a two-tailed z-test with critical values of +/-1.96, what is the probability of Type I error (alpha)? Output only the decimal.",
+    "answer": "0.05"
   },
   {
     "task_id": "reason_data_09",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A medical study finds that patients taking a drug have a 40% recovery rate, while those taking a placebo have a 25% recovery rate. The study has 200 patients in each group. What is the absolute risk reduction (ARR) in percentage points? Output only the number.",
-    "answer": "15, risk, reduction"
+    "type": "exact",
+    "prompt": "Compute the coefficient of variation for data with mean 50 and standard deviation 5. CV = SD/mean. Output only the decimal.",
+    "answer": "0.1"
   },
   {
     "task_id": "reason_data_10",
     "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "You roll two fair six-sided dice and record the sum. You repeat this 36 times and get a mean sum of 7.5. Conduct a one-sample z-test against the population mean of 7. The standard deviation of the sum of two dice is approximately 2.415. What is the z-statistic? Round to 2 decimal places. Output only the decimal.",
-    "answer": "1.24, z-test, statistic"
-  },
-  {
-    "task_id": "reason_data_11",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "The number of website visits per day follows a Poisson distribution with mean 30 visits per day. What is the approximate probability of having more than 35 visits on a given day? Use the normal approximation with continuity correction. The standard deviation is sqrt(30). The z-score for 35.5 is (35.5-30)/sqrt(30). Find the probability and express as a decimal rounded to 3 decimal places. Output only the decimal.",
-    "answer": "0.157, Poisson, normal, approximation"
-  },
-  {
-    "task_id": "reason_data_12",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A survey asks 400 people which of three products A, B, C they prefer. The results are: A=180, B=120, C=100. Test the null hypothesis that preferences are equally distributed (all proportions 1/3). Calculate the chi-squared goodness-of-fit statistic. Output only the number rounded to 2 decimal places.",
-    "answer": "26.00, chi, squared, goodness"
-  },
-  {
-    "task_id": "reason_data_13",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A data set has a mean of 50 and a standard deviation of 10. Using Chebyshev's inequality, what is the minimum percentage of data that falls within 3 standard deviations of the mean? Chebyshev says at least 1 - 1/k^2 for k > 1. Output only the number (the percentage, e.g., 75).",
-    "answer": "88.9, Chebyshev, inequality"
-  },
-  {
-    "task_id": "reason_data_14",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "An urn contains 5 red and 7 blue marbles. You draw 3 marbles without replacement. What is the probability of drawing exactly 2 red marbles? Express as a simplified fraction. Output only the fraction.",
-    "answer": "7/22, hypergeometric, without replacement"
-  },
-  {
-    "task_id": "reason_data_15",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A drug trial has a 3:1 allocation ratio (3 treated for every 1 control). The treated group of 300 shows 45 successes. The control group of 100 shows 10 successes. Calculate the relative risk (risk in treated divided by risk in control). Round to 2 decimal places. Output only the decimal.",
-    "answer": "1.50, relative, risk"
-  },
-  {
-    "task_id": "reason_data_16",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A correlation of r = 0.6 is found between hours studied and exam score for 28 students. Test whether the population correlation is zero using t = r*sqrt((n-2)/(1-r^2)). The degrees of freedom is n-2. What is the t-statistic? Round to 2 decimal places. Output only the decimal.",
-    "answer": "3.87, correlation, t-test"
-  },
-  {
-    "task_id": "reason_data_17",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "An investment portfolio has an expected annual return of 8% and standard deviation of 15%. Assuming returns are normally distributed, what is the probability of a negative return in a given year? Use z = (0-8)/15 = -0.533. The cumulative probability for z = -0.53 is approximately 0.298. Round to 3 decimal places. Output only the decimal.",
-    "answer": "0.298, normal, probability, return"
-  },
-  {
-    "task_id": "reason_data_18",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "To estimate the mean height of a population with a margin of error of 1 cm at 95% confidence, how many people must be sampled? The population standard deviation is estimated at 8 cm. The formula is n = (z*sigma / E)^2. Use z=1.96. Output only the integer (rounded up).",
-    "answer": "246, sample, size, margin"
-  },
-  {
-    "task_id": "reason_data_19",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "A company has three departments: Sales (40 employees, mean salary $50K), Engineering (30 employees, mean $80K), Support (30 employees, mean $40K). What is the weighted mean salary across all departments? Output only the number in thousands (e.g., 57 would mean $57,000).",
-    "answer": "56, weighted, mean, average"
-  },
-  {
-    "task_id": "reason_data_20",
-    "category": "Data Analysis",
-    "type": "free_form",
-    "prompt": "In a clinical trial, 10 out of 120 patients in the treatment group experience side effects, while 25 out of 130 in the control group experience side effects. Calculate the odds ratio (odds in treatment divided by odds in control). Round to 2 decimal places. Output only the decimal.",
-    "answer": "0.39, odds, ratio"
-  },
-  {
-    "task_id": "reason_sci_01",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A muon is created 10 km above the Earth's surface traveling at 0.998c (where c is the speed of light). In the muon's rest frame, its mean lifetime is 2.2 microseconds. According to special relativity, what is the distance to the Earth's surface as measured in the muon's rest frame? Use the Lorentz contraction formula L = L0/gamma, where gamma = 1/sqrt(1-v^2/c^2). Compute gamma first: v/c = 0.998, so v^2/c^2 = 0.996004, 1-v^2/c^2 = 0.003996. Gamma = sqrt(1/0.003996) ≈ 15.82. The contracted distance = 10 km / 15.82. Round to the nearest tenth of a kilometer. Output only the number.",
-    "answer": "0.6, Lorentz, contraction, relativity"
-  },
-  {
-    "task_id": "reason_sci_02",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A Carnot engine operates between a hot reservoir at 500 K and a cold reservoir at 300 K. How much heat must be extracted from the hot reservoir to produce 1000 J of work? The Carnot efficiency is 1 - Tc/Th. Efficiency = 1 - 300/500 = 0.4. Work = efficiency * Qh, so Qh = 1000 / 0.4. Output only the number in joules.",
-    "answer": "2500, Carnot, efficiency, thermodynamics"
-  },
-  {
-    "task_id": "reason_sci_03",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "In the Bohr model of the hydrogen atom, the electron transitions from n=5 to n=2. The energy of level n is E_n = -13.6/n^2 eV. The photon energy equals the energy difference. Calculate the wavelength in nanometers using E = hc/lambda, where hc = 1240 eV-nm. Output only the number rounded to the nearest integer.",
-    "answer": "434, Bohr, hydrogen, photon"
-  },
-  {
-    "task_id": "reason_sci_04",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A 0.5 kg block is attached to a spring with spring constant k = 200 N/m. The block is pulled 0.1 m from equilibrium and released. Assuming no damping, what is the maximum kinetic energy of the block in joules? The total mechanical energy is 0.5 * k * A^2. Output only the number.",
-    "answer": "1, spring, harmonic, oscillator"
-  },
-  {
-    "task_id": "reason_sci_05",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "Consider the equilibrium: N2(g) + 3H2(g) <-> 2NH3(g). At a certain temperature, Kc = 4.0. If the initial concentrations are [N2] = 0.5 M, [H2] = 1.5 M, and [NH3] = 0 M, what is the equilibrium concentration of NH3? Let x be the change in N2 concentration. Then at equilibrium: [N2] = 0.5-x, [H2] = 1.5-3x, [NH3] = 2x. Kc = (2x)^2 / ((0.5-x)*(1.5-3x)^3) = 4. This is complex - try x = 0.25: N2 = 0.25, H2 = 0.75, NH3 = 0.5. Kc = 0.25 / (0.25 * 0.75^3) = 0.25 / (0.25 * 0.4219) = 0.25/0.1055 = 2.37. Not 4. Try x = 0.3: N2=0.2, H2=0.6, NH3=0.6. Kc = 0.36/(0.2*0.216) = 0.36/0.0432 = 8.33 Too high. Try x=0.28: N2=0.22, H2=0.66, NH3=0.56. Kc = 0.3136/(0.22*0.2875) = 0.3136/0.06325 = 4.96. Close enough but let me solve: 4x^2 = 4(0.5-x)(1.5-3x)^3 = 4*27(0.5-x)^4. 4x^2 = 108(0.5-x)^4. x = sqrt(27)*(0.5-x)^2. sqrt(27) = 5.196. x = 5.196(0.25 - x + x^2). 0 = 5.196x^2 - 6.196x + 1.299. Discriminant: 38.39 - 27.0 = 11.39. sqrt = 3.375. x = (6.196-3.375)/(10.392) = 0.271. NH3 = 0.543 ≈ 0.54. Actually let me redo: Kc = (2x)^2/((0.5-x)(1.5-3x)^3) = 4. Let y = 0.5-x. Then 1.5-3x = 3(0.5-x) = 3y. NH3 = 2x = 2(0.5-y) = 1-2y. Kc = (1-2y)^2/(y*(3y)^3) = (1-2y)^2/(27y^4) = 4. (1-2y)^2 = 108y^4. 1-4y+4y^2 = 108y^4. 108y^4 - 4y^2 + 4y - 1 = 0. y = 0.23: 108*0.0028=0.302 -4*0.053=0.302-0.212=0.09 +0.92-1=0.01. y=0.228: 108*0.0027=0.292 -4*0.052=0.292-0.208=0.084 +0.912-1=-0.004. y≈0.229. NH3=1-2*0.229=0.542. Let me say answer is 0.54. Output only the number rounded to 2 decimal places.",
-    "answer": "0.54, equilibrium, chemical"
-  },
-  {
-    "task_id": "reason_sci_06",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A photon with wavelength 200 nm strikes a metal surface with work function 3.0 eV. Use E_photon = hc/lambda = 1240 eV-nm / 200 nm = 6.2 eV. The maximum kinetic energy of the emitted photoelectron is E_photon minus work function. What is the maximum kinetic energy in eV? Output only the number rounded to one decimal place.",
-    "answer": "3.2, photoelectric, Einstein"
-  },
-  {
-    "task_id": "reason_sci_07",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A sample of radioactive isotope has a half-life of 10 days. How many days will it take for 87.5% of the sample to decay? Use N = N0 * (1/2)^(t/t_half). When 87.5% has decayed, 12.5% remains. 0.125 = (1/2)^3, so t = 3 * half-life. Output only the number of days.",
-    "answer": "30, half-life, radioactive, decay"
-  },
-  {
-    "task_id": "reason_sci_08",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "Two point charges, +2 microcoulombs and -8 microcoulombs, are placed 0.3 meters apart. Coulomb's constant k = 9e9 N m^2 / C^2. Calculate the magnitude of the electrostatic force between them in newtons. Use F = k*|q1*q2|/r^2. Output only the number rounded to one decimal place.",
-    "answer": "1.6, Coulomb, electrostatic"
-  },
-  {
-    "task_id": "reason_sci_09",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "In a double-slit interference experiment with light of wavelength 500 nm, the slits are 0.2 mm apart and the screen is 2 m away. What is the distance from the central maximum to the third bright fringe on the screen? Use the small angle approximation: y_m = m*lambda*L/d. Output only the number in millimeters rounded to one decimal place.",
-    "answer": "15.0, interference, double, slit"
-  },
-  {
-    "task_id": "reason_sci_10",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A first-order reaction has a rate constant of 0.0346 per minute. How many minutes does it take for the concentration to drop to 25% of its initial value? Use the integrated rate law: ln([A]/[A0]) = -kt. ln(0.25) = -1.386. t = 1.386/0.0346. Output only the number rounded to the nearest integer.",
-    "answer": "40, kinetics, first, order"
-  },
-  {
-    "task_id": "reason_sci_11",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "An ideal gas at 300 K and 2 atm pressure occupies 5 liters. It is expanded isothermally to 15 liters. Using the ideal gas law and Boyle's law (PV = constant at constant T), find the new pressure in atm. Output only the number.",
-    "answer": "0.667, Boyle, isothermal"
-  },
-  {
-    "task_id": "reason_sci_12",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "According to the Heisenberg uncertainty principle, the uncertainty in position times the uncertainty in momentum is at least h/(4pi). If an electron's position is known to within 0.1 nanometers (1e-10 m), what is the minimum uncertainty in its velocity in meters per second? Electron mass = 9.11e-31 kg, h = 6.626e-34 J-s. Use delta_v >= h/(4*pi*m*delta_x). Output in scientific notation (e.g., 5.8e5).",
-    "answer": "5.8e5, Heisenberg, uncertainty"
-  },
-  {
-    "task_id": "reason_sci_13",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "What is the pH of a 0.01 M solution of acetic acid? Ka = 1.8e-5. For a weak acid, [H+] = sqrt(Ka*C) when Ka is small relative to C. Then pH = -log10([H+]). Compute the pH rounded to 2 decimal places. Output only the decimal.",
-    "answer": "3.37, weak, acid, equilibrium"
-  },
-  {
-    "task_id": "reason_sci_14",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "A pendulum on Earth has a period of 2 seconds. If the pendulum is taken to the Moon where gravity is 1/6 of Earth's (g_moon = 9.8/6 ≈ 1.633 m/s^2), what is the new period? The period is T = 2*pi*sqrt(L/g). On Earth: L = g*(T/(2*pi))^2 = 9.8*(1/pi)^2 ≈ 0.993 m. On Moon: T = 2*pi*sqrt(0.993/1.633) = 2*pi*sqrt(0.608) = 2*pi*0.78 = 4.90 seconds. Alternatively, T is proportional to 1/sqrt(g), so T_moon/T_earth = sqrt(6) ≈ 2.449. So T_moon = 2*2.449 = 4.898. Output only the number rounded to one decimal place.",
-    "answer": "4.9, pendulum, gravity"
-  },
-  {
-    "task_id": "reason_sci_15",
-    "category": "Scientific Reasoning",
-    "type": "free_form",
-    "prompt": "In the Luria-Delbruck fluctuation test, the number of mutations per culture follows a Poisson distribution. If the average number of mutations per culture is 0.5, what is the probability that a culture has at least 1 mutation? Use P(X >= 1) = 1 - P(X = 0) = 1 - e^(-lambda). e^(-0.5) ≈ 0.6065. Output only the decimal rounded to 3 decimal places.",
-    "answer": "0.393, Poisson, mutation, fluctuation"
+    "type": "exact",
+    "prompt": "Three groups: 10 people with average 70, 20 people with average 80, 15 people with average 90. Compute the weighted mean of all 45 people. Round to 2 decimal places. Output only the number.",
+    "answer": "81.11"
   }
 ]

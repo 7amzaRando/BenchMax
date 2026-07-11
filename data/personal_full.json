@@ -2,701 +2,701 @@
   {
     "task_id": "personal_code_1",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `segment_tree_lazy` that takes a list `arr` and a list of operations. Support two operations: 'update l r v' (add v to all elements in [l, r]) and 'query l r' (return sum of [l, r]). Build a segment tree with lazy propagation for range updates and range sum queries, both in O(log n). The function should execute all operations in order and return a list of query results.",
-    "answer": "def segment_tree_lazy"
+    "type": "mcq",
+    "prompt": "You are designing a concurrent LRU cache with O(1) amortized operations under high contention. Which synchronization strategy minimizes cache-line bouncing while preserving correctness?\nA) A single coarse-grained mutex protecting the entire hash map and doubly linked list\nB) A reader-writer lock allowing concurrent reads and exclusive writes\nC) Striped locking: partition the hash map into N independent shards, each with its own mutex and linked list, plus a global clock-based approximate LRU\nD) Lock-free hash map with a concurrent skip list for ordering, using CAS operations and hazard pointers\nE) A single mutex for writes plus RCU (Read-Copy-Update) for reads",
+    "answer": "C"
   },
   {
     "task_id": "personal_code_2",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `a_star_search` that implements A* pathfinding on a grid with obstacles. It takes `grid` (0=open, 1=blocked), `start` (row, col), and `goal` (row, col). Use Manhattan distance heuristic and a min-heap priority queue. Return the shortest path as a list of (row, col) tuples from start to goal inclusive, or an empty list if no path exists.",
-    "answer": "def a_star_search"
+    "type": "mcq",
+    "prompt": "Consider the problem of finding the minimum cut in an undirected graph with n vertices and m edges. Which statement about the Stoer-Wagner algorithm is correct?\nA) It runs in O(nm + n^2 log n) using a Fibonacci heap and always finds the global minimum cut with probability 1\nB) It repeatedly finds the s-t minimum cut using max-flow and contracts the two sides, running in O(n * MF(n,m)) where MF is the max-flow complexity\nC) It uses a deterministic global minimum cut algorithm based on successive vertex contractions, choosing the most-tightly-connected vertex at each step via a priority queue, achieving O(nm + n^2 log n) deterministic runtime\nD) It requires the graph to be directed and uses a randomized contraction algorithm with O(n^2 log^3 n) expected time",
+    "answer": "C"
   },
   {
     "task_id": "personal_code_3",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `dinic_max_flow` that implements Dinic's algorithm for maximum flow. It takes `n` (node count), `edges` as (from, to, capacity) tuples, source `s`, and sink `t`. Build a level graph using BFS, then send blocking flow using DFS with dead-end pruning. Return the maximum flow value as an integer.",
-    "answer": "def dinic_max_flow"
+    "type": "mcq",
+    "prompt": "For the problem of maintaining the median of a sliding window of size k over a stream, which data structure achieves O(log k) per operation in the worst case?\nA) A min-heap and a max-heap with lazy deletion, rebalancing when sizes differ by more than 1\nB) A balanced BST (e.g., AVL tree) storing all k elements with order-statistic queries\nC) A Fenwick tree over the compressed value range with point updates and prefix sum queries to find the median\nD) A segment tree with order statistics, updating by removing the outgoing element and inserting the incoming element\nE) Both A and B are correct approaches with O(log k) per operation",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_4",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `suffix_array_lcp` that takes a string `s` and returns two lists: the suffix array and the LCP array. Implement the O(n log n) doubling algorithm with counting sort for the suffix array, then use Kasai's algorithm to compute the LCP array (longest common prefix between consecutive suffixes). Handle strings up to length 10^5 efficiently.",
-    "answer": "def suffix_array_lcp"
+    "type": "mcq",
+    "prompt": "In the analysis of the Boruvka algorithm for minimum spanning tree, each iteration reduces the number of components by at least half. What is the tight worst-case time complexity when implemented with adjacency lists and union-find, for a graph with n vertices and m edges?\nA) O(m log n) — each of O(log n) iterations scans all edges\nB) O(m log n + n^2) — scanning edges plus component identification overhead\nC) O(m alpha(n) log n) — each iteration uses union-find for component checks\nD) O(m log n) if using a Fibonacci heap for finding the cheapest edge per component, else O(m log n) with binary heaps\nE) O(m log n) average case, O(nm) worst case when many components survive each iteration",
+    "answer": "A"
   },
   {
     "task_id": "personal_code_5",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `convex_hull_graham` that takes a list of (x, y) points and returns the convex hull as a list of points in counterclockwise order using Graham's scan. First find the point with the lowest y-coordinate (break ties by x), sort by polar angle, then scan with cross-product orientation tests. Exclude collinear interior points, keeping only hull vertices.",
-    "answer": "def convex_hull_graham"
+    "type": "mcq",
+    "prompt": "When implementing the Bellman-Ford algorithm on a graph with n vertices and m edges, which modification correctly detects negative cycles reachable from the source while maintaining O(nm) worst-case complexity?\nA) Run n-1 relaxation passes over all edges, then run one more pass; any edge that relaxes in the nth pass indicates a reachable negative cycle\nB) Run n passes, then check if any distance is still decreasing after n+1 passes\nC) Initialize all distances to 0 instead of infinity, run n passes, then check for negative cycles by seeing if any distance continues to decrease\nD) Use a queue (SPFA variant) and count how many times each vertex is dequeued; if any vertex is dequeued n times, a negative cycle exists\nE) Both A and D are correct, but A has the simpler proof of correctness",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_6",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `implicit_treap` that implements an implicit treap (cartesian tree with random priorities). Support `insert(pos, val)` to insert val at position pos and `range_sum(l, r)` to compute the sum of elements in [l, r). Use split(root, k) and merge(left, right) as primitives. The function takes an initial list and a list of operations and returns a list of range sum results.",
-    "answer": "def implicit_treap"
+    "type": "mcq",
+    "prompt": "For the problem of maintaining connected components under edge deletions (decremental connectivity) in a forest, what is the optimal amortized time per operation?\nA) O(log n) using link-cut trees with Euler tour trees\nB) O(log^2 n) using the Holm-de Lichtenberg-Thorup (HLT) algorithm with dynamic trees and an adjacency list hierarchy\nC) O(sqrt(m)) using the Frederickson's topology trees for bounded-degree graphs\nD) O(log n) using a dynamic forest data structure with path-parent queries and edge deletions via ET-trees\nE) O(n) worst case using a simple union-find with rollback, since edge deletions break the forest into two components",
+    "answer": "D"
   },
   {
     "task_id": "personal_code_7",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `three_dim_knapsack` that solves the 0/1 knap problem with weight, volume, and value constraints. It takes arrays `weights`, `volumes`, `values`, weight capacity `W`, and volume capacity `V`. Use a 3D DP table dp[i][w][v] tracking maximum value achievable with first i items, weight w, and volume v. Return the maximum total value.",
-    "answer": "def three_dim_knapsack"
+    "type": "mcq",
+    "prompt": "Consider the problem of computing the edit distance between two strings of length n and m. Which algorithm achieves O(min(n,m) * max(n,m)) time with O(min(n,m)) space?\nA) The standard Wagner-Fisher dynamic programming with a full (n+1)*(m+1) table\nB) The Myers' O(nd) algorithm for diff, where d is the edit distance\nC) Hirschberg's algorithm using divide-and-conquer on the DP matrix with linear space\nD) Ukkonen's algorithm using diagonal monotonicity in the DP matrix with O(nd) time where d is the edit distance\nE) Both C and D achieve O(nm) time with linear space, but D is output-sensitive",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_8",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `levenshtein_linear` that computes the Levenshtein edit distance between two strings using O(min(n,m)) space. Return both the distance and the edit sequence as a list of ('insert', char), ('delete', char), or ('substitute', old, new) operations. Use two rolling DP arrays for distance, then reconstruct the path using Hirschberg's divide-and-conquer technique.",
-    "answer": "def levenshtein_linear"
+    "type": "mcq",
+    "prompt": "For the maximum bipartite matching problem on a graph with n vertices on each side and m edges, which of the following complexity bounds is achievable by the Hopcroft-Karp algorithm?\nA) O(m * sqrt(n)) — each of O(sqrt(n)) BFS/DFS phases processes all unmatched edges\nB) O(n * m) — each augmenting path is found by DFS in O(m) time\nC) O(n^2 * m) — naive augmenting path search without layering\nD) O(m * n^(2/3)) — using the Even-Tarjan reduction to max-flow with Dinic\nE) O(sqrt(n) * m) average case, O(n*m) worst case for dense graphs",
+    "answer": "A"
   },
   {
     "task_id": "personal_code_9",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `rabin_karp_2d` that implements 2D pattern matching using rolling hash. It takes a 2D `text` matrix and a 2D `pattern` matrix of characters. Compute hash values for all text submatrices the same size as the pattern using a 2D rolling hash with base1 for rows and base2 for columns. Return a list of (row, col) positions where pattern occurs.",
-    "answer": "def rabin_karp_2d"
+    "type": "mcq",
+    "prompt": "In implementing a concurrent hash map with open addressing, what is the primary correctness challenge that linear probing faces under concurrent insertions and deletions?\nA) Tombstone accumulation causes the table to degrade to O(n) search time even after few deletions\nB) A concurrent insertion may observe a chain of displaced keys that does not yet include the target slot, leading to false negatives for subsequent lookups\nC) Two concurrent inserts may both identify the same empty slot and both succeed, causing a lost update\nD) The load factor cannot exceed 0.5 for concurrent correctness, halving effective table capacity\nE) Resizing requires stopping all concurrent operations, causing latency spikes in production systems",
+    "answer": "B"
   },
   {
     "task_id": "personal_code_10",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `manacher_palindromes` that takes a string `s` and returns a list of all distinct palindromic substrings using Manacher's O(n) algorithm. Transform s by inserting separators between characters, compute palindrome radii at each center using mirror positions and expansion, then extract all unique palindromes. Return them as a list of strings.",
-    "answer": "def manacher_palindromes"
+    "type": "mcq",
+    "prompt": "In the analysis of the A* search algorithm, which condition on the heuristic h(n) guarantees that the first time A* pops a goal state from the open set, the path found is optimal for a graph with non-negative edge weights?\nA) h(n) is admissible (never overestimates the true cost to the goal) and consistent (satisfies the triangle inequality h(n) <= c(n,m) + h(m))\nB) h(n) is admissible and monotonic, meaning h(n) <= h(m) + c(n,m) for all edges n->m\nC) h(n) is consistent, which implies admissibility but also guarantees that the f-cost along any path is non-decreasing\nD) h(n) is any non-negative function, since A* with a closed set (graph search) finds optimal paths regardless of heuristic quality\nE) Both A and B describe the same property under different names; C is also true but does not independently guarantee optimality without admissibility",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_11",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `tarjan_scc` that implements Tarjan's algorithm for finding strongly connected components in a directed graph. It takes `n` (node count) and a list of edges as (u, v) tuples. Maintain an index counter, a stack, and arrays for indices, low-link values, and on-stack tracking. Return a list of SCCs, each as a list of node indices in topological order (reversed).",
-    "answer": "def tarjan_scc"
+    "type": "mcq",
+    "prompt": "When implementing a Fibonacci heap, the potential function used in amortized analysis is Phi = t + 2*m, where t is the number of trees in the root list and m is the number of marked nodes. Under this potential, what is the amortized cost of an extract-min operation that performs d cascading cuts?\nA) O(log n) — the actual cost of O(d + log n) plus the change in potential from consolidating trees and unmarking nodes\nB) O(d + log n) — each cascading cut contributes O(1) amortized cost, and consolidation adds O(log n)\nC) O(log n) amortized regardless of d, because each cascading cut's actual O(1) cost is offset by a decrease in the number of marked nodes\nD) O(d) — cascading cuts dominate the cost, and d can be O(n) in the worst case\nE) O(log n) average, O(n) worst case when many cascading cuts occur during a single extract-min",
+    "answer": "C"
   },
   {
     "task_id": "personal_code_12",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `bidirectional_dijkstra` that implements bidirectional Dijkstra's shortest path algorithm. It takes `n` node count, adjacency list `graph` (list of (neighbor, weight) pairs), `source`, and `target`. Run forward Dijkstra from source and backward Dijkstra from target simultaneously using two heaps, alternating between them. Terminate when a node has been settled by both searches. Return the shortest distance and the path as a list of nodes.",
-    "answer": "def bidirectional_dijkstra"
+    "type": "mcq",
+    "prompt": "Consider the problem of finding the longest path in a directed acyclic graph (DAG) with n vertices and m edges. Which approach is correct and has optimal worst-case complexity?\nA) Run Bellman-Ford with negative edge weights on the negated graph — O(nm)\nB) Use topological sort and DP in O(n + m): process vertices in topological order, for each vertex relax its outgoing edges dist[v] = max(dist[v], dist[u] + w(u,v))\nC) Convert to a maximum flow problem with unit capacities and use Dinic — O(m * sqrt(n))\nD) Use Dijkstra on the negated graph since the graph has no cycles — O(m + n log n) with a binary heap\nE) Apply Floyd-Warshall for all-pairs longest paths and take the maximum — O(n^3)",
+    "answer": "B"
   },
   {
     "task_id": "personal_code_13",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `floyd_warshall_paths` that implements Floyd-Warshall for all-pairs shortest paths. It takes `n` and a matrix `dist` where dist[i][j] is the edge weight from i to j (infinity if no edge). Compute shortest distances and also maintain a next-node matrix `nxt` for path reconstruction. Return both the distance matrix and a function that reconstructs the path between any two nodes.",
-    "answer": "def floyd_warshall_paths"
+    "type": "mcq",
+    "prompt": "In a B-tree of minimum degree t >= 2, what is the tight bound on the number of nodes visited during a search operation?\nA) O(log_t n) — each node reduces the search space by a factor of at least t, and each node has at most 2t-1 keys\nB) O(log_2 n) — the tree height is O(log n) regardless of t, since each internal node contains O(1) keys\nC) O(log_{t} (n/t)) — the fanout is at most 2t, and each internal node has at least t-1 keys except the root\nD) O(log n / log t) — the height is bounded by log_t ((n+1)/2) + 1, since each node except the root has at least t-1 keys\nE) Both C and D are equivalent statements about B-tree height, though D is more precise",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_14",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `chinese_postman` that implements the route inspection (Chinese postman) algorithm for an undirected graph. It takes `n` (node count) and `edges` as (u, v, weight) tuples. Find all odd-degree vertices, compute all-pairs shortest paths between them, solve a minimum-weight perfect matching on odd vertices (via DP over subsets), then determine the minimum length of a closed walk covering every edge at least once. Return the total length.",
-    "answer": "def chinese_postman"
+    "type": "mcq",
+    "prompt": "For the problem of computing the convex hull of n points in the plane, which algorithm achieves optimal O(n log h) time, where h is the number of hull points?\nA) Graham's scan after sorting by polar angle — O(n log n) regardless of h\nB) The Quickhull algorithm — O(n log n) average case, O(n^2) worst case\nC) Chan's algorithm — combines gift wrapping and divide-and-conquer, selecting a block size m = h, running Jarvis march on blocks, then using a pruning step\nD) Andrew's monotone chain — O(n log n) worst case with O(n) space\nE) The Marriage-before-Conquest algorithm by Kirkpatrick and Seidel — O(n log h) time with a complicated prune-and-search approach",
+    "answer": "C"
   },
   {
     "task_id": "personal_code_15",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `hopcroft_karp` that implements the Hopcroft-Karp algorithm for maximum bipartite matching. It takes `left_n`, `right_n`, and `edges` as (left_node, right_node) tuples. Use alternating BFS to find the shortest augmenting path distance and DFS to find disjoint augmenting paths in batches. Return the maximum matching size and the matching as a dict mapping left nodes to right nodes.",
-    "answer": "def hopcroft_karp"
+    "type": "mcq",
+    "prompt": "In the analysis of quicksort with a randomized pivot, what is the exact expected number of comparisons C(n) for sorting n distinct elements?\nA) C(n) = 2n log n + O(n)\nB) C(n) = 2(n+1) * H_n - 4n, where H_n is the n-th harmonic number, which is approximately 2n ln n - (4 - 2*gamma) n + O(log n)\nC) C(n) = n log_2 n + O(n)\nD) C(n) = n^2 / 4 in the worst case, O(n log n) on average\nE) C(n) = (n+1) * H_n - 2n, approximately n ln n - (1 - gamma) n + O(log n)",
+    "answer": "B"
   },
   {
     "task_id": "personal_code_16",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `lis_nlogn` that implements the O(n log n) algorithm for the longest increasing subsequence. It takes a list of integers and returns both the length of the LIS and one longest increasing subsequence as a list. Maintain an array `tails` where tails[i] is the smallest possible tail value of an increasing subsequence of length i+1. For reconstruction, also store predecessor indices.",
-    "answer": "def lis_nlogn"
+    "type": "mcq",
+    "prompt": "When implementing a lock-free stack using a linked list with CAS (Compare-And-Swap) on the head pointer, which problem known as the ABA issue requires a solution?\nA) A thread reads head = A, another thread pops A and pushes B then A again (same address), the first thread's CAS succeeds incorrectly because it sees the same pointer value A\nB) Two threads simultaneously push new nodes; both read the same head and CAS succeeds for both, losing one node\nC) A thread reading head while another thread is in the middle of a push causes an infinite loop\nD) The stack becomes empty but the head pointer points to a freed node due to garbage collection timing\nE) CAS on a 64-bit system requires double-word CAS which is not available on x86 without the CMPXCHG16B instruction",
+    "answer": "A"
   },
   {
     "task_id": "personal_code_17",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `voronoi_fortune` that implements Fortune's sweep-line algorithm for computing a Voronoi diagram of a set of 2D points. It takes a list of (x, y) seed points. Use a priority queue of site events and circle events, and a balanced BST of beach line arcs. Output the Voronoi edges as a list of line segment tuples ((x1,y1), (x2,y2)) representing the finite edges of the diagram.",
-    "answer": "def voronoi_fortune"
+    "type": "mcq",
+    "prompt": "For constructing a suffix array of a string of length n in O(n) time, which algorithm is correct?\nA) The prefix-doubling algorithm with radix sort — O(n log n) time, O(n) space\nB) SA-IS (Suffix Array Induced Sorting) — uses induced sorting on LMS (Leftmost S-type) suffixes, achieving O(n) time and O(n) space\nC) The DC3 (Difference Cover modulo 3) algorithm — recursively sorts suffixes modulo 3 positions, O(n) time, O(n) space\nD) Ukkonen's suffix tree construction in O(n) time, then performing a DFS of the suffix tree to extract the suffix array in order\nE) Both B and C are correct linear-time suffix array construction algorithms",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_18",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `hungarian_algorithm` that implements the Kuhn-Munkres (Hungarian) algorithm for the assignment problem. It takes an n x n cost matrix of non-negative integers. For each row, subtract the row minimum, then for each column subtract the column minimum. Cover all zeros with minimum lines using the standard Hungarian method (marking, augmenting). Return the minimum total cost and the assignment as a list of (row, col) pairs.",
-    "answer": "def hungarian_algorithm"
+    "type": "mcq",
+    "prompt": "In the context of cache-oblivious algorithms, what is the optimal cache complexity for the cache-oblivious matrix multiplication of two n x n matrices, assuming an ideal cache with Z words and L-word cache lines?\nA) O(n^3 / (L * sqrt(Z))) — the standard divide-and-conquer approach with block size sqrt(Z/3)\nB) O(n^3 / sqrt(Z)) — block matrix multiplication with tiling\nC) O(n^3 / (L * Z^(1/2))) — the blocked algorithm has optimal cache complexity\nD) O(n^3 / (L * sqrt(Z))) — the cache-oblivious Strassen-like recursive algorithm\nE) O(n^3 / L) — each element is loaded once into cache, the cache complexity is simply the number of cache lines filled",
+    "answer": "A"
   },
   {
     "task_id": "personal_code_19",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python class called `RedBlackTree` with methods `insert(val)` and `inorder()` that implements a red-black tree. On insert, perform standard BST insertion, color the new node red, then fix violations using rotations and color flips: handle cases for uncle being red (recolor) and uncle being black (rotate). Maintain the five red-black properties at all times. The `inorder` method should return values in sorted order as a list.",
-    "answer": "def RedBlackTree"
+    "type": "mcq",
+    "prompt": "For the problem of finding the maximum subarray sum (Kadane's algorithm generalization) in a 2D matrix of size m x n, what is the optimal time complexity?\nA) O(m^2 n) — for each pair of row boundaries, run Kadane's 1D algorithm on the column-wise sums\nB) O(mn log min(m,n)) — using divide and conquer, splitting the longer dimension\nC) O(mn) — there exists a linear-time 2D generalization of Kadane's algorithm using prefix sums\nD) O(m^2 n log n) — for each row pair, use a segment tree for the column-wise prefix sums\nE) O(mn * min(m,n)) — using the 1D reduction applied to the smaller dimension",
+    "answer": "A"
   },
   {
     "task_id": "personal_code_20",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `kmp_search` that implements the Knuth-Morris-Pratt string matching algorithm. It takes a text string and a pattern string. Build the LPS (longest proper prefix which is also a suffix) array for the pattern in O(m) time, then scan the text using the LPS array to skip unnecessary comparisons. Return a list of all starting indices where the pattern occurs in the text, or an empty list if none.",
-    "answer": "def kmp_search"
+    "type": "mcq",
+    "prompt": "Consider the problem of counting the number of inversions in an array of length n. Which of the following approaches achieves the optimal O(n log n) worst-case time complexity?\nA) Using a balanced BST and inserting elements while counting larger nodes — O(n log n) expected, O(n^2) worst\nB) Using a Fenwick tree over the compressed value range, processing from right to left — O(n log n)\nC) Using a modified merge sort that counts cross-inversions during the merge step — O(n log n)\nD) Using an order-statistic tree (augmented RB tree) with insertion and rank queries — O(n log n)\nE) All of B, C, and D achieve O(n log n) worst-case complexity",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_21",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `bishop_min_moves` that computes the minimum number of bishop moves to reach (x2, y2) from (x1, y1) on an infinite chessboard. A bishop moves any number of squares diagonally. Consider the two diagonals: same-color squares require 1 or 2 moves (0 if same square), different-color squares are unreachable. For the 2-move case, the intersection point of the two diagonals is the intermediate square. Return the minimum moves or -1 if unreachable.",
-    "answer": "def bishop_min_moves"
+    "type": "mcq",
+    "prompt": "In the analysis of the Knuth-Morris-Pratt string matching algorithm, which statement about the failure function (also called the prefix function or LPS array) is correct?\nA) For pattern P of length m, the failure function pi[i] is the length of the longest proper prefix of P[0..i] that is also a suffix of P[0..i]\nB) The failure function can be computed in O(m) time using two pointers, and during the search phase the total number of character comparisons is at most 2n for a text of length n\nC) The failure function pi[0] is always defined as 0 or -1 depending on the convention used\nD) During the search phase, when a mismatch occurs at position j in the pattern, the pattern is shifted so that the first pi[j-1] characters align with the matched prefix\nE) All of the above are correct statements about the KMP failure function",
+    "answer": "E"
   },
   {
     "task_id": "personal_code_22",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `lcs_suffix_automaton` that finds the longest common substring of two strings using a suffix automaton. Build a SAM for the first string s, then traverse it with the second string t, tracking current state and current length. When a transition exists, follow it and increment length; otherwise follow suffix links until a transition exists. Return the longest common substring and its starting positions in both strings.",
-    "answer": "def lcs_suffix_automaton"
+    "type": "mcq",
+    "prompt": "When implementing a concurrent skiplist, what is the expected number of pointers per node to maintain O(log n) expected search time with high probability?\nA) 1 — a singly linked list with optimistic locking\nB) 2 — each node has a forward pointer and a next pointer for the base layer\nC) 1/(1-p) where p is the probability of promotion between levels, typically 1/2 or 1/4, giving expected 2 or 4 pointers per node\nD) log n / log(1/p) — each node stores pointers for all levels it belongs to, with the topmost level at roughly log_{1/p} n\nE) log_2 n — each node has a pointer for every level in the skiplist, and the maximum level is log_2 n",
+    "answer": "C"
   },
   {
     "task_id": "personal_code_23",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `held_karp_tsp` that implements the Held-Karp dynamic programming algorithm for the traveling salesman problem. It takes an n x n distance matrix. Use DP over subsets: dp[mask][i] = minimum cost to visit all cities in mask exactly once, ending at city i. Iterate over all subsets, for each subset iterate over possible ending cities and transition from previous subsets. Return the minimum tour cost as an integer.",
-    "answer": "def held_karp_tsp"
+    "type": "mcq",
+    "prompt": "For the problem of computing all-pairs shortest paths in a graph with non-negative integer weights bounded by a constant C, which algorithm achieves the best asymptotic complexity?\nA) Floyd-Warshall — O(n^3)\nB) Johnson's algorithm with Dial's implementation using buckets for the priority queue — O(mn + nC)\nC) Repeated Dijkstra with a binary heap — O(n(m + n log n))\nD) Min-plus matrix multiplication using the Four Russians method — O(n^3 / log n)\nE) Repeated Dijkstra with a Fibonacci heap — O(nm + n^2 log n)",
+    "answer": "B"
   },
   {
     "task_id": "personal_code_24",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `boyer_moore` that implements the Boyer-Moore string search algorithm with the bad-character heuristic. It takes a text string and a pattern string. Build the bad-character shift table (last occurrence of each character in the pattern). Then scan the text from left to right, comparing the pattern from right to left. When a mismatch occurs, shift the pattern using the bad-character rule. Return the index of the first match or -1.",
-    "answer": "def boyer_moore"
+    "type": "mcq",
+    "prompt": "Consider the space-efficient implementation of the van Emde Boas tree for a universe of size u = 2^k. Which of the following correctly describes the recurrence for query time and space usage?\nA) T(u) = T(sqrt(u)) + O(1), S(u) = sqrt(u) * S(sqrt(u)) + O(sqrt(u)), leading to O(log log u) time and O(u) space\nB) T(u) = 2*T(sqrt(u)) + O(1), S(u) = (sqrt(u)+1) * S(sqrt(u)) + O(sqrt(u)), leading to O(log log u) time and O(u log log u) space\nC) T(u) = T(sqrt(u)) + O(log sqrt(u)), S(u) = sqrt(u) * S(sqrt(u)), leading to O(log u) time and O(u) space\nD) T(u) = T(sqrt(u)) + O(sqrt(u)), S(u) = u * S(sqrt(u)), leading to O(log u) time and O(u log u) space\nE) T(u) = 2*T(u/2) + O(1), S(u) = 2*S(u/2) + O(1), leading to O(log u) time and O(u) space using bit-level parallelism",
+    "answer": "B"
   },
   {
     "task_id": "personal_code_25",
     "category": "Code",
-    "type": "code",
-    "prompt": "Write a Python function called `matrix_chain_order` that solves the optimal matrix chain multiplication problem using DP. It takes a list `dims` where matrix i has dimensions dims[i-1] x dims[i]. Compute the minimum number of scalar multiplications needed to multiply the chain. Use a 2D DP table m[i][j] = minimum cost for matrices i through j, and s[i][j] = split point. Return the minimum cost and the optimal parenthesization as a string like '((A1(A2A3))A4)'.",
-    "answer": "def matrix_chain_order"
+    "type": "mcq",
+    "prompt": "For the problem of finding strongly connected components in a directed graph with n vertices and m edges, which approach has the optimal O(n + m) time complexity?\nA) Kosaraju's algorithm: forward DFS to get finish order, reverse graph DFS on that order — O(n + m) with two passes\nB) Tarjan's algorithm: single-pass DFS with low-link values and a stack — O(n + m)\nC) The path-based strong components algorithm by Cheriyan-Mehlhorn-Gabow using a DFS and two stacks — O(n + m)\nD) Contract the graph by repeatedly finding cycles and collapsing them until no cycles remain — O(n + m) amortized\nE) All of A, B, and C are linear-time SCC algorithms",
+    "answer": "E"
+  },
+  {
+    "task_id": "personal_code_26",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "In designing a consistent hashing scheme with virtual nodes for distributed key-value storage, which property is NOT guaranteed by adding virtual nodes?\nA) Improved load balancing when the number of physical nodes is small\nB) Reduced variance in the distribution of keys across physical nodes\nC) Guaranteed O(1) worst-case lookup time even during node additions and removals\nD) Smoother redistribution of keys when nodes join or leave, approaching uniform distribution\nE) Better handling of heterogeneous node capacities by assigning different numbers of virtual nodes per physical node",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_code_27",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "For the problem of finding the minimum enclosing circle of n points in the plane, which randomized algorithm achieves O(n) expected time?\nA) Welzl's algorithm — recursively selects a random point as a candidate, and if it lies outside the current circle, recurses with it as a boundary point\nB) The Megiddo prune-and-search approach — O(n) deterministic by discarding a fixed fraction of points per iteration\nC) The Naive-Smallest-Enclosing-Circle — O(n^4) by checking all triples\nD) The incremental randomized algorithm — shuffles points and maintains the circle, with expected O(n) runtime for fixed dimensions\nE) Both A and D describe the same algorithm by Welzl, achieving O(n) expected time for d=2",
+    "answer": "E"
+  },
+  {
+    "task_id": "personal_code_28",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "In implementing the Dinic maximum flow algorithm on a graph with n vertices and m edges, what is the worst-case time complexity when the capacities are integers bounded by U?\nA) O(n^2 m) — the original bound from the level graph and blocking flow approach\nB) O(min(V^(2/3), sqrt(E)) * E) — using the improved capacity scaling approach\nC) O(nm log U) — using the Edmonds-Karp variant with shortest augmenting paths\nD) O(n^3) — for unit capacity networks, since each blocking flow saturates at most n edges\nE) O(nm log (n^2/m)) — using dynamic trees for the blocking flow computation",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_code_29",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "Consider the problem of finding the k-th smallest element in a binary search tree with n nodes. Which approach achieves O(log n + k) time?\nA) Perform an inorder traversal and stop after k elements — O(n) worst case\nB) Use a min-heap and repeatedly extract the minimum k times — O(k log n)\nC) Augment each node with the size of its left subtree, then traverse from the root comparing k with subtree sizes — O(log n) for balanced BST, O(n) for degenerate\nD) Use Morris traversal and stop after visiting k nodes — O(n) worst case with O(1) space\nE) Maintain an order-statistic tree with subtree sizes, enabling O(log n) find-by-rank and thus O(log n + k) for retrieving all first k in order",
+    "answer": "E"
+  },
+  {
+    "task_id": "personal_code_30",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "When implementing a concurrent work-stealing deque for fork-join parallelism, which data layout ensures that the owner thread can push and pop from one end with minimal synchronization while thieves steal from the other end?\nA) A single lock-protected deque with condition variables for empty/full signaling\nB) A concurrent linked list where each node represents a task, with atomic head and tail pointers\nC) A circular array with atomic head and tail indices, where the owner accesses the tail using regular loads/stores and thieves access the head using CAS\nD) A treiber stack for work items, with thieves stealing the entire stack and splitting it\nE) A fine-grained locking scheme on each bucket of the circular array, with a global work count",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_code_31",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "For the problem of finding the diameter of a tree (the longest shortest path between any two nodes), which algorithm is correct and optimal?\nA) Run BFS from an arbitrary node to find the farthest node u, then BFS from u to find the farthest node v; the distance between u and v is the diameter — O(n)\nB) Use dynamic programming: for each node compute the two longest paths through its children; the diameter is the max of those sums — O(n)\nC) Root the tree and compute height of each node; the diameter is max over all nodes of (max child height + second max child height) — O(n)\nD) Use Floyd-Warshall and find the maximum shortest path distance — O(n^3)\nE) All of A, B, and C are correct O(n) algorithms for tree diameter, though A is the simplest",
+    "answer": "E"
+  },
+  {
+    "task_id": "personal_code_32",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "In implementing the Karger-Stein random contraction algorithm for minimum cut, what is the probability that a specific minimum cut survives all O(log^2 n) iterations?\nA) At least 1 / (n choose 2), following the original Karger's analysis\nB) At least 1 / log n, achieved by running the contraction until n/sqrt(2) vertices remain, then recursing twice\nC) At least Omega(1 / log n), with the full algorithm repeating the two-way recursion O(log^2 n) times for total O(n^2 log^3 n) expected time\nD) At least 1/2 per trial, but each trial costs O(n^2 m) time\nE) At least 1 / (n log n), requiring O(n^2 log n) repetitions to achieve high probability",
+    "answer": "C"
+  },
+  {
+    "task_id": "personal_code_33",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "For the problem of maintaining a minimum spanning forest under edge weight increases in a graph with n vertices and m edges, which data structure achieves O(log n) amortized time per operation?\nA) Link-Cut Tree with dynamic edge weight updates and MST revalidation — O(log n) per operation\nB) The Holm-de Lichtenberg-Thorup algorithm for dynamic connectivity — O(log^2 n) per operation\nC) Euler tour trees with level-based hierarchy — O(log n) per operation for forests\nD) Chordal graph maintenance with clique trees — O(m log n) per operation\nE) A static MST recomputed from scratch after each change — O(m log n) flat cost",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_code_34",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "Consider the problem of finding a maximum matching in general (non-bipartite) graphs. Which algorithm achieves polynomial time and how does it handle blossoms (odd-length cycles)?\nA) The Hopcroft-Karp algorithm works for general graphs without modification — O(m sqrt(n))\nB) Edmonds' blossom algorithm: when an odd cycle is found by alternating BFS, contract the blossom into a single vertex and continue — O(n^2 m) in the original formulation\nC) The Hungarian algorithm extended to non-bipartite graphs — O(n^3) using matrix operations\nD) Reduce to maximum flow by orienting edges and solving — O(n^3) via Dinic\nE) The blossom algorithm runs in O(n^3) using the Micali-Vazirani generalization of Hopcroft-Karp to general graphs",
+    "answer": "B"
+  },
+  {
+    "task_id": "personal_code_35",
+    "category": "Code",
+    "type": "mcq",
+    "prompt": "For the problem of creating a data structure that supports insert, delete, and get-random in O(1) average time with equal probability for get-random, which combination is correct?\nA) A hash map from value to index plus a dynamic array, where deletion swaps the target with the last element before removing\nB) A hash set with linear probing, where get-random iterates until a non-empty slot is found\nC) A balanced BST storing all elements, with get-random using order statistics to select a uniformly random rank\nD) A hash map storing values and a doubly linked list, with get-random traversing to a random node\nE) A bit array indexed by value with a separate list of present values, where get-random picks from the list with a random index",
+    "answer": "A"
   },
   {
     "task_id": "personal_knowledge_1",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which of the following formal languages is recognized by a linear bounded automaton but NOT by a pushdown automaton?\nA) {aⁿbⁿ | n ≥ 0}\nB) {aⁿbⁿcⁿ | n ≥ 0}\nC) {wwᴿ | w ∈ {a,b}*}\nD) {aⁿ | n is prime}",
-    "answer": "B"
+    "prompt": "In computational complexity theory, TQBF (True Quantified Boolean Formulas) is the canonical PSPACE-complete problem. What is the relationship between PSPACE and the polynomial hierarchy (PH) if PSPACE = PH?\nA) The polynomial hierarchy collapses to the first level, P = NP = co-NP = PH = PSPACE\nB) The polynomial hierarchy collapses to some finite level k, but not necessarily the first; PH = PSPACE does not imply P = NP\nC) If PSPACE = PH, then PH would equal PSPACE, but since TQBF is not in PH under standard assumptions, PSPACE strictly contains PH\nD) PSPACE = PH implies P = PSPACE, since the polynomial hierarchy is defined via oracle machines and TQBF reduces to some level\nE) PH = PSPACE is known to be false because PSPACE contains PH via Toda's theorem, but the converse containment is an open problem",
+    "answer": "C"
   },
   {
     "task_id": "personal_knowledge_2",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "What is the nuclear spin quantum number of deuterium (²H) and how does it affect NMR spectroscopy compared to protium (¹H)?\nA) I=0; deuterium is NMR-inactive\nB) I=1/2; identical splitting patterns to protium\nC) I=1; deuterium causes triplet splitting and has a quadrupole moment\nD) I=3/2; deuterium shows four NMR peaks",
-    "answer": "C"
+    "prompt": "In the density matrix formulation of quantum mechanics, a mixed state rho evolves under a Hamiltonian H according to which equation?\nA) i * hbar * d(rho)/dt = [H, rho] — the Liouville-von Neumann equation\nB) d(rho)/dt = -i/hbar * (H*rho - rho*H) + L(rho) — the Lindblad master equation for open systems\nC) i * hbar * d(rho)/dt = H*rho — the time-dependent Schrodinger equation extended to density matrices\nD) d(rho)/dt = {H, rho} / (i*hbar) — the anti-commutator form for dissipative systems\nE) Both A and B are correct in different contexts: A for closed systems, B for open quantum systems with Markovian noise",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_3",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the RSA cryptosystem with modulus n = 3233 (p=53, q=61) and public exponent e = 17, what is the private exponent d?\nA) 413\nB) 2753\nC) 1921\nD) 1237",
-    "answer": "B"
+    "prompt": "In category theory, which of the following is NOT a requirement for a pair of functors F: C -> D and G: D -> C to form an adjunction F -| G?\nA) There exists a natural transformation eta: id_C -> G circ F called the unit\nB) There exists a natural transformation epsilon: F circ G -> id_D called the counit\nC) The triangle identities hold: G(epsilon_X) circ eta_{G(X)} = id_{G(X)} and epsilon_{F(Y)} circ F(eta_Y) = id_{F(Y)}\nD) For every object X in C and Y in D, there is a bijection Hom_D(F(X), Y) =~ Hom_C(X, G(Y)) that is natural in both X and Y\nE) The functor F must be full and faithful, and G must be essentially surjective on objects",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_4",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In category theory, which property is NOT guaranteed to exist in an arbitrary category?\nA) Identity morphisms for every object\nB) Composition of morphisms when the codomain matches the domain\nC) An initial object (an object with exactly one morphism to every other object)\nD) Associativity of morphism composition",
-    "answer": "C"
+    "prompt": "In the lambda calculus with the Church encoding of natural numbers, what is the Church numeral for 0, and how is the successor function S defined?\nA) 0 = lambda f x. f x, S = lambda n f x. f (n f x)\nB) 0 = lambda f x. x, S = lambda n f x. f (n f x)\nC) 0 = lambda f x. x, S = lambda n f x. n f (f x)\nD) 0 = lambda f. lambda x. x, S = lambda n. lambda f x. n f (f x)\nE) Both B and D describe the same Church encoding using different syntax conventions",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_5",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "What is the correct ground-state electron configuration of a neutral copper atom (Cu, Z=29) and why does it deviate from the expected Aufbau filling?\nA) [Ar] 3d¹⁰ 4s¹ due to the enhanced stability of a filled d-subshell\nB) [Ar] 3d⁹ 4s² following the standard Aufbau principle\nC) [Ar] 3d⁸ 4s² 4p¹ due to p-orbital hybridization\nD) [Ar] 3d¹⁰ 4s⁰ due to complete s-to-d electron transfer",
-    "answer": "A"
+    "prompt": "In the Vapnik-Chervonenkis theory, what is the VC dimension of the hypothesis class of axis-aligned rectangles in the Euclidean plane R^2?\nA) 2 — any set of 2 points can be shattered, but 3 collinear points cannot be separated\nB) 3 — the set of three points forming a triangle can be shattered, but any four points cannot\nC) 4 — the class can shatter four points arranged in a convex quadrilateral, but no set of five points can be fully shattered\nD) 5 — axis-aligned rectangles in R^2 have VC-dimension 5, as the Sauer-Shelah lemma predicts\nE) Infinity — rectangles can be arbitrarily adjusted to shatter any finite set of points",
+    "answer": "C"
   },
   {
     "task_id": "personal_knowledge_6",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the proof of the Cook-Levin theorem, the Boolean formula constructed from an NTM computation of time T(n) has size:\nA) O(T(n)), linear in the number of computation steps\nB) O(T(n)²), dominated by the transition constraint clauses across tape cells\nC) O(T(n)³), dominated by the input specification clauses\nD) O(2^T(n)), exponential due to state encoding",
-    "answer": "B"
+    "prompt": "In the context of the Riemann Hypothesis, which of the following statements about the Riemann zeta function zeta(s) is correct?\nA) All non-trivial zeros of zeta(s) lie on the critical line Re(s) = 1/2, which has been verified for the first 10 trillion zeros\nB) The functional equation relates zeta(s) to zeta(1-s): zeta(s) = 2^s * pi^(s-1) * sin(pi*s/2) * Gamma(1-s) * zeta(1-s)\nC) The Euler product formula expresses zeta(s) as a product over all prime numbers for Re(s) > 1\nD) The Riemann-von Mangoldt formula counts the number of zeros with imaginary part less than T: N(T) = (T/(2pi)) * log(T/(2pi)) - (T/(2pi)) + O(log T)\nE) All of the above are correct statements about the Riemann zeta function",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_7",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which single-qubit quantum gate has the matrix representation (1/√2) * [[1, 1], [1, -1]] and what is its action on the computational basis states |0⟩ and |1⟩?\nA) Pauli-X gate; swaps |0⟩ and |1⟩\nB) Hadamard gate; creates equal superpositions from both basis states\nC) Phase gate S; adds relative phase of i to |1⟩\nD) T gate; adds relative phase of e^(iπ/4) to |1⟩",
-    "answer": "B"
+    "prompt": "In molecular orbital theory, which statement correctly describes the bonding in dioxygen (O2) according to the molecular orbital diagram?\nA) O2 has a bond order of 2.0, is diamagnetic with all electrons paired, and has the configuration (sigma_2s)^2 (sigma*_2s)^2 (sigma_2p)^2 (pi_2p)^4 (pi*_2p)^2 with both pi* electrons paired\nB) O2 has a bond order of 2.5 with one unpaired electron, making it paramagnetic\nC) O2 has a bond order of 2.0 with two unpaired electrons in the degenerate pi* orbitals (Hund's rule), giving triplet ground state and paramagnetism\nD) O2 has a bond order of 3.0 similar to N2, with all bonding orbitals filled and no electrons in antibonding orbitals\nE) O2 has a bond order of 1.5 with three unpaired electrons due to sp mixing in the second period",
+    "answer": "C"
   },
   {
     "task_id": "personal_knowledge_8",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which parsing algorithm can handle ALL context-free grammars, including ambiguous grammars, with O(n³) worst-case time complexity?\nA) LR(1) parser\nB) LALR(1) parser\nC) Earley parser\nD) LL(1) recursive descent parser",
-    "answer": "C"
+    "prompt": "In the CAP theorem for distributed systems, which of the following correctly describes the tradeoffs?\nA) A system can guarantee at most two of Consistency, Availability, and Partition Tolerance simultaneously\nB) During a network partition, a system must choose between consistency and availability; when no partition exists, all three can be achieved simultaneously\nC) The CAP theorem states that no distributed system can guarantee all three of Consistency, Availability, and Partition Tolerance at the same time; in practice, systems choose CP (sacrifice availability) or AP (sacrifice consistency)\nD) Both B and C are correct interpretations of the CAP theorem's practical implications\nE) The CAP theorem has been formally disproven for certain types of distributed databases that achieve all three through innovative consistency models",
+    "answer": "D"
   },
   {
     "task_id": "personal_knowledge_9",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "What is the maximum number of distinct regions into which 6 circles can partition the Euclidean plane, assuming each pair of circles intersects at exactly two distinct points?\nA) 32\nB) 44\nC) 42\nD) 64",
+    "prompt": "In statistical mechanics, the partition function for a quantum harmonic oscillator with energy levels E_n = hbar * omega * (n + 1/2) for n = 0, 1, 2, ... is given by which expression?\nA) Z = e^{(-hbar*omega)/(2kT)} / (1 - e^{(-hbar*omega)/(kT)}) — the sum of a geometric series over all n\nB) Z = 1 / (1 - e^{(-hbar*omega)/(kT)}) — using the high-temperature approximation\nC) Z = kT / (hbar*omega) — from the classical equipartition theorem limit\nD) Z = sum_{n=0}^{N} e^{(-E_n)/(kT)} with a finite cutoff due to zero-point energy constraints\nE) Both A and D are equivalent at the high-temperature limit, but A gives the exact closed form",
     "answer": "A"
   },
   {
     "task_id": "personal_knowledge_10",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the P versus NP debate, which of the following statements about the class co-NP is known to be TRUE?\nA) co-NP = NP is a proven theorem\nB) If P = NP, then co-NP = NP\nC) co-NP is strictly contained within NP\nD) The Halting Problem is in co-NP",
-    "answer": "B"
+    "prompt": "In group theory, which of the following statements about the Sylow theorems is correct?\nA) For a finite group G of order n = p^k * m where p does not divide m, the number of Sylow p-subgroups n_p divides m and is congruent to 1 modulo p\nB) All Sylow p-subgroups of G are conjugate to each other\nC) A Sylow p-subgroup exists for every prime p dividing |G|\nD) Any two Sylow p-subgroups are conjugate, and n_p = [G : N_G(P)] where N_G(P) is the normalizer of a Sylow p-subgroup P\nE) All of the above are true statements about Sylow p-subgroups and their properties",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_11",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Which of the following molecules has a trigonal bipyramidal electron-pair geometry with T-shaped molecular geometry due to lone pairs?\nA) PCl₅ — no lone pairs, trigonal bipyramidal molecular\nB) SF₄ — one lone pair, seesaw molecular geometry\nC) BrF₃ — two lone pairs, T-shaped molecular geometry\nD) XeF₂ — three lone pairs, linear molecular geometry",
-    "answer": "C"
+    "prompt": "In the Shapley value solution concept from cooperative game theory, which axiom is NOT part of Shapley's original characterization?\nA) Efficiency — the sum of all players' Shapley values equals the total value of the grand coalition\nB) Symmetry — if two players are interchangeable (they make identical marginal contributions), they receive the same Shapley value\nC) Null player — a player who adds no marginal value to any coalition receives a Shapley value of zero\nD) Additivity — for two games v and w, the Shapley value of v+w equals the sum of the Shapley values\nE) Individual rationality — each player's Shapley value is at least as large as the value they could obtain by acting alone",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_12",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the 3D Ising model at a second-order phase transition, the specific heat C diverges as |T − Tc|^(−α). The critical exponent α for the 3D Ising universality class is approximately:\nA) 0 (logarithmic divergence, as in the 2D Ising model)\nB) 0.11\nC) 0.33 (equal to the inverse of the correlation length exponent ν)\nD) 0.63 (equal to the magnetization exponent β)",
+    "prompt": "In relativity, the Schwarzschild metric describes the spacetime around a non-rotating, uncharged spherical mass. At which radius does the metric become singular in Schwarzschild coordinates, and what is the physical interpretation?\nA) r = 0 — the physical singularity where curvature becomes infinite\nB) r = 2GM/c^2 — the event horizon (Schwarzschild radius), a coordinate singularity that can be removed by changing to Kruskal-Szekeres coordinates\nC) r = GM/c^2 — the photon sphere where light orbits in unstable circular paths\nD) Both r = 0 and r = 2GM/c^2 are physical singularities where geodesics cannot be extended\nE) r = 3GM/c^2 — the innermost stable circular orbit (ISCO) for massive particles",
     "answer": "B"
   },
   {
     "task_id": "personal_knowledge_13",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "In the IPv4 packet header, which field is decremented at each router hop and, upon reaching zero, causes the packet to be discarded and an ICMP Time Exceeded message to be sent?\nA) Identification field — used for fragmentation reassembly\nB) Fragment Offset — indicates position in a fragmented packet\nC) Time to Live (TTL) — prevents routing loops\nD) Header Checksum — detects corruption in the header",
-    "answer": "C"
+    "prompt": "In the theory of formal languages, which of the following languages is NOT context-free?\nA) {a^n b^n c^n | n >= 0} — requires counting three sequences equally\nB) {ww^R | w in {a,b}^*} — the language of even-length palindromes\nC) {a^i b^j c^k | i < j < k} — length comparison across three segments\nD) {a^n b^m c^n d^m | n,m >= 0} — crossing pattern requiring two simultaneous counts\nE) Both A and C are not context-free, as they require multiple simultaneous comparisons that a PDA with a single stack cannot track",
+    "answer": "E"
   },
   {
     "task_id": "personal_knowledge_14",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Consider the propositional logic formula (p → q) ∨ (q → p). Which of the following best describes this formula?\nA) It is a tautology — at least one of the two implications must be true under any truth assignment\nB) It is a contradiction — both implications cannot be true simultaneously\nC) It is satisfiable but not a tautology — true only when p and q have the same truth value\nD) It is satisfiable but not a tautology — true only when at least one of p or q is true",
-    "answer": "A"
+    "prompt": "In the Standard Model of particle physics, which force is mediated by gluons and exhibits the property of asymptotic freedom at high energies?\nA) Electromagnetic force — mediated by photons, QED has a running coupling that increases with energy\nB) Weak nuclear force — mediated by W and Z bosons, unified with QED in electroweak theory\nC) Strong nuclear force — mediated by gluons, described by QCD where the coupling decreases logarithmically at high energies\nD) Gravitational force — mediated by gravitons, not yet incorporated into the Standard Model\nE) Strong nuclear force — but asymptotic freedom occurs at low energies, not high energies, as proven by Ken Wilson's lattice QCD",
+    "answer": "C"
   },
   {
     "task_id": "personal_knowledge_15",
     "category": "Knowledge",
     "type": "mcq",
-    "prompt": "For a real symmetric matrix A ∈ ℝ^{n×n}, which of the following conditions is both necessary and sufficient for A to be positive definite?\nA) All entries of A are positive real numbers\nB) All eigenvalues of A are non-negative\nC) All leading principal minors of A are strictly positive\nD) The trace of A is positive and the determinant of A is positive",
-    "answer": "C"
+    "prompt": "In computational learning theory, the probably approximately correct (PAC) learning framework requires that for any target concept, the learning algorithm outputs a hypothesis that with probability at least 1-delta has error at most epsilon. For a finite hypothesis class H, what is the sample complexity bound derived from the Hoeffding inequality and union bound?\nA) m >= (1/epsilon) * ln(|H|/delta) — the classic VC-dimension-free bound for finite H\nB) m >= (1/(2*epsilon^2)) * ln(2|H|/delta) — using the additive Chernoff/Hoeffding bound\nC) m >= (1/epsilon) * (ln|H| + ln(1/delta)) — from the Occam's razor bound\nD) m >= (VC dimension / epsilon) * log(1/epsilon) + (1/epsilon) * log(1/delta) — the general VC bound\nE) Both A and C are equivalent formulations using different constants derived from the union bound over the finite hypothesis class",
+    "answer": "B"
   },
   {
-    "task_id": "personal_if_1",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write exactly four sentences about concurrent data structures. The first and fourth sentences must each contain the word 'lock-free' exactly once. The second sentence must contain 'wait-free' and 'progress'. The third sentence must contain 'atomic'. Each sentence must be between 8 and 20 words. Number each sentence as '1.', '2.', '3.', '4.' at the start of its line. No other text before or after.",
-    "answer": "lock-free, wait-free, progress, atomic, concurrent, data, structures, sentences"
+    "task_id": "personal_knowledge_16",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the Diffie-Hellman key exchange over a cyclic group G of prime order q with generator g, which computational assumption is necessary for the protocol's security against a passive eavesdropper?\nA) The Discrete Logarithm assumption — given g^a and g^b, computing a or b is hard\nB) The Computational Diffie-Hellman (CDH) assumption — given g^a and g^b, computing g^{ab} is hard\nC) The Decisional Diffie-Hellman (DDH) assumption — distinguishing (g^a, g^b, g^{ab}) from (g^a, g^b, g^c) for random c is hard\nD) The Strong RSA assumption — given a random RSA modulus and a random element, finding e-th roots is hard\nE) Only the CDH assumption is both necessary and sufficient for the basic Diffie-Hellman protocol's security against passive eavesdropping",
+    "answer": "B"
   },
   {
-    "task_id": "personal_if_2",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Generate a JSON object with exactly two top-level keys: 'metadata' and 'values'. Under 'metadata', include nested keys 'created' set to '2026-07-05', 'version' set to integer 3, and 'type' set to the string 'test' (not a number). Under 'values', include an array of exactly five integers that are perfect squares greater than 1. The 'type' field must be the literal string 'test'. Output ONLY this JSON object with no text before or after.",
-    "answer": "JSON, metadata, values, perfect, squares, version, type, test, 2026"
+    "task_id": "personal_knowledge_17",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In quantum computation, the Gottesman-Knill theorem states that certain quantum circuits can be efficiently simulated on a classical computer. Which quantum circuits fall under this theorem?\nA) All circuits with at most n qubits where n is polynomial in the input size\nB) Circuits consisting only of Clifford gates (Hadamard, S, CNOT) and Pauli measurements, with product state inputs\nC) Any circuit where the number of T gates is at most O(log n)\nD) Circuits that use only stabilizer states and Clifford operations, with measurements restricted to Pauli operators\nE) Both B and D describe the same class of circuits — stabilizer circuits — which can be simulated in O(n^2) time on a classical computer using the stabilizer formalism",
+    "answer": "E"
   },
   {
-    "task_id": "personal_if_3",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write a paragraph about distributed consensus satisfying ALL constraints: (1) exactly 75 words total, count carefully, (2) must contain 'Raft' and 'Paxos' each exactly once, (3) must contain 'log' exactly three times, (4) must NOT contain the word 'algorithm' in any form including plurals, (5) must end with the exact 5-word phrase 'Consensus enables fault tolerance.' followed by nothing else. After the paragraph, on a new line, output the word count as 'WORDS: N'.",
-    "answer": "Raft, Paxos, log, Consensus, enables, fault, tolerance, distributed, word, count"
+    "task_id": "personal_knowledge_18",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the proof of the PCP Theorem (Probabilistically Checkable Proofs), which statement about the relationship between PCP and inapproximability is correct?\nA) The PCP Theorem states that NP = PCP(log n, 1) — every NP problem has a proof that can be verified with O(log n) randomness and O(1) queries, leading to hardness of approximation results\nB) The PCP Theorem shows that MAX-3SAT cannot be approximated within a factor of 7/8 + epsilon unless P = NP\nC) The PCP Theorem is equivalent to the statement that Gap-3SAT is NP-hard for some constant gap, which in turn implies inapproximability of many optimization problems\nD) The PCP Theorem was proven using expander graphs and algebraic coding theory, building on the work of Arora, Lund, Motwani, Sudan, and Szegedy\nE) All of the above are correct statements about the PCP Theorem and its implications",
+    "answer": "E"
   },
   {
-    "task_id": "personal_if_4",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "List exactly five programming languages in strictly descending order of their first public release year (oldest first). Each line must be numbered '1.' through '5.' followed by the language name, a pipe character '|', and the four-digit release year. After the list, on a new line output 'OLDEST:' followed by the oldest language name, then on another line 'NEWEST:' followed by the newest language name. No other text.",
-    "answer": "oldest, newest, languages, programming, release, year, pipe, numbered, list"
+    "task_id": "personal_knowledge_19",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the theory of NP-completeness, which of the following problems is NOT known to be NP-complete?\nA) Hamiltonian Cycle — determining if a graph has a cycle visiting each vertex exactly once\nB) Graph Isomorphism — determining if two graphs are isomorphic\nC) Subset Sum — determining if a subset of integers sums to a target value\nD) 3-SAT — determining if a Boolean formula in conjunctive normal form with 3 literals per clause is satisfiable\nE) Vertex Cover — determining if a graph has a vertex cover of size at most k",
+    "answer": "B"
   },
   {
-    "task_id": "personal_if_5",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Create a Markdown pipe-delimited table with exactly three columns: 'Metric', 'Value', 'Unit'. Add exactly two data rows: row 1 with Metric='Accuracy', Value='95.2', Unit='%' and row 2 with Metric='Latency', Value='42', Unit='ms'. The table MUST include a separator line between header and data rows containing '|---|---|---|'. Output ONLY this Markdown table with no surrounding text.",
-    "answer": "Metric, Value, Unit, Accuracy, Latency, table, Markdown, pipe, delimited, separator"
+    "task_id": "personal_knowledge_20",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the context of the Ehrenfest theorem in quantum mechanics, which statement correctly describes the relationship between quantum expectation values and classical equations of motion?\nA) The expectation values of position and momentum operators exactly follow Newton's second law for any quantum state, proving that quantum mechanics reduces to classical mechanics at all scales\nB) d<X>/dt = <P>/m and d<P>/dt = -<dV/dX>, where V is the potential, showing that expectation values follow Hamilton's equations provided the wavefunction is sufficiently localized\nC) The Ehrenfest theorem only holds for Gaussian wavepackets in harmonic potentials, where the wavefunction remains Gaussian\nD) The time derivative of the position expectation equals the expectation of the velocity operator, and the Ehrenfest theorem fails for non-commuting observables\nE) Both A and B are correct formulations of Ehrenfest's theorem, which relates quantum expectation values to classical equations of motion",
+    "answer": "B"
   },
   {
-    "task_id": "personal_if_6",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write exactly two sentences. The first sentence must be a question starting with 'What' about memory management. The second sentence must answer that question and must contain the words 'garbage', 'collection', and 'tracing' in that exact order with no other words between them. The answer sentence must be between 12 and 22 words. Output the two sentences on separate lines without numbering.",
-    "answer": "What, question, garbage, collection, tracing, memory, management, answer, sentences"
+    "task_id": "personal_knowledge_21",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In organic chemistry, which statement correctly describes the product distribution of the Diels-Alder reaction between cyclopentadiene and maleic anhydride?\nA) The reaction produces exclusively the endo product due to secondary orbital interactions between the diene's pi orbitals and the carbonyl pi* orbitals of the dienophile\nB) The reaction produces the exo product due to steric hindrance in the endo transition state\nC) The reaction produces a racemic mixture of endo and exo products in equal proportion\nD) The reaction is reversible at room temperature and the thermodynamic product (exo) dominates at equilibrium\nE) The reaction proceeds through a stepwise diradical mechanism rather than a concerted [4+2] cycloaddition when cyclopentadiene is the diene",
+    "answer": "A"
   },
   {
-    "task_id": "personal_if_7",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write a single line of Python code that simultaneously: (1) generates a list of the first 20 prime numbers using a list comprehension with a nested any() check, (2) filters to keep only primes greater than 30, (3) computes the sum of those filtered primes, and (4) assigns the result to a variable named 'sum_big_primes'. Use exactly one assignment statement with no semicolons. Output ONLY the line of code.",
-    "answer": "sum, big, primes, Python, list, comprehension, assignment, statement, filtered"
+    "task_id": "personal_knowledge_22",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the analysis of algorithms, which of the following correctly describes the relationship between the classes ZPP, RP, and BPP?\nA) ZPP <= RP <= BPP and ZPP <= co-RP <= BPP, with the exact relationship between RP and co-RP unknown\nB) ZPP = RP cap co-RP, and it is known that BPP = P unless something surprising happens in complexity theory\nC) RP <= NP, but the relationship between BPP and NP is unknown; BPP is believed to be contained in NP but not proven\nD) There exist oracle separations showing that RP is strictly contained in BPP relative to some oracle\nE) All of the above are correct statements about the relationships between these randomized complexity classes",
+    "answer": "E"
   },
   {
-    "task_id": "personal_if_8",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Output a string that is a valid URL with protocol 'https', domain 'example.org', path '/api/v2/data', and exactly three query parameters: 'limit'=100, 'offset'=0, 'sort'='desc'. The parameters must appear in alphabetical order by name. On the next line output 'SCHEME:' followed by the protocol. On the next line output 'HOST:' followed by the domain. On the next line output 'PATH:' followed by the path. No other text.",
-    "answer": "https, example, api, limit, offset, sort, URL, scheme, host, path, query, parameters, alphabetical"
+    "task_id": "personal_knowledge_23",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the theory of computation, which of the following problems is undecidable (not recursively enumerable)?\nA) The Halting Problem for Turing machines — determining whether a given TM halts on a given input\nB) The Post Correspondence Problem — determining whether a set of dominoes has a match\nC) The Membership Problem for context-sensitive grammars — determining whether a given string is generated by a context-sensitive grammar\nD) The problem of determining whether a given Diophantine equation has an integer solution (Hilbert's 10th Problem)\nE) The problem of determining whether two given context-free grammars generate the same language",
+    "answer": "E"
   },
   {
-    "task_id": "personal_if_9",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write a riddle whose answer is 'a stack' data structure. The riddle must be exactly three sentences. The first sentence must contain 'push'. The second sentence must contain 'pop'. The third sentence must contain 'LIFO'. You must NOT include the words 'stack', 'answer', 'riddle', or 'data' anywhere in the riddle. After the riddle, output 'ANSWER: ' and then the answer.",
-    "answer": "push, pop, LIFO, ANSWER, riddle, first, last, order"
+    "task_id": "personal_knowledge_24",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the Landau theory of phase transitions, which of the following correctly describes the behavior of the order parameter near a second-order phase transition?\nA) The order parameter vanishes discontinuously at the critical temperature, with the free energy having a cusp singularity\nB) The order parameter phi vanishes continuously as |T - T_c|^beta, with beta = 1/2 in mean-field theory, and the free energy has a discontinuous second derivative\nC) The order parameter obeys the scaling law phi ~ |T - T_c|^(1/delta) where delta is the critical isotherm exponent, equal to 3 in mean-field\nD) The susceptibility diverges as |T - T_c|^(-gamma) with gamma = 2 in mean-field theory, and the correlation length diverges as |T - T_c|^(-nu) with nu = 1/2\nE) Both B and D describe mean-field critical exponents derived from the Landau-Ginzburg free energy expanded to fourth order in the order parameter",
+    "answer": "E"
   },
   {
-    "task_id": "personal_if_10",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Generate a Markdown ordered (numbered) list of exactly five Greek letters: 'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', each on its own line numbered 1 through 5. After the list, output a bold line containing 'TOTAL:' followed by the number of items. After that, insert a thematic break using three asterisks separated by single spaces. After that, output the first letter of each item separated by commas in order.",
-    "answer": "Alpha, Beta, Gamma, Delta, Epsilon, TOTAL, Markdown, ordered, list, thematic, break"
-  },
-  {
-    "task_id": "personal_if_11",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write a single sentence that explains what a Monad is in functional programming without using ANY of the following words: 'monad', 'functor', 'applicative', 'bind', 'return', 'flatMap', 'pure', 'wrap', 'container', or 'context'. The sentence must be between 12 and 28 words. After the sentence, on a new line, output 'WORD COUNT: ' followed by the number of words in the sentence as a digit.",
-    "answer": "functional, programming, explains, sentence, word, count, Monad, without"
-  },
-  {
-    "task_id": "personal_if_12",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Output exactly seven lines. Line 1: the current year as four digits. Line 2: the word 'START' in uppercase. Line 3: a palindrome that reads the same forward and backward consisting of at least 5 letters. Line 4: the word 'MIDDLE' in uppercase. Line 5: the reverse of the palindrome from line 3. Line 6: the word 'END' in uppercase. Line 7: the current year plus one. No other text.",
-    "answer": "START, MIDDLE, END, palindrome, reverse, year, lines, uppercase"
-  },
-  {
-    "task_id": "personal_if_13",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write a paragraph naming exactly four data structures that support O(1) average-case insertion. For each data structure, provide its worst-case insertion time complexity in Big-O notation in parentheses immediately after its name. The paragraph must be exactly four sentences, one per data structure, ordered from best worst-case insertion time to worst. Use semicolons to separate clauses within a sentence if needed. Output ONLY the paragraph.",
-    "answer": "data, structures, insertion, worst, case, average, O(1), Big-O, paragraph, sentences, ordered"
-  },
-  {
-    "task_id": "personal_if_14",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Compose exactly 8 lines of output. Lines 1-4 must be 'Stage 1', 'Stage 2', 'Stage 3', 'Stage 4' each on its own line. Line 5 must be a single uppercase letter 'X'. Line 6 must be a single uppercase letter 'Y'. Line 7 must be a single uppercase letter 'Z'. Line 8 must be exactly 8 hyphen characters '--------'. No other text before, after, or between lines.",
-    "answer": "Stage, lines, output, letter, hyphens, X, Y, Z"
-  },
-  {
-    "task_id": "personal_if_15",
-    "category": "Instruction Following",
-    "type": "free_form",
-    "prompt": "Write exactly three sentences about garbage collection strategies. The first sentence must start with 'Reference counting' and be about reference counting. The second sentence must start with 'Tracing' and be about tracing collectors. The third sentence must start with 'Generational' and be about generational collection. Each sentence must be between 10 and 18 words. The first sentence must end with 'cycles.' the second with 'memory.' and the third with 'pause.' exactly.",
-    "answer": "Reference, counting, Tracing, Generational, garbage, collection, cycles, memory, pause, sentences"
+    "task_id": "personal_knowledge_25",
+    "category": "Knowledge",
+    "type": "mcq",
+    "prompt": "In the Curry-Howard correspondence, which logical system corresponds to the simply typed lambda calculus?\nA) First-order predicate logic — quantifiers correspond to dependent types\nB) Intuitionistic propositional logic — types correspond to propositions, and lambda terms correspond to constructive proofs\nC) Classical propositional logic — Peirce's law corresponds to the call/cc operator in Scheme\nD) Linear logic — every variable must be used exactly once, corresponding to resource-aware computation\nE) Modal logic S4 — the box operator corresponds to the necessity modality in staged computation",
+    "answer": "B"
   },
   {
     "task_id": "personal_math_1",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer solution to the system of congruences: x ≡ 3 (mod 5), x ≡ 5 (mod 7), x ≡ 2 (mod 11). Apply the Chinese Remainder Theorem step by step. Output the solution as an integer followed by ' solution'.",
-    "answer": "68 solution Chinese remainder theorem congruences modular integer"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer n such that the sum of the first n positive integers (1 + 2 + ... + n) is divisible by 37. Use the formula S = n(n+1)/2 and find when n(n+1) is congruent to 0 modulo 74. Output just the integer.",
+    "answer": "36"
   },
   {
     "task_id": "personal_math_2",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A conical tank with vertex at the bottom has radius 3 m at the top and height 5 m. Water enters at 0.5 m³/min. How fast is the water level rising when the depth is 3 m? Use related rates: relate V = (1/3)πr²h and similar triangles r/h = 3/5 to express V in terms of h alone, then differentiate. Output the answer in m/min as an exact expression followed by ' m per minute'.",
-    "answer": "meters, per, minute, rate, conical, tank, related, rates, derivative, volume, depth, rising"
+    "type": "exact",
+    "prompt": "Solve the system of congruences: find the smallest positive integer x such that x ≡ 7 (mod 11), x ≡ 3 (mod 13), and x ≡ 10 (mod 17). Use the Chinese Remainder Theorem. Output just the integer.",
+    "answer": "1283"
   },
   {
     "task_id": "personal_math_3",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A sequence is defined by a₀ = 0, a₁ = 1, and aₙ = 4a_{n-1} − 3a_{n-2} for n ≥ 2. Solve the linear recurrence to find a closed form, then compute a₈. Use the characteristic equation r² − 4r + 3 = 0. Output 'a₈ = ' followed by the number.",
-    "answer": "sequence, recurrence, closed, form, characteristic, equation, linear, compute, solve"
+    "type": "exact",
+    "prompt": "Let S = {1, 2, 3, ..., 100}. How many subsets of S have the property that the sum of their elements is divisible by 3? Use generating functions: count elements congruent to 0, 1, 2 modulo 3, then compute (1+x)^{33} * (1+omega*x)^{34} * (1+omega^2*x)^{33} evaluated at x=1 where omega is a primitive cube root of unity, divided by 3. Output just the integer.",
+    "answer": "422364439142396"
   },
   {
     "task_id": "personal_math_4",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the double integral ∬_R (x² + y²) dA where R is the triangular region bounded by y = x, y = 0, and x = 1. Set up iterated integrals with appropriate limits. Output the result as a simplified fraction followed by ' integral'.",
-    "answer": "double, integral, region, bounded, triangular, fraction, iterated, evaluate"
+    "type": "exact",
+    "prompt": "Evaluate the determinant of the 5x5 Hilbert matrix H where H_{ij} = 1/(i+j-1) for i,j = 1,...,5. The Hilbert matrix has known closed-form determinant: det(H_n) = (c_n^4) / (1! * 2! * ... * (n-1)!) where c_n = product_{k=1}^{n-1} k!. Output as a simplified fraction like 'a/b'.",
+    "answer": "1/266716800000"
   },
   {
     "task_id": "personal_math_5",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many distinct spanning trees does the complete graph K₅ have? Apply Cayley's formula τ(Kₙ) = n^{n−2}. Output the number followed by ' spanning trees'.",
-    "answer": "spanning, trees, Cayley, formula, K5, complete, graph, number"
+    "type": "exact",
+    "prompt": "Compute the sum over all k from 0 to 20 of (-1)^k * C(20, k) * (20 - k)^20. This equals the number of surjective functions from a 20-element set onto a 20-element set via inclusion-exclusion, which is 20! (20 factorial). Output just the integer.",
+    "answer": "2432902008176640000"
   },
   {
     "task_id": "personal_math_6",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the sum Σ_{k=0}^{10} (−1)^k · C(10,k) · 2^{10−k}. Hint: factor out 2^{10} and recognize a binomial expansion of (1 − 1/2)^{10}. Output the number followed by ' sum'.",
-    "answer": "sum, binomial, coefficient, alternating, expansion, evaluate, combinatorics"
+    "type": "exact",
+    "prompt": "Find the number of positive integer solutions to x_1 + x_2 + x_3 + x_4 + x_5 = 100 where each x_i >= 3. Use stars and bars with the substitution y_i = x_i - 3, giving y_1 + y_2 + y_3 + y_4 + y_5 = 85 with each y_i >= 0. Output just the integer.",
+    "answer": "3280217"
   },
   {
     "task_id": "personal_math_7",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "What is the units digit of the power tower 7^(7^7)? Compute the exponent modulo 4 using Euler's theorem and the cyclic pattern of powers of 7 modulo 10 (cycle length 4). Output a single digit followed by ' digit'.",
-    "answer": "digit, units, power, tower, modular, arithmetic, Euler, cyclic, pattern"
+    "type": "exact",
+    "prompt": "Let a_n = 5a_{n-1} - 6a_{n-2} for n >= 2 with a_0 = 0, a_1 = 1. Solve the linear recurrence and find a_15. The characteristic equation is r^2 - 5r + 6 = 0 giving roots r = 2 and r = 3, so a_n = 3^n - 2^n. Output just the integer.",
+    "answer": "4772321"
   },
   {
     "task_id": "personal_math_8",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many ternary strings of length 8 (each digit from {0,1,2}) contain at least one 0, at least one 1, and at least one 2? Use inclusion-exclusion: subtract strings missing each digit, add back those missing two digits. Output the integer followed by ' strings'.",
-    "answer": "strings, ternary, inclusion, exclusion, counting, length, digits"
+    "type": "exact",
+    "prompt": "Compute the sum of all distinct positive integers n such that n divides 2024 and 2024 divides n^2. Let N = 2024 = 2^3 * 11 * 23. For each prime factor p^e of N, n must contain p^{ceil(e/2)} to p^e. Output just the integer sum.",
+    "answer": "3096"
   },
   {
     "task_id": "personal_math_9",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate lim_{x→0} (sin x − tan x) / x³ using Taylor series expansions of sin and tan up to x³. Output the answer as a simplified fraction followed by ' limit'.",
-    "answer": "limit, calculus, Taylor, series, sin, tan, evaluate, L'Hopital"
+    "type": "exact",
+    "prompt": "How many ways can 12 identical balls be placed into 5 distinct boxes such that no box is empty and each box contains at most 5 balls? First use stars and bars with each box >= 1 giving C(11,4) = 330, then use inclusion-exclusion to subtract arrangements where any box has >= 6 balls. Output just the integer.",
+    "answer": "395"
   },
   {
     "task_id": "personal_math_10",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "How many integers between 1 and 10,000 inclusive are NOT divisible by 2, 3, or 5? Use the inclusion-exclusion principle: count multiples of each, subtract pairwise intersections, add triple intersection. Output the integer followed by ' integers'.",
-    "answer": "integers, inclusion, exclusion, divisible, counting, multiples, between"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer n such that n^2 - n + 41 is NOT prime. This is Euler's prime-generating polynomial which yields primes for n = 1, 2, ..., 40 but fails at n = 41. Output just the integer.",
+    "answer": "41"
   },
   {
     "task_id": "personal_math_11",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let z = (cos(π/7) + i·sin(π/7))^14. Use De Moivre's theorem: (cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ). Express z in rectangular form a + bi where a and b are real numbers. Output 'z = ' followed by the result.",
-    "answer": "DeMoivre, complex, numbers, Euler, formula, power, trigonometric, rectangular"
+    "type": "exact",
+    "prompt": "Compute the sum of all 3-digit positive integers that are divisible by 7 but not by 3. Use arithmetic series: sum of multiples of 7 minus sum of multiples of LCM(7,3)=21. The first 3-digit multiple of 7 is 105, the last is 994. Output just the integer.",
+    "answer": "65013"
   },
   {
     "task_id": "personal_math_12",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A particle's position is s(t) = t⁴ − 8t² + 16 for t ≥ 0. Find the total distance traveled from t = 0 to t = 4. Compute velocity v(t) = s'(t), find when it changes sign, integrate |v(t)| in segments. Output the number followed by ' distance'.",
-    "answer": "distance, particle, position, velocity, integral, absolute, segments, motion"
+    "type": "exact",
+    "prompt": "Find the number of integers between 1 and 10^6 inclusive that are NOT divisible by any of 2, 3, or 5. Use inclusion-exclusion to count the complement. Output just the integer.",
+    "answer": "266666"
   },
   {
     "task_id": "personal_math_13",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the number of positive integer solutions to x₁ + x₂ + x₃ + x₄ = 20 where x₁ ≥ 1, x₂ ≥ 2, x₃ ≥ 3, x₄ ≥ 4. Use the substitution yᵢ = xᵢ − lower bound to convert to nonnegative variables, then apply stars and bars. Output the integer followed by ' solutions'.",
-    "answer": "solutions, positive, integer, stars, bars, combinatorics, substitution, equation"
+    "type": "exact",
+    "prompt": "Evaluate the sum S = sum_{k=1}^{100} floor(100 / k). This is the divisor summatory function D(100), which counts the number of pairs (a,b) of positive integers with a*b <= 100. Output just the integer.",
+    "answer": "482"
   },
   {
     "task_id": "personal_math_14",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Let f(x) = x³ − 3x² + 4 = 0 have roots α, β, γ. Compute α³ + β³ + γ³ using Newton's identities or the identity α³+β³+γ³ = (α+β+γ)³ − 3(α+β+γ)(αβ+βγ+γα) + 3αβγ. Output the integer followed by ' roots'.",
-    "answer": "roots, cubic, symmetric, sums, Newton, identities, Vieta, polynomial"
+    "type": "exact",
+    "prompt": "Find the coefficient of x^12 in the expansion of (1 + x^2 + x^4 + x^6 + x^8 + x^10)^4. This counts the number of ways to write 12 as a sum of 4 even nonnegative integers each at most 10, which is equivalent to writing 6 as a sum of 4 nonnegative integers each at most 5. Use stars and bars with inclusion-exclusion. Output just the integer.",
+    "answer": "85"
   },
   {
     "task_id": "personal_math_15",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the determinant of the 4×4 matrix A where a_{ij} = i·j (the product of its row and column indices). Observe that each row is a scalar multiple of [1,2,3,4], so rows are linearly dependent. Output the number followed by ' determinant'.",
-    "answer": "determinant, matrix, linearly, dependent, rows, scalar, multiple, rank"
+    "type": "exact",
+    "prompt": "A random permutation of {1, 2, 3, 4, 5, 6, 7} is chosen uniformly. What is the probability that exactly 3 elements are in their original positions (fixed points)? Number of permutations with exactly k fixed points = C(7, k) * !(7-k) where !n is the number of derangements of n elements. Output the answer as a reduced fraction 'a/b'.",
+    "answer": "1/18"
   },
   {
     "task_id": "personal_math_16",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A card is drawn from a standard 52-card deck, replaced, then another is drawn. What is the probability the two cards have the same rank (e.g., both kings)? Compute as 13 ranks × (4/52)². Output the answer as a simplified fraction followed by ' probability'.",
-    "answer": "probability, cards, deck, rank, fraction, independent, events, drawing"
+    "type": "exact",
+    "prompt": "Find the last two digits of 7^2023. Use Euler's theorem: phi(100) = 40, so 7^40 ≡ 1 (mod 100). Reduce the exponent: 2023 mod 40 = 23. Compute 7^23 mod 100. Output the two-digit number.",
+    "answer": "43"
   },
   {
     "task_id": "personal_math_17",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "What is the coefficient of x⁵ in the expansion of (2x − 1)¹⁰? Use the binomial theorem: C(10,k) (2x)^{10−k} (−1)^k, and identify the term where the exponent of x is 5. Output the integer (which may be negative) followed by ' coefficient'.",
-    "answer": "coefficient, binomial, expansion, term, integer, negative, theorem"
+    "type": "exact",
+    "prompt": "Compute the sum of all positive integers n such that both n and n+1 divide 2024. Let N = 2024 = 2^3 * 11 * 23. Find all consecutive integer pairs that both divide N. Output just the integer sum.",
+    "answer": "5"
   },
   {
     "task_id": "personal_math_18",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the smallest positive integer n such that n³ + n² + n + 1 is divisible by 13. Factor as (n+1)(n²+1) and check residues modulo 13. Output the number followed by ' smallest'.",
-    "answer": "smallest, positive, integer, divisible, modulo, factor, residues, congruences"
+    "type": "exact",
+    "prompt": "How many ways can the letters of the word 'MISSISSIPPI' be arranged such that no two S's are adjacent? First arrange the other letters (M, I, I, I, I, P, P) and then place the 4 S's into the gaps between them. Output just the integer.",
+    "answer": "7350"
   },
   {
     "task_id": "personal_math_19",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "Evaluate the infinite sum Σ_{k=1}^{∞} 1/(k(k+2)). Use partial fractions: 1/(k(k+2)) = 1/2 · (1/k − 1/(k+2)), then telescope. Output the result as a simplified fraction followed by ' series'.",
-    "answer": "series, infinite, sum, partial, fractions, telescoping, evaluate"
+    "type": "exact",
+    "prompt": "Find the smallest positive integer x such that phi(x) = 12, where phi is Euler's totient function. Recall that phi(n) counts positive integers less than n that are coprime to n, and phi(p^k) = p^k - p^{k-1}. Output just the integer.",
+    "answer": "13"
   },
   {
     "task_id": "personal_math_20",
     "category": "Math",
-    "type": "free_form",
-    "prompt": "A circle is inscribed in a square. A smaller square is then inscribed in the circle. Compute the ratio of the area of the smaller square to the area of the larger square. Let the circle have radius r, express both areas in terms of r, and simplify. Output as a simplified fraction followed by ' ratio'.",
-    "answer": "ratio, area, square, circle, inscribed, fraction, geometry, radius"
+    "type": "exact",
+    "prompt": "Evaluate the definite integral from 0 to pi/2 of sin^6(x) * cos^4(x) dx. Use the Beta function identity: integral_0^{pi/2} sin^{2a-1}(x) cos^{2b-1}(x) dx = Gamma(a)Gamma(b) / (2 * Gamma(a+b)). Here a = 7/2, b = 5/2. Compute the result in terms of pi as a simplified fraction.",
+    "answer": "3pi/512"
   },
   {
-    "task_id": "personal_math_21",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "Compute Bell number B₅: the number of ways to partition a 5-element set into nonempty disjoint subsets. Use the recurrence B_{n+1} = Σ_{k=0}^{n} C(n,k) B_k starting from B₀ = 1. Output the integer followed by ' partitions'.",
-    "answer": "Bell, number, partitions, set, recurrence, combinatorial, subsets"
+    "task_id": "personal_ins_follow_1",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output exactly five lines. Line 1 must be the single lowercase letter 'a'. Line 2 must be the single lowercase letter 'b'. Line 3 must be a single lowercase letter that is two positions after 'b' in the alphabet. Line 4 must be a single lowercase letter that is three positions after the letter on line 3. Line 5 must be a single lowercase letter that is the sum of the alphabetical positions (a=1, b=2, ..., z=26) of all previous letters, modulo 26, mapped back to a letter. Output only these five lines with no other text.",
+    "answer": "a"
   },
   {
-    "task_id": "personal_math_22",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "For matrix A = [[3, 1], [2, 2]], compute A¹⁰ × [1, 1]ᵀ. Find eigenvalues: λ=4, λ=1. Notice [1,1]ᵀ is an eigenvector of λ=4, so A¹⁰v = λ¹⁰v. Output the two components separated by comma and space followed by ' eigenvector'.",
-    "answer": "eigenvector, eigenvalue, matrix, power, diagonalization, linear, algebra"
+    "task_id": "personal_ins_follow_2",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Generate a Markdown table with exactly 2 columns: 'Type' and 'Count'. Add exactly 3 data rows: row 1 with Type='Apple', Count='5'; row 2 with Type='Banana', Count='3'; row 3 with Type='Cherry', Count='8'. The table must have a separator line '|---|---|' between the header and data rows. After the table, output a horizontal rule consisting of exactly 3 dashes '---'. Then on a new line, output the total count as 'Total: N'. No other text.",
+    "answer": "---"
   },
   {
-    "task_id": "personal_math_23",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "How many trailing zeros does 100! have? Count the number of factors of 5 in the prime factorization: floor(100/5) + floor(100/25) + floor(100/125). Output the integer followed by ' zeros'.",
-    "answer": "zeros, trailing, factorial, prime, factors, powers, floor, counting"
+    "task_id": "personal_ins_follow_3",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Write a single sentence containing exactly 20 words. The sentence must start with the word 'When'. The sentence must contain the word 'but' exactly once and the word 'and' exactly twice. The sentence must not contain the word 'the'. After the sentence, on a new line, output the number of words as 'Words: 20'. On the next line, output the number of times 'and' appears as 'And count: 2'. On the next line, output the last word of the sentence as 'Last word: X'. No other text.",
+    "answer": "Words: 20"
   },
   {
-    "task_id": "personal_math_24",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "The monic polynomial p(x) = x⁵ + ax⁴ + bx³ + cx² + dx + e has roots 1, 2, 3, 4, 5. Find b, the coefficient of x³, which equals the sum of products of roots taken two at a time (the elementary symmetric sum e₂). Compute all C(5,2)=10 pairwise products and sum them. Output the integer followed by ' symmetric'.",
-    "answer": "symmetric, polynomial, roots, coefficient, Vieta, elementary, sums"
+    "task_id": "personal_ins_follow_4",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output a valid Python dictionary literal with exactly 3 key-value pairs. The keys must be the strings 'a', 'b', and 'c' in that order. The value for 'a' must be a list of the first 3 prime numbers in ascending order. The value for 'b' must be a nested dictionary with keys 'x' (integer 10) and 'y' (integer 20). The value for 'c' must be None (the Python None value, not the string 'None'). Output ONLY the dictionary literal.",
+    "answer": "{'a': [2, 3, 5], 'b': {'x': 10, 'y': 20}, 'c': None}"
   },
   {
-    "task_id": "personal_math_25",
-    "category": "Math",
-    "type": "free_form",
-    "prompt": "Find the positive integer n such that n! + 1 = 71². This is a known Brocard's problem solution. Compute 71² = 5041, subtract 1 to find the factorial, then determine n. Output 'n = ' followed by the number.",
-    "answer": "Brocard, factorial, perfect, square, integer, equation, solve"
+    "task_id": "personal_ins_follow_5",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output exactly 7 lines. Line 1: the single uppercase letter 'X'. Line 2: 'X' repeated 2 times ('XX'). Line 3: 'X' repeated 3 times. Continue this pattern where line i has 'X' repeated i times, through line 7. After the 7 lines, output a blank line. Then output the total number of X characters across all 7 lines as 'Total: N'. No other text.",
+    "answer": "Total: 28"
+  },
+  {
+    "task_id": "personal_ins_follow_6",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Write exactly 4 lines. Line 1 must contain a single uppercase letter that is a vowel (A, E, I, O, U). Line 2 must contain the uppercase letter that comes 3 positions after the letter on line 1 in the alphabet (wrapping Z to A). Line 3 must contain the lowercase letter that comes 3 positions before the letter on line 1 (wrapping A to Z). Line 4 must be the single character 'V' if line 1 is a vowel, or 'C' if line 1 is a consonant. Output only these 4 lines.",
+    "answer": "A"
+  },
+  {
+    "task_id": "personal_ins_follow_7",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output a JSON object with exactly 2 keys: 'operation' and 'result'. The value of 'operation' must be the string 'sum-of-cubes'. The value of 'result' must be the sum of the cubes of the first 5 positive integers (1^3 + 2^3 + 3^3 + 4^3 + 5^3) as a JSON number. Output ONLY the JSON object with no surrounding text, no backticks, and no whitespace before or after.",
+    "answer": "225"
+  },
+  {
+    "task_id": "personal_ins_follow_8",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Write a sentence that contains exactly the following words in this exact order with no other words: 'The', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog'. The sentence must be all lowercase except the first word which is capitalized. Each word separated by exactly one space. The sentence must end with a period. After the sentence, on a new line, output the sentence in all uppercase. After that, on a new line, output the sentence with all vowels removed. No other text.",
+    "answer": "The"
+  },
+  {
+    "task_id": "personal_ins_follow_9",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output exactly 4 lines. Line 1: the result of 2 + 2 as a single digit. Line 2: the result of 2 * 2 as a single digit. Line 3: the result of 2^2 as a single digit. Line 4: the result of sqrt(16) as a single digit. Output only these 4 lines with no other text.",
+    "answer": "4"
+  },
+  {
+    "task_id": "personal_ins_follow_10",
+    "category": "Instruction Following",
+    "type": "exact",
+    "prompt": "Output a single line containing a string of exactly 10 characters. The first 5 characters must be the lowercase letters 'a', 'b', 'c', 'd', 'e' in order. Characters 6 through 10 must be the uppercase letters 'V', 'W', 'X', 'Y', 'Z' in order. Output ONLY this 10-character string with no other text.",
+    "answer": "abcdeVWXYZ"
   },
   {
     "task_id": "personal_logic_1",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "There are five houses in a row, each painted a different color, inhabited by people of different nationalities, each drinking a different beverage, smoking a different brand, and keeping a different pet. Use these clues: (1) The Brit lives in the red house. (2) The Swede keeps dogs. (3) The Dane drinks tea. (4) The green house is immediately left of the white house. (5) The green house's owner drinks coffee. (6) The person who smokes Pall Mall keeps birds. (7) The owner of the yellow house smokes Dunhill. (8) The man living in the center house drinks milk. (9) The Norwegian lives in the first house. (10) The man who smokes Blends lives next to the cat owner. (11) The horse owner lives next to the Dunhill smoker. (12) The man who smokes Blue Master drinks root beer. (13) The German smokes Prince. (14) The Norwegian lives next to the blue house. (15) The Blends smoker has a neighbor who drinks water. Who owns the fish? Output the nationality in lowercase followed by ' owns the fish'.",
-    "answer": "German, owns, fish, zebra, puzzle, nationality, deduction, clues, logic"
+    "type": "exact",
+    "prompt": "You have a 3-liter jug and a 5-liter jug, both empty initially, and an unlimited supply of water. You need to measure exactly 4 liters. Each operation is either filling a jug completely, emptying a jug completely, or pouring water from one jug to the other until the source is empty or the destination is full. What is the minimum number of operations needed? Count each fill, empty, or pour as one operation, and the initial state does not count. Output just the integer.",
+    "answer": "6"
   },
   {
     "task_id": "personal_logic_2",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "On an island of knights (always tell truth) and knaves (always lie), you meet six inhabitants: A, B, C, D, E, and F. A says: 'B is a knight and C is a knave.' B says: 'D is a knave or E is a knight.' C says: 'If A is a knight, then F is a knave.' D says: 'E is a knave and F is a knight.' E says: 'A is a knave or B is a knave.' F says: 'C is a knight if and only if D is a knight.' Determine how many are knights. Output the number of knights followed by ' knights'.",
-    "answer": "knights, knaves, island, truth, lies, logic, puzzle, deduction, inhabitants"
+    "type": "exact",
+    "prompt": "Three wise men are told that at least one of them has a red dot on their forehead. They can see each other's foreheads but not their own. They are asked in rounds: 'If you know your dot color, step forward.' In round 1, no one steps forward. In round 2, still no one steps forward. In round 3, some step forward. How many step forward in round 3, assuming they are all perfect logicians? Output just the integer.",
+    "answer": "3"
   },
   {
     "task_id": "personal_logic_3",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "A farmer must transport a wolf, a goat, a cabbage, a dog, and a cat across a river using a boat that can carry at most three items at once. The wolf will eat the goat if left alone together. The goat will eat the cabbage. The dog will eat the cat. The cat will eat the mouse (which is also being transported). What is the minimum number of crossings needed? Output the number followed by ' crossings'.",
-    "answer": "crossings, river, farmer, transport, constraints, minimum, puzzle, boat"
+    "type": "exact",
+    "prompt": "On an island of knights (always tell truth) and knaves (always lie), you meet three inhabitants: A, B, and C. A says: 'B is a knight.' B says: 'A and C are of the same type (both knights or both knaves).' C says: 'At least one of A or B is a knave.' Determine how many are knights. Output just the integer.",
+    "answer": "2"
   },
   {
     "task_id": "personal_logic_4",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "You have 12 identical-looking coins, but one is counterfeit and weighs either slightly more or slightly less than a genuine coin (you don't know which). Using a balance scale, what is the minimum number of weighings needed in the worst case to identify the counterfeit coin AND determine whether it is heavier or lighter? Output the number followed by ' weighings'.",
-    "answer": "weighings, coins, counterfeit, balance, scale, minimum, worst, case, heavier, lighter"
+    "type": "exact",
+    "prompt": "You have 12 identical-looking coins. One is counterfeit and weighs either slightly more or slightly less than a genuine coin (you do not know which). Using a balance scale, what is the minimum number of weighings needed in the worst case to identify the counterfeit coin AND determine whether it is heavier or lighter? Output just the integer.",
+    "answer": "3"
   },
   {
     "task_id": "personal_logic_5",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Seven prisoners are lined up facing forward (each can see only the prisoners in front of them). They will each be given a hat that is either black or white, chosen uniformly at random. Starting from the back (who sees the six in front), each must guess their own hat color aloud. They can agree on a strategy beforehand. What is the maximum number of prisoners that can be guaranteed to guess correctly? Output the number followed by ' prisoners'.",
-    "answer": "prisoners, hats, strategy, parity, guessing, guaranteed, correct, optimal"
+    "type": "exact",
+    "prompt": "Cheryl tells Albert and Bernard that her birthday is one of: May 15, May 16, May 19, June 17, June 18, July 14, July 16, August 14, August 15, August 17. She tells Albert the month and Bernard the day. Albert says: 'I don't know the birthday, but I know Bernard doesn't know either.' Bernard says: 'Now I know the birthday.' Albert says: 'Now I know it too.' What is the month of Cheryl's birthday? Output the full month name in lowercase.",
+    "answer": "july"
   },
   {
     "task_id": "personal_logic_6",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Cheryl tells Albert and Bernard that her birthday is one of these dates: May 15, May 16, May 19, June 17, June 18, July 14, July 16, August 14, August 15, August 17. She tells Albert the month and Bernard the day. Albert says: 'I don't know the birthday, but I know Bernard doesn't know either.' Bernard says: 'Now I know the birthday.' Albert says: 'Now I know it too.' What is the month of Cheryl's birthday? Output the month name in full lowercase followed by ' month'.",
-    "answer": "Cheryl, birthday, month, date, puzzle, logic, deduction, Albert, Bernard"
+    "type": "exact",
+    "prompt": "A census taker asks a woman: 'How many children do you have and what are their ages?' She replies: 'I have three children. The product of their ages is 36. The sum of their ages is the house number next door.' The census taker looks at the house number, thinks, and says: 'I need more information.' She replies: 'The oldest one plays the piano.' The census taker then knows the ages. What is the oldest child's age? Output just the integer.",
+    "answer": "9"
   },
   {
     "task_id": "personal_logic_7",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Three wise men are told that at least one has a red dot on their forehead. They can see each other's dots but not their own. They are asked in rounds: 'If you know your dot color, step forward.' In the first round, no one steps forward. In the second round, still no one steps forward. In the third round, some step forward. How many step forward in the third round? Output the number followed by ' wise men'.",
-    "answer": "wise, men, dots, common, knowledge, deduction, rounds, red, logic"
+    "type": "exact",
+    "prompt": "A farmer must transport a wolf, a goat, and a cabbage across a river using a boat that can carry at most one item at a time besides the farmer. The wolf will eat the goat if left alone together. The goat will eat the cabbage if left alone together. The farmer must be in the boat for it to cross. What is the minimum number of crossings needed? Count each single crossing (one direction) as one crossing. Output just the integer.",
+    "answer": "7"
   },
   {
     "task_id": "personal_logic_8",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "A says: 'B is lying.' B says: 'C is lying.' C says: 'A and B are both lying.' Who is telling the truth? Determine for each person whether they are truthful or lying. Output the letter(s) of those telling the truth separated by commas followed by ' truthful'.",
-    "answer": "truthful, lying, paradox, logic, statements, deduction, consistency"
+    "type": "exact",
+    "prompt": "A says: 'B is lying.' B says: 'C is lying.' C says: 'A and B are both lying.' On this island, knights tell only truth and knaves tell only lies. How many are telling the truth? Output just the integer.",
+    "answer": "1"
   },
   {
     "task_id": "personal_logic_9",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "In a race with eight runners (A through H), these facts are known: (1) A finished ahead of B. (2) C finished ahead of D but behind E. (3) F finished behind G but ahead of H. (4) E finished behind A but ahead of F. (5) B finished ahead of C. (6) D finished ahead of G. Determine the finishing order from 1st to 8th. Output the sequence of letters separated by ' > ' followed by ' order'.",
-    "answer": "order, race, finishing, sequence, deduction, constraints, ranking, logical"
+    "type": "exact",
+    "prompt": "You have a 7-minute hourglass and an 11-minute hourglass. You need to measure exactly 15 minutes. You may flip either hourglass at any time; flipping takes negligible time. What is the minimum number of flips needed (counting the initial start as one flip per hourglass, i.e., starting both at time 0 counts as 2 flips)? Output just the integer.",
+    "answer": "4"
   },
   {
     "task_id": "personal_logic_10",
     "category": "Logic",
-    "type": "free_form",
-    "prompt": "Five friends (Alice, Bob, Carol, Dave, Eve) each have a different favorite color (red, blue, green, yellow, purple) and a different favorite number (2, 3, 5, 7, 11). Clues: (1) The person whose favorite number is 3 likes green. (2) Alice's favorite number is prime and her color is not blue. (3) Bob likes red or yellow and his number is not 5. (4) Carol's number is the smallest prime and her color is not purple. (5) Dave's number is 7 and his color is not yellow. (6) The person who likes blue has the number 11. (7) Eve's number is not 2 and her color is not purple. (8) The person who likes purple has a number that is one less than the person who likes yellow's number. What is Eve's favorite color? Output the color in lowercase followed by ' color'.",
-    "answer": "Eve, color, favorite, grid, puzzle, deduction, constraints, attributes, logic"
-  },
-  {
-    "task_id": "personal_logic_11",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "An ancient manuscript contains the claim: 'This statement is false.' Separately, another page says: 'The statement on the other page is true.' A third page says: 'Exactly one of the statements on the other two pages is true.' How many of the three statements are true? Output the number followed by ' statements'.",
-    "answer": "statements, paradox, truth, false, self, reference, logical, consistency"
-  },
-  {
-    "task_id": "personal_logic_12",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "You have a 3-liter jug and a 5-liter jug, both empty, and an unlimited supply of water. You need to measure exactly 4 liters. Each operation is either filling a jug to the top, emptying a jug completely, or pouring water from one jug to the other until either the source is empty or the destination is full. What is the minimum number of operations needed? Output the number followed by ' operations'.",
-    "answer": "jug, water, measuring, operations, minimum, pouring, BFS, state, space"
-  },
-  {
-    "task_id": "personal_logic_13",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "A census taker asks a woman: 'How many children do you have and what are their ages?' She replies: 'I have three children. The product of their ages is 36. The sum of their ages is the house number next door.' The census taker looks at the house number, thinks, and says: 'I need more information.' She replies: 'The oldest one plays the piano.' The census taker then knows the ages. What is the oldest child's age? Output the number followed by ' years'.",
-    "answer": "ages, children, product, sum, puzzle, census, oldest, deduction, factor"
-  },
-  {
-    "task_id": "personal_logic_14",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "A says: 'If I am a knight, then B is a knight.' B says: 'If I am a knight, then C is a knave.' C says: 'A is a knave.' On this island, knights tell only truth and knaves tell only lies. Determine the type (knight or knave) of each person. Output the three types in order A, B, C as comma-separated words (e.g., 'knight, knave, knight') followed by ' types'.",
-    "answer": "knight, knave, types, conditional, logic, truth, deduction, island"
-  },
-  {
-    "task_id": "personal_logic_15",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "You have a 7-minute hourglass and an 11-minute hourglass. You need to measure exactly 15 minutes. You may flip either hourglass at any time. Assume the flipping takes negligible time. What is the minimum number of flips needed (counting the initial start as one flip per hourglass)? Output the number followed by ' flips'.",
-    "answer": "hourglass, flips, measuring, time, minutes, puzzle, minimum, operations"
-  },
-  {
-    "task_id": "personal_logic_16",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "Four people (A, B, C, D) must cross a rickety bridge at night with only one flashlight. At most two can cross at a time, and any crossing party must have the flashlight. The flashlight must be walked back and forth. Crossing times: A=1 min, B=2 min, C=5 min, D=10 min. When two cross together, they move at the slower person's pace. What is the minimum total crossing time? Output the number followed by ' minutes'.",
-    "answer": "bridge, crossing, flashlight, minimum, time, minutes, puzzle, optimization"
-  },
-  {
-    "task_id": "personal_logic_17",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "How many squares (of all sizes) are there on a standard 8×8 chessboard? Count 1×1, 2×2, 3×3, up to 8×8. The number of k×k squares on an n×n board is (n−k+1)². Output the total followed by ' squares'.",
-    "answer": "squares, chessboard, counting, sizes, total, sum, formula"
-  },
-  {
-    "task_id": "personal_logic_18",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "In a game show with four doors, one hides a car and the other three hide goats. You pick door 1. The host, who knows what is behind each door, opens door 3 revealing a goat. Then you are asked: do you want to stick with door 1, or switch to one of the remaining unopened doors? The host then opens another goat door from the remaining. You are then asked to stick or switch one final time. What is the probability of winning the car if you always switch when given the option? Output as a simplified fraction followed by ' probability'.",
-    "answer": "probability, Monty, Hall, doors, switching, conditional, goats, car, game, show"
-  },
-  {
-    "task_id": "personal_logic_19",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "You are in a room with two doors. One door leads to freedom, the other to certain doom. There are two guards, one in front of each door. One guard always tells the truth, the other always lies. You do not know which is which. You may ask exactly one question to one guard to determine the door to freedom. What is the minimum number of words in a question that guarantees you find freedom? The question is addressed to a single guard and must be in the form: 'If I asked the other guard which door leads to freedom, what would they say?' Your answer should be the number of doors you should NOT choose. Output 'door ' followed by 1 or 2.",
-    "answer": "door, guards, truth, lies, puzzle, question, freedom, logical"
-  },
-  {
-    "task_id": "personal_logic_20",
-    "category": "Logic",
-    "type": "free_form",
-    "prompt": "There are 100 lockers numbered 1 to 100, all initially closed. Person 1 opens every locker. Person 2 toggles every 2nd locker (2, 4, 6, ...). Person 3 toggles every 3rd locker, and so on up to person 100. After all 100 people have acted, how many lockers are open? A locker is toggled as many times as it has distinct divisors. It ends open if it has an odd number of divisors, which happens exactly for perfect squares. Output the number followed by ' lockers'.",
-    "answer": "lockers, toggles, perfect, squares, divisors, open, closed, sequence"
+    "type": "exact",
+    "prompt": "Seven prisoners are lined up facing forward (each sees the prisoners in front of them). Each will be given a black or white hat uniformly at random. Starting from the back (who sees the six in front), each must guess their own hat color aloud. They can agree on a strategy beforehand. What is the MAXIMUM number of prisoners that can be GUARANTEED to guess correctly regardless of the hat distribution? Output just the integer.",
+    "answer": "6"
   }
 ]

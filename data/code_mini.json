@@ -2,36 +2,36 @@
   {
     "task_id": "code_algorithms_01",
     "category": "Algorithms",
-    "type": "code",
-    "prompt": "Write a Python function called `a_star_search` that takes a 2D grid (list of list of ints, 0=open, 1=wall), a start tuple (r,c), and an end tuple, and returns the shortest path as a list of (r,c) tuples using A* with Manhattan distance heuristic and a min-heap (priority queue). If no path exists, return None. Example: grid=[[0,0,0,0],[0,1,1,0],[0,0,0,0],[0,0,1,0]], start=(0,0), end=(3,3) returns [(0,0),(0,1),(0,2),(0,3),(1,3),(2,3),(3,3)].",
-    "answer": "a_star_search"
+    "type": "mcq",
+    "prompt": "In the push-relabel maximum flow algorithm with the highest-label selection rule, consider the effect of the gap heuristic. Which of the following correctly explains why the gap heuristic improves performance?\n\nA) It eliminates the need for BFS to rebuild the level graph by detecting when a height value has no vertices assigned to it, causing all vertices above that height to be marked as unreachable from the sink.\nB) It reduces the number of saturating pushes by preferentially selecting edges with higher residual capacity.\nC) It replaces the global relabeling step with localized height updates that propagate along reverse edges.\nD) It prevents the algorithm from pushing flow out of vertices whose height exceeds the maximum possible shortest-path distance from source to sink.\n\nAnswer with a single letter A, B, C, or D.",
+    "answer": "A"
   },
   {
     "task_id": "code_algorithms_02",
     "category": "Algorithms",
-    "type": "code",
-    "prompt": "Write a Python function called `dinic_max_flow` that takes a directed graph as an adjacency list (dict[int, list[tuple[int,int]]] where each tuple is (neighbor, capacity)), a source node, and a sink node, and returns the maximum flow value using Dinic's algorithm (build level graph via BFS, send blocking flow via DFS). Example: graph={0:[(1,16),(2,13)],1:[(2,10),(3,12)],2:[(1,4),(4,14)],3:[(2,9),(5,20)],4:[(3,7),(5,4)],5:[]}, source=0, sink=5 returns 23.",
-    "answer": "dinic_max_flow"
+    "type": "mcq",
+    "prompt": "Consider the Hopcroft-Karp algorithm for maximum bipartite matching. Which condition guarantees that the BFS phase of the algorithm has found a maximal set of vertex-disjoint shortest augmenting paths?\n\nA) The BFS proceeds until all vertices at distance d from the source are exhausted, where d is the distance to the farthest reachable unmatched vertex.\nB) The BFS builds a layered graph from all free left vertices, and each DFS augmentation saturates one edge at the current shortest distance, after which that edge is removed from the layered graph.\nC) The algorithm terminates when the number of augmenting paths found in a single DFS phase is less than the size of the matching.\nD) The BFS phase constructs the layered graph from all free left vertices and terminates when all free right vertices are at the same minimum distance.\n\nAnswer with a single letter A, B, C, or D.",
+    "answer": "B"
   },
   {
     "task_id": "code_algorithms_03",
     "category": "Algorithms",
-    "type": "code",
-    "prompt": "Write a Python function called `hopcroft_karp` that takes a bipartite graph as a dict mapping left vertices to lists of right vertex neighbors (all ints), and returns the size of the maximum matching using the Hopcroft-Karp algorithm (BFS to build layer graph, DFS to find augmenting paths, runs in O(E sqrt(V))). Example: graph={0:[1,3],1:[0,2],2:[1,3],3:[0,2]} (4 left, 4 right nodes) returns 4.",
-    "answer": "hopcroft_karp"
+    "type": "mcq",
+    "prompt": "In the context of Delaunay triangulation of a set of points in the plane in general position (no three collinear, no four cocircular), which of the following statements is true about the relationship between the Delaunay triangulation and the Euclidean minimum spanning tree (EMST)?\n\nA) The EMST is always a superset of the Delaunay triangulation, containing all Delaunay edges plus additional edges necessary for connectivity.\nB) The Delaunay triangulation is always a subgraph of the EMST, and all EMST edges are Delaunay edges.\nC) The EMST is a subgraph of the Delaunay triangulation, meaning every edge of the EMST appears in the Delaunay triangulation.\nD) There is no guaranteed containment relationship; the EMST and Delaunay triangulation are independent structures.\n\nAnswer with a single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_04",
     "category": "Algorithms",
-    "type": "code",
-    "prompt": "Write a Python function called `strassen_multiply` that takes two n x n matrices (list of lists of ints, n is a power of 2) and returns their product using Strassen's divide-and-conquer algorithm (7 multiplications instead of 8, O(n^2.807)). For non-power-of-2, pad with zeros internally. Example: A=[[1,2],[3,4]], B=[[5,6],[7,8]] returns [[19,22],[43,50]].",
-    "answer": "strassen_multiply"
+    "type": "mcq",
+    "prompt": "In the A* search algorithm for graph traversal, suppose the heuristic h(n) is admissible but NOT consistent (monotonic). Which of the following best describes the consequences for optimality and the required modifications?\n\nA) A* with an admissible but inconsistent heuristic is guaranteed to find the optimal path without any modifications, because admissibility alone suffices for optimality.\nB) A* may fail to find the optimal path with an inconsistent heuristic and must be modified to use a bidirectional search instead.\nC) A* with an admissible but inconsistent heuristic remains optimal only if the algorithm re-opens closed nodes when a better g-value is discovered, which may increase the running time.\nD) An inconsistent heuristic cannot be admissible, so this situation cannot arise.\n\nAnswer with a single letter A, B, C, or D.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_05",
     "category": "Algorithms",
-    "type": "code",
-    "prompt": "Write a Python function called `simplex_method` that takes a 2D list `A` (constraint coefficients), a list `b` (right-hand sides), and a list `c` (objective coefficients), and returns the maximum value of c^T x subject to Ax <= b, x >= 0 using the simplex method with the standard tableau (Bland's rule for pivot selection to avoid cycling). Example: A=[[2,1],[-4,5],[1,-2]], b=[10,3,3], c=[1,1] returns 6.0.",
-    "answer": "simplex_method"
+    "type": "mcq",
+    "prompt": "Consider the Li Chao segment tree for dynamic convex hull trick queries. In which scenario does the Li Chao tree maintain its O(log C) per-operation guarantee (where C is the coordinate range) while a deque-based CHT implementation fails?\n\nA) When slopes are inserted in arbitrary order and query x-coordinates are also arbitrary.\nB) When slopes are inserted in monotonic order but queries are in arbitrary order.\nC) When both slopes and queries are monotonic in the same direction.\nD) When slopes are inserted in arbitrary order but queries are monotonic.\n\nAnswer with a single letter A, B, C, or D.",
+    "answer": "A"
   }
 ]
