@@ -171,7 +171,22 @@ def _parse_func_call_string(call_str: str) -> dict | None:
     args_str = m.group(2).strip()
     args = {}
     if args_str:
-        for pair in re.split(r",\s*(?=[a-zA-Z_])", args_str):
+        parts = []
+        current = []
+        in_single = in_double = False
+        for ch in args_str:
+            if ch == '"' and not in_single:
+                in_double = not in_double
+            elif ch == "'" and not in_double:
+                in_single = not in_single
+            elif ch == ',' and not in_single and not in_double:
+                parts.append(''.join(current).strip())
+                current = []
+                continue
+            current.append(ch)
+        if current:
+            parts.append(''.join(current).strip())
+        for pair in parts:
             pair = pair.strip()
             if "=" in pair:
                 k, v = pair.split("=", 1)
@@ -315,9 +330,14 @@ def _multiple_function_checker(func_descriptions, model_output, possible_answers
     if len(model_output) != len(possible_answers):
         return {"valid": False, "error": ["Wrong number of functions."], "error_type": "wrong_count"}
 
-    func_name_expected = list(possible_answers[0].keys())[0]
-    func_desc = _find_description(func_descriptions, func_name_expected)
-    return _simple_function_checker(func_desc, model_output[0], possible_answers[0], model_name)
+    for i in range(len(possible_answers)):
+        func_name_expected = list(possible_answers[i].keys())[0]
+        func_desc = _find_description(func_descriptions, func_name_expected)
+        result = _simple_function_checker(func_desc, model_output[i], possible_answers[i], model_name)
+        if not result["valid"]:
+            return result
+
+    return {"valid": True, "error": []}
 
 
 def _dict_checker(param, model_output, possible_answers):

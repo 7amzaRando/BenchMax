@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import * as api from '@/lib/api'
 import { useToast } from '@/components/ui/toast-provider'
 
@@ -40,6 +41,7 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
   const [installingAll, setInstallingAll] = useState(false)
   const [installingSingle, setInstallingSingle] = useState<Set<string>>(new Set())
   const [hfToken, setHfToken] = useState('')
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [exitMsg, setExitMsg] = useState('')
   const [runtimesLoading, setRuntimesLoading] = useState(false)
   const mountedRef = useRef(true)
@@ -78,6 +80,7 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
       if (mountedRef.current) setDatasets(r.datasets || [])
     } catch (e: any) {
       if (mountedRef.current) setDatasets([])
+      toast({ title: 'Scan Failed', description: e?.message ?? 'Could not scan datasets', variant: 'error' })
     } finally {
       if (mountedRef.current) setDatasetsLoading(false)
     }
@@ -88,8 +91,8 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
     try {
       await api.installAllDatasets(hfToken)
       await handleScanDatasets()
-    } catch {
-      // silent
+    } catch (e: any) {
+      toast({ title: 'Install All Failed', description: e?.message ?? 'Could not install datasets', variant: 'error' })
     } finally {
       if (mountedRef.current) setInstallingAll(false)
     }
@@ -274,7 +277,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
                             try {
                               await api.installDataset(d.Benchmark, hfToken)
                               await handleScanDatasets()
-                            } catch { console.warn('Failed to install dataset') }
+                            } catch (e: any) {
+                              toast({ title: 'Install Failed', description: e?.message ?? `Could not install ${d.Benchmark}`, variant: 'error' })
+                            }
                             setInstallingSingle(prev => { const next = new Set(prev); next.delete(d.Benchmark); return next })
                           }}
                         >
@@ -312,10 +317,17 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
           <CardDescription>Shutdown the BenchMax server</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center gap-3">
-          <Button variant="destructive" onClick={handleExit}>
+          <Button variant="destructive" onClick={() => setShowExitConfirm(true)}>
             Exit Server
           </Button>
           {exitMsg && <span className="text-sm text-muted-foreground">{exitMsg}</span>}
+          <ConfirmDialog
+            open={showExitConfirm}
+            onOpenChange={setShowExitConfirm}
+            title="Shut Down Server?"
+            description="This will stop the BenchMax server. Any running benchmarks will be interrupted."
+            onConfirm={handleExit}
+          />
         </CardContent>
       </Card>
     </div>

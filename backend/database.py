@@ -35,7 +35,7 @@ class Run(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     model_name = Column(String, nullable=False)
     benchmark_name = Column(String, nullable=False)
-    status = Column(String, default="PENDING")  # PENDING, RUNNING, PAUSED, COMPLETED, FAILED
+    status = Column(String, default="PENDING")  # PENDING, RUNNING, PAUSED, COMPLETED, FAILED, HALTED
     current_index = Column(Integer, default=0)
     total_samples = Column(Integer, default=0)
     parameters = Column(Text, nullable=True)  # Store JSON representation of params
@@ -45,6 +45,11 @@ class Run(Base):
 
     # Relationship to results
     results = relationship("Result", back_populates="run", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        Index("ix_runs_status", "status"),
+        Index("ix_runs_batch_id", "batch_id"),
+    )
 
     def get_parameters(self):
         if self.parameters:
@@ -78,11 +83,10 @@ class Result(Base):
 
     run = relationship("Run", back_populates="results")
 
-# Indexes for frequently-queried columns
-Index("ix_runs_status", Run.status)
-Index("ix_runs_batch_id", Run.batch_id)
-Index("ix_results_run_id", Result.run_id)
-Index("ix_results_task_id", Result.task_id)
+    __table_args__ = (
+        Index("ix_results_run_id", "run_id"),
+        Index("ix_results_task_id", "task_id"),
+    )
 
 def init_db():
     Base.metadata.create_all(bind=engine)

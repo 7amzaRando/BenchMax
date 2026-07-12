@@ -40,6 +40,7 @@ function AppContent() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [pendingRerun, setPendingRerun] = useState<{ model: string; benchmark: string; params: any } | null>(null)
   const prevBatchIdRef = useRef<string | null>(null)
+  const wasConnectedRef = useRef(false)
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
   const refreshHistory = useCallback(() => setHistoryRefreshKey(k => k + 1), [])
 
@@ -58,7 +59,6 @@ function AppContent() {
     if (!result.status.startsWith('🟢')) {
       setConnection(prev => ({ ...prev, connected: false, models: [] }))
       toast({ title: "Connection Failed", description: result.status, variant: "error" })
-      throw new Error(result.status)
     }
     setConnection(prev => ({
       ...prev,
@@ -151,10 +151,14 @@ function AppContent() {
         await api.poll()
         if (!connection.connected) {
           setConnection(prev => ({ ...prev, connected: true }))
-          toast({ title: "Connection Restored", description: "Successfully reconnected to BenchMax server.", variant: "success" })
+          if (wasConnectedRef.current) {
+            toast({ title: "Connection Restored", description: "Successfully reconnected to BenchMax server.", variant: "success" })
+          }
+          wasConnectedRef.current = true
         }
       } catch {
         if (connection.connected) {
+          wasConnectedRef.current = true
           setConnection(prev => ({ ...prev, connected: false }))
           toast({ title: "Connection Lost", description: "Could not reach BenchMax server. Please check connection.", variant: "error" })
         }

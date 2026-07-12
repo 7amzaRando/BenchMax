@@ -11,9 +11,9 @@ import httpx
 logger = logging.getLogger(__name__)
 
 class LMStudioClient:
-    def close(self):
-        """Synchronously close the underlying HTTP client session."""
-        asyncio.run(self._client.aclose())
+    async def aclose(self):
+        """Close the underlying HTTP client session."""
+        await self._client.aclose()
     def __init__(self, base_url: str = "http://127.0.0.1:1234", api_key: Optional[str] = None):
         base_url = base_url.rstrip("/")
         self.base_url = base_url
@@ -266,7 +266,7 @@ class LMStudioClient:
             resp = await self._client.post(url, json=payload, timeout=httpx.Timeout(60.0))
             body = resp.json() if resp.text else {}
             logger.info(f"Unload response ({resp.status_code}): {json.dumps(body)[:300]}")
-            if resp.status_code != 200 and model_id:
+            if resp.status_code != 200 and model_id and isinstance(body, dict):
                 err_msg = body.get("error", {}).get("message", "")
                 if "instance_id" in err_msg and source == "from_models_query":
                     payload2 = {"instance_id": model_id}
@@ -297,21 +297,17 @@ class LMStudioClient:
     async def stop_generation(
         self,
         model_name: str,
-        system_prompt: Optional[str] = None,
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
-        Sends a stop command to LM Studio via POST /v1/chat/completions with empty messages.
-        This tells the model to halt generation for the current sample before moving on.
-
-        Follows OpenAI-compatible API: https://platform.openai.com/docs/api-reference/chat/create
-        Uses 'messages' as an empty list (system prompt applied automatically for chat-tuned models).
+        Sends a stop command to LM Studio via POST /v1/chat/completions.
+        Uses a cancel instruction message to avoid API rejection of empty messages array.
         """
         url = f"{self.base_url}/chat/completions"
         payload = {
             "model": model_name,
-            "messages": [],  # Empty messages — system prompt is auto-applied by LM Studio
+            "messages": [{"role": "user", "content": "[STOP]"}],
             "temperature": temperature,
             "stream": False,
         }
@@ -442,6 +438,10 @@ class LMStudioClient:
                                 rc = delta.get("reasoning_content")
                                 if rc is not None:
                                     thinking_content += rc
+                                    self._rep_buffer += rc
+                                    if len(self._rep_buffer) > self._rep_max_len:
+                                        self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+                                    last_token_time = time.time()
                                 content = delta.get("content")
                                 if content is not None:
                                     last_token_time = time.time()

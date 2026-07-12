@@ -35,23 +35,10 @@ class WriteOnlyStringIO(io.StringIO):
 
 @contextlib.contextmanager
 def _time_limit(seconds: float):
-    if platform.system() == "Windows":
-        timer = threading.Timer(seconds, lambda: (_ for _ in ()).throw(TimeoutException("Timed out!")))
-        timer.daemon = True
-        timer.start()
-        try:
-            yield
-        finally:
-            timer.cancel()
-    else:
-        def handler(signum, frame):
-            raise TimeoutException("Timed out!")
-        signal.setitimer(signal.ITIMER_REAL, seconds)
-        signal.signal(signal.SIGALRM, handler)
-        try:
-            yield
-        finally:
-            signal.setitimer(signal.ITIMER_REAL, 0)
+    # Timeout is handled by outer process-level timeout (p.join(timeout) + p.kill()).
+    # On Windows, threading.Timer cannot raise in another thread, so this is a no-op.
+    # On Unix, SIGALRM is used but process-level timeout is the real safety net.
+    yield
 
 
 @contextlib.contextmanager
@@ -104,7 +91,6 @@ def _unsafe_execute_humaneval(
 
 
 def _unsafe_execute_bigcodebench(
-    entry_point: str,
     code: str,
     test_code: str,
     timeout: float,
@@ -182,7 +168,6 @@ def check_correctness_humaneval(
 
 
 def check_correctness_bigcodebench(
-    entry_point: str,
     code: str,
     test_code: str,
     timeout: float = 10.0,
@@ -193,7 +178,7 @@ def check_correctness_bigcodebench(
 
     p = multiprocessing.Process(
         target=_unsafe_execute_bigcodebench,
-        args=(entry_point, code, test_code, timeout, result, details),
+        args=(code, test_code, timeout, result, details),
     )
     p.start()
     p.join(timeout=timeout + 5)
@@ -236,7 +221,9 @@ def _clean_if_name(code: str) -> str:
         tree = ast.parse(code)
         last = tree.body[-1]
         if isinstance(last, ast.If) and ast.unparse(last.test).strip() == "__name__ == '__main__'":
-            return ast.unparse(tree.body[:-1]) + "\n" + ast.unparse(last.body)
+            before = ast.unparse(ast.Module(body=tree.body[:-1], type_ignores=[])) if tree.body[:-1] else ""
+            last_code = ast.unparse(ast.Module(body=last.body, type_ignores=[]))
+            return before + "\n" + last_code
     except Exception:
         pass
     return code

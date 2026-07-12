@@ -282,13 +282,9 @@ except Exception as e:
             "ttft": 0.0, "thinking_tokens": 0, "response_tokens": 0}
 ```
 
-### Reasoning tokens (if not disabled)
+### Reasoning tokens
 ```python
-disable_reasoning = params.get("disable_reasoning", True)
-gen = await self.client.generate_completion(
-    ...,
-    reasoning_tokens=params.get("reasoning_tokens") if not disable_reasoning else None,
-)
+# reasoning_tokens support was removed in v1.0
 ```
 
 ## 7. Test-based Benchmarks

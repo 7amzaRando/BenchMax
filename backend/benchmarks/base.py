@@ -1,4 +1,6 @@
+import html
 import json
+import difflib
 import logging
 import sys
 from abc import ABC, abstractmethod
@@ -148,7 +150,6 @@ class BaseBenchmark(ABC):
                         logger.warning(f"Benchmark run {run_id} — repetition detected at index {i}, sending stop and skipping sample.")
                         await self.client.stop_generation(
                             model_name=model_name,
-                            system_prompt=None,
                             temperature=0.0,
                             max_tokens=None,
                         )
@@ -177,11 +178,14 @@ class BaseBenchmark(ABC):
                     standard_keys = {"prompt", "raw_response", "extracted_code",
                                      "correct", "error_message", "elapsed_time",
                                      "tps", "ttft", "thinking_tokens", "response_tokens",
-                                     "thinking_content", "answer_content",
-                                     "scoring_details"}
+                                     "thinking_content", "answer_content"}
                     extra = {k: v for k, v in result_data.items() if k not in standard_keys}
                     if "scoring_details" in result_data:
-                        extra["scoring_details"] = result_data["scoring_details"]
+                        scoring_details = json.dumps(result_data["scoring_details"])
+                    elif extra:
+                        scoring_details = json.dumps(extra)
+                    else:
+                        scoring_details = None
                     result_record = Result(
                         run_id=run_id,
                         task_id=sample.get("task_id", f"sample_{i}"),
@@ -195,7 +199,7 @@ class BaseBenchmark(ABC):
                         ttft=result_data.get("ttft", 0.0),
                         thinking_tokens=result_data.get("thinking_tokens", 0),
                         response_tokens=result_data.get("response_tokens", 0),
-                        scoring_details=json.dumps(extra) if extra else None
+                        scoring_details=scoring_details
                     )
                     self.db.add(result_record)
                     result_buffer.append(result_record)
@@ -236,7 +240,6 @@ class BaseBenchmark(ABC):
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
         """Generate a textual diff. Override per benchmark for richer HTML views."""
-        import difflib
         expected = sample.get("canonical_solution") or sample.get("answer") or sample.get("source_code", "")
         generated = result_data.get("extracted_code", result_data.get("raw_response", ""))
         if not expected:
@@ -245,4 +248,4 @@ class BaseBenchmark(ABC):
             str(expected).splitlines(),
             str(generated).splitlines(),
         )
-        return "<pre>" + "\n".join(diff) + "</pre>"
+        return "<pre>" + html.escape("\n".join(diff)) + "</pre>"

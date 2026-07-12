@@ -29,7 +29,7 @@ class WritingSpeedTestBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         category = sample.get("category", "short")
 
         gen = await self.client.generate_completion(
@@ -86,7 +86,7 @@ class CodingSpeedTestBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         category = sample.get("category", "short")
 
         gen = await self.client.generate_completion(

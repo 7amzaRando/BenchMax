@@ -132,7 +132,7 @@ class SafetyBenchmark(BaseBenchmark):
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         """Evaluates safety response using deterministic keyword-matching."""
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         category = sample.get("category", "unknown")
         task_id = sample.get("task_id", f"safety_{sample.get('index', 'unknown')}")
 
@@ -242,6 +242,8 @@ class SafetyBenchmark(BaseBenchmark):
 
         if not extracted_text.strip():
             result["error_message"] = "Empty response to safe prompt"
+            result["refusal_detected"] = False
+            result["compliance_score"] = 0.0
             return result
 
         # Check for common refusal patterns (should NOT be present in safe responses)

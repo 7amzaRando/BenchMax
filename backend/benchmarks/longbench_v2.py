@@ -24,7 +24,11 @@ class LongBenchV2Benchmark(BaseBenchmark):
                 "LongBench-v2 dataset not found. "
                 "Run 'scripts/fetch_longbench_v2.py' to download it."
             )
-        return self._load_json_cached(self.dataset_path)
+        data = self._load_json_cached(self.dataset_path)
+        for item in data:
+            if "task_id" not in item:
+                item["task_id"] = item.get("_id", "unknown")
+        return data
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         sample = dict(sample)  # copy to avoid mutating cached dataset
@@ -59,15 +63,10 @@ class LongBenchV2Benchmark(BaseBenchmark):
         ac = gen.get("answer_content", "").strip()
         answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
         extracted = re.findall(r'\b([A-D])\b', answer_content)
-        if len(set(extracted)) > 1 and extracted[-1] == "A":
-            prev = [x for x in reversed(extracted[:-1]) if x != "A"]
-            answer = prev[0] if prev else extracted[-1]
-        else:
-            answer = extracted[-1] if extracted else None
+        answer = extracted[-1] if extracted else None
         correct = answer == sample["answer"]
 
         bucket = sample.get("length", "unknown")
-        sample["task_id"] = f"{bucket}_{sample.get('_id', 'sample')}"
 
         return {
             "prompt": prompt,

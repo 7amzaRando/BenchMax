@@ -11,6 +11,13 @@ from backend.benchmarks.longbench_v2 import LongBenchV2Benchmark
 from backend.benchmarks.mmmu_pro import MMMUProBenchmark
 from backend.benchmarks.livebench import LiveBenchBenchmark
 from backend.benchmarks.personal import BenchMaxPersonalBenchmark
+from backend.benchmarks.livecodebench import LiveCodeBenchBenchmark
+from backend.benchmarks.speed_test import WritingSpeedTestBenchmark, CodingSpeedTestBenchmark
+from backend.benchmarks.lite import BenchMaxLiteBenchmark
+from backend.benchmarks.code_bench import BenchMaxCodeBenchmark
+from backend.benchmarks.reason_bench import BenchMaxReasonBenchmark
+from backend.benchmarks.tectonic import BenchMaxTectonicBenchmark
+from backend.benchmarks.truthfulqa import TruthfulQABenchmark
 
 __all__ = [
     "HumanEvalBenchmark",
@@ -26,4 +33,12 @@ __all__ = [
     "MMMUProBenchmark",
     "LiveBenchBenchmark",
     "BenchMaxPersonalBenchmark",
+    "LiveCodeBenchBenchmark",
+    "WritingSpeedTestBenchmark",
+    "CodingSpeedTestBenchmark",
+    "BenchMaxLiteBenchmark",
+    "BenchMaxCodeBenchmark",
+    "BenchMaxReasonBenchmark",
+    "BenchMaxTectonicBenchmark",
+    "TruthfulQABenchmark",
 ]

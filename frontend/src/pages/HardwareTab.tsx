@@ -5,6 +5,46 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 
+function MetricChart({ title, data, dataKey, color, unit }: {
+    title: string;
+    data: { t: number; v: number }[];
+    dataKey?: string;
+    color?: string;
+    unit?: string;
+}) {
+    const chartColor = color || '#3b82f6';
+    return (
+        <div className="bg-card border border-border rounded-lg p-3">
+            <h3 className="text-sm font-medium text-foreground mb-2">{title}</h3>
+            <ResponsiveContainer width="100%" height={120}>
+                <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="t" tick={false} axisLine={false} />
+                    <YAxis tick={false} axisLine={false} domain={[0, 'auto']} />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                        }}
+                        formatter={(value: number) => [`${value}${unit || ''}`, title]}
+                        labelFormatter={() => ''}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey={dataKey || 'v'}
+                        stroke={chartColor}
+                        strokeWidth={2}
+                        dot={false}
+                        isAnimationActive={false}
+                    />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
 export default function HardwareTab({ telemetryPaused, setTelemetryPaused }: { telemetryPaused?: boolean; setTelemetryPaused?: (v: boolean) => void }) {
   const [current, setCurrent] = useState<any>(null)
   const historyRef = useRef<any[]>([])
@@ -95,59 +135,11 @@ export default function HardwareTab({ telemetryPaused, setTelemetryPaused }: { t
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card><CardHeader><CardTitle className="text-sm">CPU %</CardTitle></CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history.slice(-80)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                <XAxis dataKey="t" stroke="var(--chart-axis)" hide />
-                <YAxis domain={[0, 100]} stroke="var(--chart-axis)" />
-                <Tooltip />
-                <Line type="monotone" dataKey="cpu" stroke="#3B82F6" dot={false} strokeWidth={2} name="CPU %" isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card><CardHeader><CardTitle className="text-sm">RAM %</CardTitle></CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history.slice(-80)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                <XAxis dataKey="t" stroke="var(--chart-axis)" hide />
-                <YAxis domain={[0, 100]} stroke="var(--chart-axis)" />
-                <Tooltip />
-                <Line type="monotone" dataKey="ram" stroke="#10B981" dot={false} strokeWidth={2} name="RAM %" isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card><CardHeader><CardTitle className="text-sm">GPU Load %</CardTitle></CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history.slice(-80)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                <XAxis dataKey="t" stroke="var(--chart-axis)" hide />
-                <YAxis domain={[0, 100]} stroke="var(--chart-axis)" />
-                <Tooltip />
-                <Line type="monotone" dataKey="gpu" stroke="#F59E0B" dot={false} strokeWidth={2} name="GPU %" isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card><CardHeader><CardTitle className="text-sm">VRAM %</CardTitle></CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history.slice(-80)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                <XAxis dataKey="t" stroke="var(--chart-axis)" hide />
-                <YAxis domain={[0, 100]} stroke="var(--chart-axis)" />
-                <Tooltip />
-                <Line type="monotone" dataKey="vram" stroke="#8B5CF6" dot={false} strokeWidth={2} name="VRAM %" isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricChart title="CPU Usage" data={history.slice(-80)} dataKey="cpu" color="#3b82f6" unit="%" />
+        <MetricChart title="RAM Usage" data={history.slice(-80).map(p => ({ t: p.t, v: p.ram }))} color="#10b981" unit="%" />
+        <MetricChart title="GPU Load" data={history.slice(-80).map(p => ({ t: p.t, v: p.gpu }))} color="#f59e0b" unit="%" />
+        <MetricChart title="VRAM Usage" data={history.slice(-80).map(p => ({ t: p.t, v: p.vram }))} color="#8b5cf6" unit="%" />
       </div>
     </div>
   )

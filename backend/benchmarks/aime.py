@@ -75,7 +75,7 @@ class AIMEBenchmark(BaseBenchmark):
 
         answer_content = (gen.get("answer_content") or gen.get("raw_response", "")).strip()
         extracted = extract_aime_answer(answer_content)
-        expected = int(sample["answer"])
+        expected = int(sample.get("answer", "0"))
         correct = extracted == expected
 
         error_msg = None

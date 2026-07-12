@@ -24,7 +24,7 @@ except ImportError:
 
 # Telemetry cache to avoid expensive GPU counter queries every call
 _telemetry_cache: dict = {}
-_telemetry_cache_ttl = 2.0  # seconds
+_telemetry_cache_ttl = 3.5  # seconds (slightly longer than frontend 3s poll interval)
 
 
 def _get_gpu_counters_typeperf() -> dict:
@@ -198,6 +198,7 @@ def _gather_system_metrics_fresh() -> dict:
     # 1. CPU and System RAM (these are cheap)
     try:
         metrics["cpu_percent"] = psutil.cpu_percent(interval=None)
+        metrics["cpu_load"] = metrics["cpu_percent"]
         vm = psutil.virtual_memory()
         metrics["ram_total_gb"] = round(vm.total / (1024 ** 3), 2)
         metrics["ram_used_gb"] = round(vm.used / (1024 ** 3), 2)

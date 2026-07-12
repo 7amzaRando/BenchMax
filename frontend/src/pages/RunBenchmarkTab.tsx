@@ -107,7 +107,9 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
   }
 
   useEffect(() => {
-    api.getBenchmarks().then(d => setBenchmarks(d.benchmarks || [])).catch(() => { console.warn('getBenchmarks failed') })
+    let mounted = true
+    api.getBenchmarks().then(d => { if (mounted) setBenchmarks(d.benchmarks || []) }).catch(() => { console.warn('getBenchmarks failed') })
+    return () => { mounted = false }
   }, [])
 
   useEffect(() => {
@@ -117,16 +119,15 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
   }, [connection.models])
 
   useEffect(() => {
+    let mounted = true
     if (connection.metadata?.[connection.selectedModel]) {
       const m = connection.metadata[connection.selectedModel]
       const ctx = m?.context_length || m?.max_context_length || m?.context_window
-      if (ctx) setContextWindow(String(ctx))
+      if (mounted) setContextWindow(ctx ? String(ctx) : 'N/A')
     } else {
-      api.getConnectionMetadata().then(d => {
-        const ctx = d?.context_length || d?.max_context_length
-        if (ctx) setContextWindow(String(ctx))
-      }).catch(() => console.warn('Failed to get context window'))
+      if (mounted) setContextWindow('N/A')
     }
+    return () => { mounted = false }
   }, [connection.selectedModel, connection.metadata])
 
   // Derive run status from the main poll in App.tsx (runs at 3s)
@@ -249,17 +250,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
     try { const r = await api.skipModelQueue(); setRunMsg(r.status) } catch { console.warn('skipModelQueue failed') }
   }
 
-  const status = localRunStatus || (runStatus?.run_progress ? {
-    status: runStatus.run_progress.status_md || '',
-    current_index: 0, total_samples: 0,
-    accuracy: runStatus.run_progress.accuracy || '0%',
-    avg_tps: runStatus.run_progress.avg_tps || '0 t/s',
-    avg_ttft: runStatus.run_progress.avg_ttft || '0 s',
-    token_stats: runStatus.run_progress.token_stats || '—',
-    progress: 0,
-  } : null)
-
-  const displayStatus = liveOverride || status
+  const displayStatus = liveOverride || localRunStatus
 
   return (
     <div className="space-y-5">
@@ -274,9 +265,9 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
           )}
         </div>
         <div className="flex bg-card/80 border border-border rounded-lg p-0.5">
-          <button onClick={() => setMode('single')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'single' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Single</button>
-          <button onClick={() => setMode('batch')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'batch' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Batch</button>
-          <button onClick={() => setMode('model-queue')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'model-queue' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Model Queue</button>
+          <button role="tab" aria-pressed={mode === 'single'} onClick={() => setMode('single')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'single' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Single</button>
+          <button role="tab" aria-pressed={mode === 'batch'} onClick={() => setMode('batch')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'batch' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Batch</button>
+          <button role="tab" aria-pressed={mode === 'model-queue'} onClick={() => setMode('model-queue')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'model-queue' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Model Queue</button>
         </div>
       </div>
 
@@ -415,9 +406,9 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
             )}
             {mode !== 'model-queue' && activeRunId && (
               <div className="flex gap-1.5 ml-2">
-                <Button variant="secondary" size="sm" onClick={handlePause} title="Pause">⏸</Button>
-                <Button variant="secondary" size="sm" onClick={handleResume} title="Resume">▶</Button>
-                <Button variant="destructive" size="sm" onClick={() => setHaltConfirmOpen(true)} title="Halt">⏹</Button>
+                <Button variant="secondary" size="sm" onClick={handlePause} aria-label="Pause run">⏸</Button>
+                <Button variant="secondary" size="sm" onClick={handleResume} aria-label="Resume run">▶</Button>
+                <Button variant="destructive" size="sm" onClick={() => setHaltConfirmOpen(true)} aria-label="Halt run">⏹</Button>
               </div>
             )}
             {mode === 'model-queue' && queueState && !['completed', 'failed', 'idle'].includes(queueState.status) && (

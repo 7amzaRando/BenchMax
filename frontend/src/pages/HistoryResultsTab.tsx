@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +20,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
   const [clearConfirm, setClearConfirm] = useState('')
   const [diffHtml, setDiffHtml] = useState('')
   const [selectedTask, setSelectedTask] = useState('')
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [sortColumn, setSortColumn] = useState<string>('Run ID')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [historyFilter, setHistoryFilter] = useState('')
@@ -48,17 +49,19 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
     )
   }, [sortedRuns, historyFilter])
 
+  const mountedRef = useRef(true)
+  useEffect(() => { return () => { mountedRef.current = false } }, [])
+
   function handleSort(col: string) {
     if (sortColumn === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortColumn(col); setSortDir('asc') }
   }
 
-  useEffect(() => { loadRuns() }, [])
   useEffect(() => { if (activeTab === 'history') loadRuns() }, [activeTab])
   useEffect(() => { loadRuns() }, [historyRefreshKey])
 
   async function loadRuns() {
-    try { const data = await api.loadHistory(); setRuns(data.runs || []) } catch { console.warn('Failed to load history') }
+    try { setLoadError(null); const data = await api.loadHistory(); setRuns(data.runs || []) } catch (e) { setLoadError('Failed to load history'); console.warn('loadRuns failed:', e) }
   }
 
   const stats = useMemo(() => {
@@ -87,6 +90,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
     setDiffHtml('')
     try {
       const data = await api.loadRunDetails(runId)
+      if (!mountedRef.current) return
       setRunDetails(data)
       if (data.failed_tasks?.length) setSelectedTask(data.failed_tasks[0])
     } catch { console.warn('Failed to load run details') }
@@ -94,21 +98,21 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
 
   async function handleDiff() {
     if (!selectedRunId || !selectedTask) return
-    try { const data = await api.getDiff(selectedRunId, selectedTask); setDiffHtml(data.html) } catch { console.warn('Failed to generate diff') }
+    try { const data = await api.getDiff(selectedRunId, selectedTask); if (mountedRef.current) setDiffHtml(data.html) } catch { console.warn('Failed to generate diff') }
   }
 
   async function loadBatch() {
     if (!batchId) return
-    try { const data = await api.loadBatchSummary(batchId); setBatchSummary(data) } catch { console.warn('Failed to load batch summary') }
+    try { const data = await api.loadBatchSummary(batchId); if (mountedRef.current) setBatchSummary(data) } catch { console.warn('Failed to load batch summary') }
   }
 
   async function handleCompare() {
     if (!compareIds?.trim()) return
-    try { const data = await api.loadComparison(compareIds); setComparison(data) } catch { console.warn('Failed to load comparison') }
+    try { const data = await api.loadComparison(compareIds); if (mountedRef.current) setComparison(data) } catch { console.warn('Failed to load comparison') }
   }
 
   async function handleClear() {
-    try { const data = await api.clearAllHistory(clearConfirm); setRuns(data.history || []); setClearConfirm('') } catch { console.warn('Failed to clear history') }
+    try { const data = await api.clearAllHistory(clearConfirm); if (mountedRef.current) { setRuns(data.history || []); setClearConfirm('') } } catch { console.warn('Failed to clear history') }
   }
 
   return (
@@ -140,6 +144,10 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
             <div className="font-mono text-sm mt-0.5">{stats.best_accuracy?.accuracy === '—' ? '—' : `${stats.best_accuracy?.accuracy}%`}</div>
           </div>
         </div>
+      )}
+
+      {loadError && (
+        <div className="text-red-500 text-sm p-2">{loadError}</div>
       )}
 
       <div className="flex items-center gap-4">
@@ -203,7 +211,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
           <Card variant="glow">
             <CardHeader><CardTitle>Run #{selectedRunId}</CardTitle></CardHeader>
             <CardContent>
-              <div className="text-sm whitespace-pre-wrap mb-4" dangerouslySetInnerHTML={{ __html: runDetails.summary }} />
+              <div className="text-sm text-muted-foreground whitespace-pre-wrap mb-4">{runDetails.summary}</div>
               <div className="flex gap-2 mb-4">
                 <select className="h-8 text-xs rounded-md border border-border bg-card px-2" value={exportFormat} onChange={e => setExportFormat(e.target.value as 'CSV' | 'JSON')}>
                   <option value="CSV">CSV</option>

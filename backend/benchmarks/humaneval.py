@@ -65,7 +65,7 @@ class HumanEvalBenchmark(BaseBenchmark):
             if any(stripped.startswith(kw) for kw in ['def ', 'class ', 'for ', 'if ', 'while ',
                                                         'return ', 'import ', 'from ', 'assert ',
                                                         'print(', 'raise ', 'yield ', 'del ',
-                                                        '[', ']', '{', '}', ':']):
+                                                        '[', ']', '{', '}', ':', 'self.']):
                 code_lines.append(line)
             else:
                 # If we have collected code, return it
@@ -110,7 +110,7 @@ class HumanEvalBenchmark(BaseBenchmark):
         """
         Runs completions against the local LLM and executes code via safe_executor.
         """
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         entry_point = sample["entry_point"]
         test_suite = sample["test"]
         task_id = sample["task_id"]

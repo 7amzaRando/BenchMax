@@ -189,7 +189,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
         for pat in patterns:
             m = pat.search(raw_text)
             if m:
-                code = m.group(1).strip()
+                code = m.group(m.lastindex).strip()
                 if code:
                     return code
 

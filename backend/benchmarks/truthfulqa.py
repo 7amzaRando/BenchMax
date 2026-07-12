@@ -26,10 +26,10 @@ class TruthfulQABenchmark(BaseBenchmark):
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         prompt = (
-            f"Question: {sample['question']}\n\n"
+            f"Question: {sample.get('question', '')}\n\n"
             f"Options:\n"
-            f"  A. {sample['choice_A']}\n"
-            f"  B. {sample['choice_B']}\n\n"
+            f"  A. {sample.get('choice_A', '')}\n"
+            f"  B. {sample.get('choice_B', '')}\n\n"
             f"Answer with only the letter of the correct option."
         )
 
@@ -45,14 +45,14 @@ class TruthfulQABenchmark(BaseBenchmark):
         answer_content = (gen.get("answer_content") or gen.get("raw_response", "")).strip().upper()
         extracted = re.findall(r'\b([A-B])\b', answer_content)
         answer = extracted[-1] if extracted else None
-        correct = answer == sample["answer"]
+        correct = answer == sample.get("answer", "")
 
         return {
             "prompt": prompt,
             "raw_response": gen.get("raw_response", ""),
             "extracted_code": answer_content,
             "correct": correct,
-            "error_message": None if correct else f"Expected {sample['answer']}, got {answer}",
+            "error_message": None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
             "elapsed_time": gen.get("elapsed_time", 0.0),
             "tps": gen.get("tps", 0.0),
             "ttft": gen.get("ttft", 0.0),

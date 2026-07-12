@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 MAX_HISTORY_LEN = 300
 telemetry_history: list[dict] = []
-_batch_queue: dict[str, list[int]] = {}
 _active_batch_id: str | None = None
 _batch_start_time: float | None = None
 _halt_events: dict[int, threading.Event] = {}
@@ -103,88 +102,75 @@ def _add_scoring_columns(row: dict, result) -> dict:
     return row
 
 
+def _compute_result_stats(results):
+    """Compute aggregate statistics from a list of Result objects.
+    Returns a dict with tps_vals, ttft_vals, total_tk, think_tk, resp_tk,
+    avg_tps, avg_ttft, avg_tokens, accuracy.
+    Handles empty results gracefully."""
+    tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
+    ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
+    total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
+    think_tk = sum(r.thinking_tokens or 0 for r in results)
+    resp_tk = sum(r.response_tokens or 0 for r in results)
+    correct = sum(1 for r in results if r.correct)
+    total = len(results)
+    return {
+        "tps_vals": tps_vals,
+        "ttft_vals": ttft_vals,
+        "total_tk": total_tk,
+        "think_tk": think_tk,
+        "resp_tk": resp_tk,
+        "avg_tps": round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0.0,
+        "avg_ttft": round(sum(ttft_vals) / len(ttft_vals), 1) if ttft_vals else 0.0,
+        "avg_tokens": round(total_tk / total, 1) if total else 0,
+        "accuracy": round(correct / total * 100, 1) if total else 0.0,
+        "correct": correct,
+        "total": total,
+    }
+
+
 def _make_client(api_url: str, api_key: str):
     from backend.lm_studio.client import LMStudioClient
     return LMStudioClient(base_url=api_url, api_key=api_key or None)
 
 
-def _run_async(coro):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        return loop.run_until_complete(coro)
-    finally:
-        loop.close()
+BENCHMARK_CLASSES = {
+    "HumanEval": ("backend.benchmarks.humaneval", "HumanEvalBenchmark"),
+    "MMLU-Pro": ("backend.benchmarks.mmlu_pro", "MMLUProBenchmark"),
+    "IFEval": ("backend.benchmarks.ifeval", "IFEvalBenchmark"),
+    "AIME": ("backend.benchmarks.aime", "AIMEBenchmark"),
+    "BigCodeBench": ("backend.benchmarks.bigcodebench", "BigCodeBenchBenchmark"),
+    "BigCodeBench-Hard": ("backend.benchmarks.bigcodebench", "BigCodeBenchBenchmark"),
+    "BFCL": ("backend.benchmarks.bfcl", "BFCLBenchmark"),
+    "MCP-Bench": ("backend.benchmarks.mcp_bench", "MCPBenchBenchmark"),
+    "Safety": ("backend.benchmarks.safety", "SafetyBenchmark"),
+    "LongBench-v2": ("backend.benchmarks.longbench_v2", "LongBenchV2Benchmark"),
+    "Aider Polyglot": ("backend.benchmarks.aider_polyglot", "AiderPolyglotBenchmark"),
+    "MMMU-Pro": ("backend.benchmarks.mmmu_pro", "MMMUProBenchmark"),
+    "LiveBench": ("backend.benchmarks.livebench", "LiveBenchBenchmark"),
+    "LiveCodeBench": ("backend.benchmarks.livecodebench", "LiveCodeBenchBenchmark"),
+    "BenchMax Personal": ("backend.benchmarks.personal", "BenchMaxPersonalBenchmark"),
+    "BenchMax Lite": ("backend.benchmarks.lite", "BenchMaxLiteBenchmark"),
+    "BenchMax Code": ("backend.benchmarks.code_bench", "BenchMaxCodeBenchmark"),
+    "BenchMax Reason": ("backend.benchmarks.reason_bench", "BenchMaxReasonBenchmark"),
+    "Writing Speed Test": ("backend.benchmarks.speed_test", "WritingSpeedTestBenchmark"),
+    "Coding Speed Test": ("backend.benchmarks.speed_test", "CodingSpeedTestBenchmark"),
+    "BenchMax Tectonic": ("backend.benchmarks.tectonic", "BenchMaxTectonicBenchmark"),
+    "TruthfulQA": ("backend.benchmarks.truthfulqa", "TruthfulQABenchmark"),
+}
 
 
 def _instantiate_benchmark(benchmark_name: str, db, client, quick_test=False, hard=False):
-    if benchmark_name == "HumanEval":
-        from backend.benchmarks.humaneval import HumanEvalBenchmark
-        return HumanEvalBenchmark(db, client, quick_test)
-    elif benchmark_name == "MMLU-Pro":
-        from backend.benchmarks.mmlu_pro import MMLUProBenchmark
-        return MMLUProBenchmark(db, client, quick_test)
-    elif benchmark_name == "IFEval":
-        from backend.benchmarks.ifeval import IFEvalBenchmark
-        return IFEvalBenchmark(db, client, quick_test)
-    elif benchmark_name == "AIME":
-        from backend.benchmarks.aime import AIMEBenchmark
-        return AIMEBenchmark(db, client, quick_test)
-    elif benchmark_name == "BigCodeBench":
-        from backend.benchmarks.bigcodebench import BigCodeBenchBenchmark
-        return BigCodeBenchBenchmark(db, client, quick_test, hard=False)
-    elif benchmark_name == "BigCodeBench-Hard":
-        from backend.benchmarks.bigcodebench import BigCodeBenchBenchmark
-        return BigCodeBenchBenchmark(db, client, quick_test, hard=True)
-    elif benchmark_name == "BFCL":
-        from backend.benchmarks.bfcl import BFCLBenchmark
-        return BFCLBenchmark(db, client, quick_test)
-    elif benchmark_name == "MCP-Bench":
-        from backend.benchmarks.mcp_bench import MCPBenchBenchmark
-        return MCPBenchBenchmark(db, client, quick_test)
-    elif benchmark_name == "Safety":
-        from backend.benchmarks.safety import SafetyBenchmark
-        return SafetyBenchmark(db, client, quick_test)
-    elif benchmark_name == "LongBench-v2":
-        from backend.benchmarks.longbench_v2 import LongBenchV2Benchmark
-        return LongBenchV2Benchmark(db, client, quick_test)
-    elif benchmark_name == "Aider Polyglot":
-        from backend.benchmarks.aider_polyglot import AiderPolyglotBenchmark
-        return AiderPolyglotBenchmark(db, client, quick_test)
-    elif benchmark_name == "MMMU-Pro":
-        from backend.benchmarks.mmmu_pro import MMMUProBenchmark
-        return MMMUProBenchmark(db, client, quick_test)
-    elif benchmark_name == "LiveBench":
-        from backend.benchmarks.livebench import LiveBenchBenchmark
-        return LiveBenchBenchmark(db, client, quick_test)
-    elif benchmark_name == "LiveCodeBench":
-        from backend.benchmarks.livecodebench import LiveCodeBenchBenchmark
-        return LiveCodeBenchBenchmark(db, client, quick_test)
-    elif benchmark_name == "BenchMax Personal":
-        from backend.benchmarks.personal import BenchMaxPersonalBenchmark
-        return BenchMaxPersonalBenchmark(db, client, quick_test)
-    elif benchmark_name == "BenchMax Lite":
-        from backend.benchmarks.lite import BenchMaxLiteBenchmark
-        return BenchMaxLiteBenchmark(db, client, quick_test)
-    elif benchmark_name == "BenchMax Code":
-        from backend.benchmarks.code_bench import BenchMaxCodeBenchmark
-        return BenchMaxCodeBenchmark(db, client, quick_test)
-    elif benchmark_name == "BenchMax Reason":
-        from backend.benchmarks.reason_bench import BenchMaxReasonBenchmark
-        return BenchMaxReasonBenchmark(db, client, quick_test)
-    elif benchmark_name == "Writing Speed Test":
-        from backend.benchmarks.speed_test import WritingSpeedTestBenchmark
-        return WritingSpeedTestBenchmark(db, client, quick_test)
-    elif benchmark_name == "Coding Speed Test":
-        from backend.benchmarks.speed_test import CodingSpeedTestBenchmark
-        return CodingSpeedTestBenchmark(db, client, quick_test)
-    elif benchmark_name == "BenchMax Tectonic":
-        from backend.benchmarks.tectonic import BenchMaxTectonicBenchmark
-        return BenchMaxTectonicBenchmark(db, client, quick_test)
-    elif benchmark_name == "TruthfulQA":
-        from backend.benchmarks.truthfulqa import TruthfulQABenchmark
-        return TruthfulQABenchmark(db, client, quick_test)
-    raise ValueError(f"Unknown benchmark: {benchmark_name}")
+    entry = BENCHMARK_CLASSES.get(benchmark_name)
+    if not entry:
+        raise ValueError(f"Unknown benchmark: {benchmark_name}")
+    mod_path, cls_name = entry
+    mod = __import__(mod_path, fromlist=[cls_name])
+    cls = getattr(mod, cls_name)
+    kwargs = {}
+    if "hard" in benchmark_name.lower():
+        kwargs["hard"] = True
+    return cls(db, client, quick_test=quick_test, **kwargs)
 
 
 def _start_benchmark_thread(
@@ -233,6 +219,7 @@ def _start_benchmark_thread(
             try:
                 loop.run_until_complete(bench.run_evaluation(run_id, params))
             finally:
+                loop.run_until_complete(client.aclose())
                 loop.close()
         except Exception as e:
             logger.error(f"Benchmark thread fatal error: {e}", exc_info=True)
@@ -280,20 +267,17 @@ def _build_batch_summary(batch_id: str) -> pd.DataFrame:
         for r in runs:
             results = r.results
             n = len(results)
-            ok = sum(1 for res in results if res.correct)
-            tps_vals = [res.tps for res in results if res.tps and res.tps > 0]
-            ttft_vals = [res.ttft for res in results if res.ttft and res.ttft > 0]
-            total_tk = sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
+            stats = _compute_result_stats(results)
             rows.append({
                 "Run ID": r.id,
                 "Benchmark": r.benchmark_name,
                 "Status": r.status,
-                "Correct": ok,
-                "Total": n,
-                "Accuracy": f"{round(ok/n*100, 1)}%" if n else "0%",
-                "Avg TPS": round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0,
-                "Avg TTFT": f"{round(sum(ttft_vals) / len(ttft_vals), 3)}s" if ttft_vals else "0s",
-                "Total Tokens": total_tk,
+                "Correct": stats["correct"],
+                "Total": stats["total"],
+                "Accuracy": f"{stats['accuracy']}%" if stats["total"] else "0%",
+                "Avg TPS": stats["avg_tps"],
+                "Avg TTFT": f"{stats['avg_ttft']}s" if stats["ttft_vals"] else "0s",
+                "Total Tokens": stats["total_tk"],
             })
         return pd.DataFrame(rows) if rows else pd.DataFrame()
     finally:
@@ -301,7 +285,8 @@ def _build_batch_summary(batch_id: str) -> pd.DataFrame:
 
 
 def _build_tps_histogram(results, bins=15) -> pd.DataFrame:
-    tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
+    stats = _compute_result_stats(results)
+    tps_vals = stats["tps_vals"]
     if not tps_vals:
         return pd.DataFrame()
     if len(set(tps_vals)) <= 1:
@@ -314,7 +299,8 @@ def _build_tps_histogram(results, bins=15) -> pd.DataFrame:
 
 
 def _build_ttft_histogram(results, bins=15) -> pd.DataFrame:
-    ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
+    stats = _compute_result_stats(results)
+    ttft_vals = stats["ttft_vals"]
     if not ttft_vals:
         return pd.DataFrame()
     if len(set(ttft_vals)) <= 1:
@@ -356,16 +342,15 @@ def _build_per_category_chart(results, benchmark_name="") -> pd.DataFrame:
     return grouped
 
 
-def _build_batch_latency_chart(runs, db) -> pd.DataFrame:
+def _build_batch_latency_chart(runs) -> pd.DataFrame:
     rows = []
     for r in runs:
-        results = db.query(Result).filter(Result.run_id == r.id).all()
-        tps_vals = [res.tps for res in results if res.tps and res.tps > 0]
-        ttft_vals = [res.ttft for res in results if res.ttft and res.ttft > 0]
+        results = r.results
+        stats = _compute_result_stats(results)
         rows.append({
             "Benchmark": r.benchmark_name,
-            "Avg TPS": round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0,
-            "Avg TTFT (s)": round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0,
+            "Avg TPS": stats["avg_tps"],
+            "Avg TTFT (s)": stats["avg_ttft"],
         })
     return pd.DataFrame(rows) if rows else pd.DataFrame()
 
@@ -374,13 +359,9 @@ def _scan_datasets() -> pd.DataFrame:
     import json as _json
     rows = []
     for name, (rel_path, _) in DATASETS.items():
-        found = False
         sample_count = "—"
-        # rel_path is like "data/humaneval_full.json" or "data/bfcl/bfcl_full.json"
-        # Check relative to ROOT, CWD, and EXE_DIR
         candidates = [ROOT / rel_path]
-        if not found:
-            candidates.append(Path.cwd() / rel_path)
+        candidates.append(Path.cwd() / rel_path)
         if EXE_DIR:
             candidates.append(EXE_DIR / rel_path)
             candidates.append(EXE_DIR.parent / rel_path)
@@ -513,7 +494,6 @@ def start_batch(
             run_ids.append(run.id)
 
         with _batch_lock:
-            _batch_queue[batch_id] = run_ids
             global _active_batch_id, _batch_start_time
             _active_batch_id = batch_id
             _batch_start_time = time.time()
@@ -601,8 +581,8 @@ def _run_model_queue_in_thread(
             if _queue_halted():
                 try:
                     loop.run_until_complete(client.unload_model(model_id))
-                except Exception:
-                    pass
+                except Exception as e2:
+                    logger.warning(f"Error unloading model {model_id}: {e2}")
                 break
 
             # Create Run records for each benchmark on this model
@@ -667,11 +647,6 @@ def _run_model_queue_in_thread(
                     db2.commit()
 
                     bench = _instantiate_benchmark(bn, db2, client, quick_test)
-                    if not bench:
-                        run_rec.status = "FAILED"
-                        db2.commit()
-                        continue
-
                     loop.run_until_complete(bench.run_evaluation(run_rec.id, params))
                 except Exception as e:
                     logger.error(f"Model queue benchmark error ({model_id} / {bn}): {e}", exc_info=True)
@@ -680,13 +655,14 @@ def _run_model_queue_in_thread(
                         if run_rec and run_rec.status not in ("COMPLETED", "HALTED", "FAILED"):
                             run_rec.status = "FAILED"
                             db2.commit()
-                    except Exception:
-                        pass
+                    except Exception as e3:
+                        logger.warning(f"Error marking run {run_rec.id} as FAILED: {e3}")
                 finally:
                     db2.close()
 
                 # After each benchmark, skip remaining benchmarks on this model if requested
                 if _queue_skip_model_requested():
+                    _clear_skip_model_flag()
                     break
 
             # Unload model (only if not halted — halt has its own cleanup)
@@ -699,6 +675,7 @@ def _run_model_queue_in_thread(
                     time.sleep(1)
                 except Exception as e:
                     logger.warning(f"Model unload warning for {model_id}: {e}")
+                _clear_skip_model_flag()
 
         # All models done or skipped/halted — set terminal state
         was_halted = _queue_halted()
@@ -742,7 +719,7 @@ def _run_model_queue_in_thread(
                 _active_batch_id = None
                 _batch_start_time = None
         try:
-            loop.run_until_complete(client.close())
+            loop.run_until_complete(client.aclose())
         except Exception:
             pass
         loop.close()
@@ -787,19 +764,13 @@ def get_model_queue_state() -> dict:
                 state["total_samples"] = run.total_samples or 0
                 results = run.results
                 if results:
-                    n = len(results)
-                    ok = sum(1 for r in results if r.correct)
-                    state["accuracy"] = f"{round(ok/n*100, 1) if n else 0}%"
-                    tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
-                    state["avg_tps"] = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0.0
-                    ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
-                    state["avg_ttft"] = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0.0
-                    total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
-                    think_tk = sum(r.thinking_tokens or 0 for r in results)
-                    resp_tk = sum(r.response_tokens or 0 for r in results)
-                    think_pct = round(think_tk / total_tk * 100, 1) if total_tk else 0.0
-                    resp_pct = round(resp_tk / total_tk * 100, 1) if total_tk else 0.0
-                    state["token_stats"] = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {total_tk}"
+                    stats = _compute_result_stats(results)
+                    state["accuracy"] = f"{stats['accuracy']}%"
+                    state["avg_tps"] = stats["avg_tps"]
+                    state["avg_ttft"] = stats["avg_ttft"]
+                    think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                    resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                    state["token_stats"] = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
         finally:
             db.close()
     return state
@@ -840,8 +811,7 @@ def skip_current_model() -> str:
             return "No active model queue."
         _model_queue_state["skip_model"] = True
         _model_queue_state["message"] = "Skipping current model..."
-    # Signal the running benchmark's halt event to stop early
-    qid = _model_queue_state.get("queue_id")
+        qid = _model_queue_state.get("queue_id")
     if qid:
         db = SessionLocal()
         try:
@@ -942,12 +912,11 @@ def load_history() -> pd.DataFrame:
         rows = []
         for r in runs:
             results = r.results  # already loaded via joinedload
-            n = len(results)
-            ok = sum(1 for res in results if res.correct)
-            tps_vals = [res.tps for res in results if res.tps and res.tps > 0]
-            ttft_vals = [res.ttft for res in results if res.ttft and res.ttft > 0]
-            total_tk = sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
-            avg_tokens = round(total_tk / n, 1) if n else 0
+            stats = _compute_result_stats(results)
+            n = stats["total"]
+            ok = stats["correct"]
+            total_tk = stats["total_tk"]
+            avg_tokens = stats["avg_tokens"]
             duration_str = "—"
             if r.status in ("COMPLETED", "FAILED", "HALTED") and r.updated_at and r.created_at:
                 diff_sec = int((r.updated_at - r.created_at).total_seconds())
@@ -971,8 +940,8 @@ def load_history() -> pd.DataFrame:
                 "Correct": ok,
                 "Total": n,
                 "Accuracy": f"{round(ok/n*100, 1)}%" if n else "0%",
-                "Avg TPS": round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0,
-                "Avg TTFT": round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0,
+                "Avg TPS": stats["avg_tps"],
+                "Avg TTFT": stats["avg_ttft"],
                 "Avg Tokens": avg_tokens,
                 "Total Tokens": total_tk,
                 "Duration": duration_str,
@@ -989,18 +958,19 @@ def load_run_details(run_id_str: str) -> tuple[str, pd.DataFrame, list, pd.DataF
     db = SessionLocal()
     try:
         run_id = int(run_id_str)
-        run = db.query(Run).filter(Run.id == run_id).first()
+        run = db.query(Run).options(joinedload(Run.results)).filter(Run.id == run_id).first()
         if not run:
             return "Run not found.", pd.DataFrame(), [], pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
-        results = db.query(Result).filter(Result.run_id == run_id).order_by(Result.id).all()
-        n = len(results)
-        ok = sum(1 for r in results if r.correct)
-        tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
-        ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
-        total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
-        think_tk = sum(r.thinking_tokens or 0 for r in results)
-        resp_tk = sum(r.response_tokens or 0 for r in results)
+        results = run.results
+        stats = _compute_result_stats(results)
+        n = stats["total"]
+        ok = stats["correct"]
+        tps_vals = stats["tps_vals"]
+        ttft_vals = stats["ttft_vals"]
+        total_tk = stats["total_tk"]
+        think_tk = stats["think_tk"]
+        resp_tk = stats["resp_tk"]
 
         params_dict = run.get_parameters()
         quick_test = params_dict.get("quick_test", False)
@@ -1060,7 +1030,7 @@ def load_batch_summary(batch_id_str: str) -> tuple[pd.DataFrame, pd.DataFrame, p
     summary_df = _build_batch_summary(batch_id_str)
     db = SessionLocal()
     try:
-        runs = db.query(Run).filter(Run.batch_id == batch_id_str).order_by(Run.id).all()
+        runs = db.query(Run).options(joinedload(Run.results)).filter(Run.batch_id == batch_id_str).order_by(Run.id).all()
         chart_rows = []
         for r in runs:
             chart_rows.append({
@@ -1068,7 +1038,7 @@ def load_batch_summary(batch_id_str: str) -> tuple[pd.DataFrame, pd.DataFrame, p
                 "Status": r.status,
             })
         chart_df = pd.DataFrame(chart_rows) if chart_rows else pd.DataFrame()
-        latency_df = _build_batch_latency_chart(runs, db)
+        latency_df = _build_batch_latency_chart(runs)
     finally:
         db.close()
     return summary_df, chart_df, latency_df
@@ -1090,14 +1060,13 @@ def load_leaderboard() -> pd.DataFrame:
         rows = []
         for r in runs:
             results = r.results
-            n = len(results)
-            ok = sum(1 for res in results if res.correct)
-            accuracy = round(ok / n * 100, 1) if n else 0.0
-            tps_vals = [res.tps for res in results if res.tps and res.tps > 0]
-            avg_tps = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0
-            ttft_vals = [res.ttft for res in results if res.ttft and res.ttft > 0]
-            avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0
-            total_tk = sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
+            stats = _compute_result_stats(results)
+            n = stats["total"]
+            ok = stats["correct"]
+            accuracy = stats["accuracy"]
+            avg_tps = stats["avg_tps"]
+            avg_ttft = stats["avg_ttft"]
+            total_tk = stats["total_tk"]
             params = r.get_parameters()
             quick_test = params.get("quick_test")
             if quick_test is None:
@@ -1172,27 +1141,26 @@ def load_cross_comparison(run_ids_csv: str) -> tuple[pd.DataFrame, pd.DataFrame,
             if not run:
                 continue
             results = run.results
-            n = len(results)
-            ok = sum(1 for r in results if r.correct)
-            tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
-            ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
-            total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
+            stats = _compute_result_stats(results)
+            n = stats["total"]
+            ok = stats["correct"]
+            total_tk = stats["total_tk"]
             label = f"#{rid} {run.benchmark_name}"
             acc_rows.append({
                 "Run": label,
-                "Accuracy": round(ok / n * 100, 1) if n else 0,
+                "Accuracy": stats["accuracy"],
                 "Correct": ok,
                 "Total": n,
             })
             lat_rows.append({
                 "Run": label,
-                "Avg TPS": round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0,
-                "Avg TTFT (s)": round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0,
+                "Avg TPS": stats["avg_tps"],
+                "Avg TTFT (s)": stats["avg_ttft"],
             })
             tok_rows.append({
                 "Run": label,
-                "Thinking": sum(r.thinking_tokens or 0 for r in results),
-                "Response": sum(r.response_tokens or 0 for r in results),
+                "Thinking": stats["think_tk"],
+                "Response": stats["resp_tk"],
                 "Total": total_tk,
             })
         return (
@@ -1491,13 +1459,12 @@ def sync_to_online_leaderboard(_trigger=0, api_key: str | None = None) -> str:
             records = []
             for r in runs:
                 results = r.results
-                n = len(results)
-                ok = sum(1 for res in results if res.correct)
-                accuracy = round(ok / n * 100, 1) if n else 0.0
-                tps_vals = [res.tps for res in results if res.tps and res.tps > 0]
-                ttft_vals = [res.ttft for res in results if res.ttft and res.ttft > 0]
-                avg_tps = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0
-                avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0
+                stats = _compute_result_stats(results)
+                n = stats["total"]
+                ok = stats["correct"]
+                accuracy = stats["accuracy"]
+                avg_tps = stats["avg_tps"]
+                avg_ttft = stats["avg_ttft"]
                 records.append({
                     "id": secrets.token_hex(8),
                     "benchmark_name": r.benchmark_name,
@@ -1507,7 +1474,7 @@ def sync_to_online_leaderboard(_trigger=0, api_key: str | None = None) -> str:
                     "passed": ok,
                     "avg_tps": avg_tps,
                     "avg_ttft": avg_ttft,
-                    "total_tokens": sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results),
+                    "total_tokens": stats["total_tk"],
                     "timestamp": r.created_at.isoformat() if r.created_at else "",
                 })
         finally:
@@ -1580,19 +1547,13 @@ def poll(
 
                 results = run.results  # already loaded via joinedload
                 if results:
-                    n = len(results)
-                    ok = sum(1 for r in results if r.correct)
-                    tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
-                    ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
-                    avg_tps = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0.0
-                    avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0.0
-                    accuracy = f"{round(ok/n*100, 1) if n else 0}%"
-                    total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
-                    think_tk = sum(r.thinking_tokens or 0 for r in results)
-                    resp_tk = sum(r.response_tokens or 0 for r in results)
-                    think_pct = round(think_tk / total_tk * 100, 1) if total_tk else 0.0
-                    resp_pct = round(resp_tk / total_tk * 100, 1) if total_tk else 0.0
-                    token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {total_tk}"
+                    stats = _compute_result_stats(results)
+                    avg_tps = stats["avg_tps"]
+                    avg_ttft = stats["avg_ttft"]
+                    accuracy = f"{stats['accuracy']}%"
+                    think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                    resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                    token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
         finally:
             db.close()
 
@@ -1607,6 +1568,7 @@ def poll(
 
     with _batch_lock:
         bid = _active_batch_id
+        bst = _batch_start_time
 
     if bid:
         batch_id_val = bid
@@ -1621,11 +1583,11 @@ def poll(
                 batch_current_name = running_names[0] if running_names else (runs[-1].benchmark_name if runs else "")
                 batch_status_md = f"Batch: {batch_done}/{batch_total} — Current: {batch_current_name}"
 
-                if _batch_start_time and batch_done > 0:
+                if bst and batch_done > 0:
                     total_done_samples = sum(r.current_index or 0 for r in runs if r.status in ("COMPLETED", "FAILED"))
                     total_remaining = sum((r.total_samples or 1) - (r.current_index or 0) for r in runs if r.status not in ("COMPLETED", "FAILED"))
                     if total_done_samples > 0 and total_remaining > 0:
-                        elapsed = time.time() - (_batch_start_time or time.time())
+                        elapsed = time.time() - bst
                         avg = elapsed / total_done_samples
                         est = int(avg * total_remaining)
                         batch_eta_str = f"{est // 60}m{est % 60}s" if est > 60 else f"~{est}s"
@@ -1653,19 +1615,13 @@ def poll(
                     active_task = running.benchmark_name
                     results = running.results
                     if results:
-                        n = len(results)
-                        ok = sum(1 for r in results if r.correct)
-                        tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
-                        ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
-                        avg_tps = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0.0
-                        avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0.0
-                        accuracy = f"{round(ok/n*100, 1) if n else 0}%"
-                        total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
-                        think_tk = sum(r.thinking_tokens or 0 for r in results)
-                        resp_tk = sum(r.response_tokens or 0 for r in results)
-                        think_pct = round(think_tk / total_tk * 100, 1) if total_tk else 0.0
-                        resp_pct = round(resp_tk / total_tk * 100, 1) if total_tk else 0.0
-                        token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {total_tk}"
+                        stats = _compute_result_stats(results)
+                        avg_tps = stats["avg_tps"]
+                        avg_ttft = stats["avg_ttft"]
+                        accuracy = f"{stats['accuracy']}%"
+                        think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                        resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+                        token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
                     active_run_override = running.id
         finally:
             db3.close()
@@ -1680,19 +1636,37 @@ def poll(
         _recent_runs_cache["timestamp"] = now
     recent_runs_list = _recent_runs_cache["data"]
 
-    return (
-        cpu_text, ram_text, gpu_text, vram_text,
-        cpu_df, ram_df, gpu_df, vram_df,
-        prog_val, status_md, active_task,
-        avg_tps, avg_ttft, accuracy,
-        token_stats,
-        batch_prog_val, batch_status_md, batch_eta_str,
-        batch_summary_df,
-        new_smooth_cpu, new_smooth_gpu,
-        history_df, recent_runs_list,
-        batch_id_val, batch_done, batch_total, batch_current_name,
-        active_run_override,
-    )
+    return {
+        "cpu_text": cpu_text,
+        "ram_text": ram_text,
+        "gpu_text": gpu_text,
+        "vram_text": vram_text,
+        "cpu_df": cpu_df,
+        "ram_df": ram_df,
+        "gpu_df": gpu_df,
+        "vram_df": vram_df,
+        "prog_val": prog_val,
+        "status_md": status_md,
+        "active_task": active_task,
+        "avg_tps": avg_tps,
+        "avg_ttft": avg_ttft,
+        "accuracy": accuracy,
+        "token_stats": token_stats,
+        "batch_prog_val": batch_prog_val,
+        "batch_status_md": batch_status_md,
+        "batch_eta_str": batch_eta_str,
+        "batch_summary_df": batch_summary_df,
+        "new_smooth_cpu": new_smooth_cpu,
+        "new_smooth_gpu": new_smooth_gpu,
+        "history_df": history_df,
+        "recent_runs_list": recent_runs_list,
+        "batch_id_val": batch_id_val,
+        "batch_done": batch_done,
+        "batch_total": batch_total,
+        "batch_current_name": batch_current_name,
+        "active_run_override": active_run_override,
+        "metrics": metrics,
+    }
 
 
 def get_stats() -> dict:

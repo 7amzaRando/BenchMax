@@ -7,6 +7,14 @@ import { CopyButton } from '@/components/ui/copy-button'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import * as api from '@/lib/api'
 
+function getSyncStyle(status: string): string {
+  const isError = status.includes('Error') || status.includes('failed') || status.includes('❌') || status.includes('first') || status.includes('enter') || status.includes('Synced 0/')
+  const isSuccess = status.includes('✅')
+  if (isError) return 'text-sm px-3 py-2 rounded-md border bg-red-900/30 text-red-300 border-red-800 dark:text-red-300 text-red-700 dark:border-red-800 border-red-300'
+  if (isSuccess) return 'text-sm px-3 py-2 rounded-md border bg-green-900/30 text-green-300 border-green-800 dark:text-green-300 text-green-700 dark:border-green-800 border-green-300'
+  return 'text-sm px-3 py-2 rounded-md border bg-muted text-muted-foreground'
+}
+
 function Medal({ rank }: { rank: number }) {
   if (rank === 1) return <span className="font-mono text-sm w-8 inline-block text-center font-bold text-yellow-400">1st</span>
   if (rank === 2) return <span className="font-mono text-sm w-8 inline-block text-center font-bold text-gray-400">2nd</span>
@@ -244,7 +252,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
               <tr>
                 <th className="p-2 text-left w-12">Rank</th>
                 {COLS.map(c => (
-                  <th key={c.key} className={`p-2 text-left ${c.sortable ? 'cursor-pointer select-none hover:text-primary' : ''}`} onClick={() => c.sortable && toggleSort(c.key)}>
+                  <th key={c.key} className={`p-2 text-left ${c.sortable ? 'cursor-pointer select-none hover:text-primary' : ''}`} onClick={() => c.sortable && toggleSort(c.key)} onKeyDown={(e) => { if (c.sortable && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleSort(c.key) } }} tabIndex={0} role="columnheader" aria-sort={sortCol === c.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                     {c.label}
                     {c.sortable && sortCol === c.key && <span className="ml-1 text-primary">{sortDir === 'asc' ? '▲' : '▼'}</span>}
                   </th>
@@ -294,7 +302,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
             <Button onClick={handleSync} disabled={!apiKey.trim()}>{!apiKey.trim() ? 'Enter key, then click Save' : 'Sync to Online'}</Button>
           </div>
           {syncStatus && (
-            <div className={`text-sm px-3 py-2 rounded-md border ${syncStatus.includes('Error') || syncStatus.includes('failed') || syncStatus.includes('❌') || syncStatus.includes('first') || syncStatus.includes('enter') || syncStatus.includes('Synced 0/') ? 'bg-red-900/30 text-red-300 border-red-800 dark:text-red-300 text-red-700 dark:border-red-800 border-red-300' : syncStatus.includes('✅') ? 'bg-green-900/30 text-green-300 border-green-800 dark:text-green-300 text-green-700 dark:border-green-800 border-green-300' : 'bg-muted text-muted-foreground'}`}>
+            <div className={getSyncStyle(syncStatus)}>
               {syncStatus}
             </div>
           )}

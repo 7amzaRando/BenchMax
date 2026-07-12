@@ -26,10 +26,14 @@ class IFEvalBenchmark(BaseBenchmark):
                 "IFEval dataset not found. "
                 "Run 'scripts/fetch_ifeval.py' to download it."
             )
-        return self._load_json_cached(self.dataset_path)
+        data = self._load_json_cached(self.dataset_path)
+        for item in data:
+            if "task_id" not in item:
+                item["task_id"] = item.get("key", str(item.get("_id", "unknown")))
+        return data
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         instruction_ids = sample.get("instruction_id_list", [])
         kwargs_list = sample.get("kwargs", [])
 
@@ -53,7 +57,7 @@ class IFEvalBenchmark(BaseBenchmark):
             try:
                 instruction = cls(instr_id)
                 accepted = instruction.get_instruction_args_keys()
-                kw = dict(kwargs_list[index]) if index < len(kwargs_list) else {}
+                kw = dict(kwargs_list[index]) if index < len(kwargs_list) and isinstance(kwargs_list[index], dict) else {}
                 kw = {k: v for k, v in kw.items() if k in accepted and v is not None}
                 instruction.build_description(**kw)
                 args = instruction.get_instruction_args()

@@ -1,8 +1,7 @@
-import json, logging, os, sys, threading, asyncio, time, uuid, hashlib
+import json, logging, time
 from pathlib import Path
-import pandas as pd
-from fastapi import APIRouter, HTTPException, Query, Body, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -17,7 +16,7 @@ from backend.operations import (
     update_context_window, update_ctx_warning,
     _load_hf_token, _save_hf_token,
     save_lb_api_key, load_lb_settings, sync_to_online_leaderboard,
-    poll, get_batch_start_time, get_active_batch_id, _batch_queue,
+    poll, get_batch_start_time, get_active_batch_id,
     start_model_queue, get_model_queue_state, halt_model_queue, skip_current_model,
     get_stats, download_runtimes,
 )
@@ -70,9 +69,6 @@ class ResumeRequest(BaseModel):
     system_prompt: str = ""
     quick_test: bool = True
 
-class ExportFormat(BaseModel):
-    format: str = "CSV"
-
 class ConfirmClear(BaseModel):
     confirm_text: str
 
@@ -90,9 +86,6 @@ def _df_to_dict(df):
         return []
     return json.loads(df.to_json(orient="records"))
 
-def _gr_update(**kwargs):
-    return kwargs
-
 @router.post("/connect")
 def api_connect(req: ConnectRequest):
     """Connect to an LM Studio instance and list available models."""
@@ -109,6 +102,7 @@ def api_connect(req: ConnectRequest):
             "metadata": metadata,
         }
     except Exception as e:
+        logger.error(f"api_connect failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/connect/metadata")
@@ -127,6 +121,7 @@ def api_scan_datasets():
         df = _scan_datasets()
         return {"datasets": _df_to_dict(df)}
     except Exception as e:
+        logger.error(f"api_scan_datasets failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/datasets/install/{bench_name}")
@@ -136,6 +131,7 @@ def api_install_dataset(bench_name: str, req: InstallRequest = Body(default=Inst
         status = install_dataset(bench_name, req.hf_token)
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_install_dataset({bench_name}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/datasets/install-all")
@@ -145,12 +141,15 @@ def api_install_all(req: InstallRequest = Body(default=InstallRequest())):
         result = install_all_missing(req.hf_token)
         return {"status": result}
     except Exception as e:
+        logger.error(f"api_install_all failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/hf-token")
 def api_get_hf_token():
     """Return the stored HuggingFace API token (masked for UI display)."""
-    return {"token": _load_hf_token()}
+    token = _load_hf_token()
+    masked = token[:4] + "****" + token[-4:] if len(token) > 8 else "****" if token else ""
+    return {"token": masked}
 
 @router.post("/hf-token")
 def api_set_hf_token(req: HfTokenRequest):
@@ -167,6 +166,7 @@ def api_trigger_run(req: RunRequest):
         )
         return {"run_id": run_id, "message": msg}
     except Exception as e:
+        logger.error(f"api_trigger_run failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/batch/start")
@@ -185,6 +185,7 @@ def api_start_batch(req: BatchRequest):
             "batch_id_display": batch_id_display,
         }
     except Exception as e:
+        logger.error(f"api_start_batch failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/model-queue/start")
@@ -198,6 +199,7 @@ def api_start_model_queue(req: ModelQueueRequest):
         )
         return {"queue_id": queue_id, "message": msg}
     except Exception as e:
+        logger.error(f"api_start_model_queue failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/model-queue/active")
@@ -207,6 +209,7 @@ def api_active_model_queue():
         state = get_model_queue_state()
         return state
     except Exception as e:
+        logger.error(f"api_active_model_queue failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/model-queue/halt")
@@ -216,6 +219,7 @@ def api_halt_model_queue():
         status = halt_model_queue()
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_halt_model_queue failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/model-queue/skip")
@@ -225,6 +229,7 @@ def api_skip_model_queue():
         status = skip_current_model()
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_skip_model_queue failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/run/{run_id}/pause")
@@ -234,6 +239,7 @@ def api_pause_run(run_id: int):
         status = pause_run(run_id)
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_pause_run({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/run/{run_id}/resume")
@@ -243,6 +249,7 @@ def api_resume_run(run_id: int, req: ResumeRequest):
         status = resume_run(run_id, req.api_url, req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test)
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_resume_run({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/run/{run_id}/halt")
@@ -252,6 +259,7 @@ def api_halt_run(run_id: int):
         status = halt_run(run_id)
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_halt_run({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/run/{run_id}/status")
@@ -299,6 +307,7 @@ def api_run_status(run_id: int):
         finally:
             db.close()
     except Exception as e:
+        logger.error(f"api_run_status({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/runs")
@@ -308,6 +317,7 @@ def api_load_history():
         df = load_history()
         return {"runs": _df_to_dict(df)}
     except Exception as e:
+        logger.error(f"api_load_history failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/runs/{run_id}")
@@ -326,6 +336,7 @@ def api_load_run_details(run_id: int):
             "category_chart": _df_to_dict(cat_chart),
         }
     except Exception as e:
+        logger.error(f"api_load_run_details({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/runs/{run_id}/diff/{task_id:path}")
@@ -335,6 +346,7 @@ def api_generate_diff(run_id: int, task_id: str):
         html = generate_diff(str(run_id), task_id)
         return {"html": html}
     except Exception as e:
+        logger.error(f"api_generate_diff({run_id}, {task_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/recent-runs")
@@ -344,6 +356,7 @@ def api_recent_runs():
         choices = load_recent_runs()
         return {"runs": choices if isinstance(choices, list) else []}
     except Exception as e:
+        logger.error(f"api_recent_runs failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/analyze/{run_id}")
@@ -361,17 +374,18 @@ def api_analyze_run(run_id: int):
             "category_chart": _df_to_dict(cat_chart),
         }
     except Exception as e:
+        logger.error(f"api_analyze_run({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/batch/active")
 def api_active_batch():
     """Get progress of the currently active batch run."""
-    _active_batch_id = get_active_batch_id()
-    if not _active_batch_id:
+    batch_id_val = get_active_batch_id()
+    if not batch_id_val:
         return {"batch_id": None, "active": False}
     db = SessionLocal()
     try:
-        runs = db.query(Run).filter(Run.batch_id == _active_batch_id).order_by(Run.id).all()
+        runs = db.query(Run).filter(Run.batch_id == batch_id_val).order_by(Run.id).all()
         completed = sum(1 for r in runs if r.status in ("COMPLETED", "FAILED"))
         total = len(runs)
         current = None
@@ -390,7 +404,7 @@ def api_active_batch():
                 est = int(avg * total_remaining)
                 eta = f"{est // 60}m{est % 60}s" if est > 60 else f"~{est}s"
         return {
-            "batch_id": _active_batch_id,
+            "batch_id": batch_id_val,
             "active": True,
             "completed": completed,
             "total": total,
@@ -412,28 +426,31 @@ def api_batch_summary(batch_id: str):
             "latency_chart": _df_to_dict(latency_df),
         }
     except Exception as e:
+        logger.error(f"api_batch_summary({batch_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/export/runs/{run_id}")
-def api_export_results(run_id: int, format: str = Query("CSV")):
+def api_export_results(run_id: int, export_format: str = Query("CSV", alias="format")):
     """Export a single run's results as CSV or JSON file download."""
     try:
-        file_path, status = export_results(str(run_id), format)
+        file_path, status = export_results(str(run_id), export_format)
         if file_path:
             return FileResponse(file_path, filename=Path(file_path).name, media_type="application/octet-stream")
         return {"status": status, "file": None}
     except Exception as e:
+        logger.error(f"api_export_results({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/export/batch/{batch_id}")
-def api_export_batch(batch_id: str, format: str = Query("CSV")):
+def api_export_batch(batch_id: str, export_format: str = Query("CSV", alias="format")):
     """Export results for an entire batch as CSV or JSON file download."""
     try:
-        file_path, status = export_batch_results(batch_id, format)
+        file_path, status = export_batch_results(batch_id, export_format)
         if file_path:
             return FileResponse(file_path, filename=Path(file_path).name, media_type="application/octet-stream")
         return {"status": status, "file": None}
     except Exception as e:
+        logger.error(f"api_export_batch({batch_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/export/telemetry")
@@ -445,6 +462,7 @@ def api_export_telemetry():
             return FileResponse(file_path, filename=Path(file_path).name, media_type="application/octet-stream")
         return {"status": status, "file": None}
     except Exception as e:
+        logger.error(f"api_export_telemetry failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/export/history")
@@ -456,6 +474,7 @@ def api_export_history():
             return FileResponse(file_path, filename=Path(file_path).name, media_type="application/octet-stream")
         return {"status": status, "file": None}
     except Exception as e:
+        logger.error(f"api_export_history failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/comparison")
@@ -469,6 +488,7 @@ def api_comparison(run_ids: str = Query("")):
             "tokens": _df_to_dict(token_df),
         }
     except Exception as e:
+        logger.error(f"api_comparison failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/leaderboard")
@@ -478,6 +498,7 @@ def api_leaderboard():
         df = load_leaderboard()
         return {"leaderboard": _df_to_dict(df)}
     except Exception as e:
+        logger.error(f"api_leaderboard failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/leaderboard/{run_id}")
@@ -487,6 +508,7 @@ def api_delete_leaderboard(run_id: int):
         lb_df, status = delete_leaderboard_entry(str(run_id))
         return {"leaderboard": _df_to_dict(lb_df), "status": status}
     except Exception as e:
+        logger.error(f"api_delete_leaderboard({run_id}) failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/leaderboard/clear")
@@ -500,6 +522,7 @@ def api_clear_leaderboard(req: ConfirmClear):
             "status": status,
         }
     except Exception as e:
+        logger.error(f"api_clear_leaderboard failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/leaderboard/settings")
@@ -519,6 +542,7 @@ def api_sync_leaderboard(req: ApiKeyRequest = Body(default=ApiKeyRequest(api_key
         status = sync_to_online_leaderboard(1, api_key=req.api_key)
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_sync_leaderboard failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/telemetry")
@@ -528,6 +552,7 @@ def api_telemetry():
         metrics = get_system_metrics()
         return metrics
     except Exception as e:
+        logger.error(f"api_telemetry failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/telemetry/history")
@@ -539,19 +564,24 @@ def api_telemetry_history():
 def api_poll(active_run_id: int = Query(default=0)):
     """Combined polling endpoint: returns telemetry, run progress, and batch progress in one call."""
     try:
-        (_cpu_str, _ram_str, _gpu_str, _vram_str,
-         _cpu_df, _ram_df, _gpu_df, _vram_df,
-         prog_val, status_md, active_task,
-         avg_tps, avg_ttft, accuracy,
-         token_stats,
-         batch_prog_val, batch_status_md, batch_eta_str,
-         batch_summary_df,
-         _new_smooth_cpu, _new_smooth_gpu,
-         _history_df, _recent_runs,
-         batch_id_val, batch_done, batch_total, batch_current_name,
-         active_run_override) = poll(active_run_id or None)
-
-        metrics = get_system_metrics()
+        result = poll(active_run_id or None)
+        metrics = result["metrics"]
+        prog_val = result["prog_val"]
+        status_md = result["status_md"]
+        active_task = result["active_task"]
+        avg_tps = result["avg_tps"]
+        avg_ttft = result["avg_ttft"]
+        accuracy = result["accuracy"]
+        token_stats = result["token_stats"]
+        batch_prog_val = result["batch_prog_val"]
+        batch_status_md = result["batch_status_md"]
+        batch_eta_str = result["batch_eta_str"]
+        batch_summary_df = result["batch_summary_df"]
+        batch_id_val = result["batch_id_val"]
+        batch_done = result["batch_done"]
+        batch_total = result["batch_total"]
+        batch_current_name = result["batch_current_name"]
+        active_run_override = result["active_run_override"]
 
         return {
             "telemetry": {
@@ -588,8 +618,8 @@ def api_poll(active_run_id: int = Query(default=0)):
             "active_run_override": active_run_override,
         }
     except Exception as e:
-        logger.error(f"Poll error: {e}")
-        return {"error": str(e)}
+        logger.error(f"Poll error: {e}", exc_info=True)
+        return {"error": "Internal error"}
 
 @router.get("/context-window")
 def api_context_window(model_id: str = Query(""), metadata: str = Query("{}")):
@@ -597,10 +627,11 @@ def api_context_window(model_id: str = Query(""), metadata: str = Query("{}")):
     try:
         meta = json.loads(metadata) if metadata else {}
         result = update_context_window(model_id, meta)
-        value = result.get("value") if isinstance(result, dict) else (result.value if hasattr(result, "value") else "N/A")
+        value = result if isinstance(result, str) else result.get("value", "N/A") if isinstance(result, dict) else "N/A"
         return {"value": value}
     except Exception as e:
-        return {"value": "N/A", "error": str(e)}
+        logger.error(f"api_context_window failed: {e}", exc_info=True)
+        return {"value": "N/A", "error": "Internal error"}
 
 @router.get("/context-warning")
 def api_context_warning(model_id: str = Query(""), max_tokens: int = Query(2048), metadata: str = Query("{}")):
@@ -610,7 +641,8 @@ def api_context_warning(model_id: str = Query(""), max_tokens: int = Query(2048)
         warning = update_ctx_warning(model_id, max_tokens, meta)
         return {"warning": warning}
     except Exception as e:
-        return {"warning": "", "error": str(e)}
+        logger.error(f"api_context_warning failed: {e}", exc_info=True)
+        return {"warning": "", "error": "Internal error"}
 
 @router.get("/providers")
 def api_providers():
@@ -630,6 +662,7 @@ def api_download_runtimes():
         status = download_runtimes()
         return {"status": status}
     except Exception as e:
+        logger.error(f"api_download_runtimes failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -639,4 +672,5 @@ def api_get_stats():
     try:
         return get_stats()
     except Exception as e:
+        logger.error(f"api_get_stats failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

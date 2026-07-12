@@ -3,7 +3,7 @@
 # BenchMax
 
 ### Local LLM Benchmarking Suite
-**Evaluate any LLM against 21 standardized benchmarks — works with LM Studio, Ollama, OpenAI, and any OpenAI-compatible endpoint.**
+**Evaluate any LLM against 22 standardized benchmarks — works with LM Studio, Ollama, OpenAI, and any OpenAI-compatible endpoint.**
 
 <br>
 
@@ -14,7 +14,7 @@
 <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" />
 <br><br>
 
-<img src="https://img.shields.io/badge/21-Benchmarks-8b5cf6?style=for-the-badge" />
+<img src="https://img.shields.io/badge/22-Benchmarks-8b5cf6?style=for-the-badge" />
 <img src="https://img.shields.io/badge/8-API_Providers-06b6d4?style=for-the-badge" />
 <img src="https://img.shields.io/badge/All--Local-22c55e?style=for-the-badge" />
 
@@ -56,8 +56,8 @@ Created by [**Rando**](https://github.com/7amzaRando).
 <tr>
 <td width="50%">
 
-#### 21 Benchmarks
-HumanEval · MMLU-Pro · IFEval · AIME · BigCodeBench · BFCL · MCP-Bench · Safety · Aider Polyglot · LongBench-v2 · MMMU-Pro · LiveBench · BenchMax Personal · BenchMax Lite · BenchMax Code · BenchMax Reason · BenchMax Tectonic · Writing Speed Test · Coding Speed Test · TruthfulQA
+#### 22 Benchmarks
+HumanEval · MMLU-Pro · IFEval · AIME · BigCodeBench · BFCL · MCP-Bench · Safety · Aider Polyglot · LongBench-v2 · MMMU-Pro · LiveBench · LiveCodeBench · BenchMax Personal · BenchMax Lite · BenchMax Code · BenchMax Reason · BenchMax Tectonic · Writing Speed Test · Coding Speed Test · TruthfulQA
 
 </td>
 <td width="50%">
@@ -180,6 +180,7 @@ MMMU-Pro sends images to vision models via the API (base64 PNG, 1,200 samples)
 | **Writing Speed Test** | Creative writing | 5 | ~300 tokens per prompt, always correct |
 | **Coding Speed Test** | Code generation | 5 | ~300 tokens per prompt, always correct |
 | **TruthfulQA** | Truthfulness MCQ | 817 | A/B multiple choice |
+| **LiveCodeBench** | Live code generation | ~175 | `check_correctness_livecodebench()` |
 
 ---
 

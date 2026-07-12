@@ -1,5 +1,6 @@
 import logging
 import re
+import textwrap
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.sandbox.safe_executor import check_correctness_bigcodebench
@@ -31,12 +32,16 @@ class BigCodeBenchBenchmark(BaseBenchmark):
     def _extract_python_code(self, text: str, entry_point: str) -> str:
         if not text:
             return ""
-        matches = re.findall(r"```python\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE)
+        matches = re.findall(r"```python\r?\n(.*?)```", text, re.DOTALL | re.IGNORECASE)
         if matches:
-            return matches[0].strip()
-        matches = re.findall(r"```\s*(.*?)\s*```", text, re.DOTALL)
+            code = textwrap.dedent(matches[0])
+            if code.strip():
+                return code.strip()
+        matches = re.findall(r"```\r?\n(.*?)```", text, re.DOTALL)
         if matches:
-            return matches[0].strip()
+            code = textwrap.dedent(matches[0])
+            if code.strip():
+                return code.strip()
         lines = text.splitlines()
         code_lines = []
         for line in lines:
@@ -48,10 +53,29 @@ class BigCodeBenchBenchmark(BaseBenchmark):
                 code_lines.append(line)
             elif code_lines and len(code_lines) > 1:
                 return '\n'.join(code_lines).strip()
+        if entry_point:
+            pat = re.compile(r'def\s+' + re.escape(entry_point) + r'\s*\(', re.DOTALL)
+            m = pat.search(text)
+            if m:
+                start = m.start()
+                rest = text[start:]
+                depth = 0
+                func_lines = []
+                for line in rest.splitlines():
+                    stripped = line.strip()
+                    if not stripped and not func_lines:
+                        continue
+                    func_lines.append(line)
+                    if stripped.endswith(':'):
+                        depth += 1
+                    elif depth > 0 and stripped.startswith(('def ', 'class ', '@', '"""', "'''", 'async def')):
+                        break
+                if len(func_lines) > 1:
+                    return textwrap.dedent('\n'.join(func_lines))
         return text.strip()
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        prompt = sample["prompt"]
+        prompt = sample.get("prompt", "")
         entry_point = sample["entry_point"]
         test_suite = sample.get("test", "")
         task_id = sample["task_id"]

@@ -20,8 +20,8 @@ class MMLUProBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        options = sample["options"]
-        prompt = f"{sample['question']}\n\nOptions:\n"
+        options = sample.get("options", [])
+        prompt = f"{sample.get('question', '')}\n\nOptions:\n"
         for letter, opt in zip("ABCDEFGHIJ", options):
             prompt += f"  {letter}. {opt}\n"
         prompt += "\nAnswer with only the letter of the correct option."
@@ -39,14 +39,14 @@ class MMLUProBenchmark(BaseBenchmark):
         answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
         extracted = re.findall(r'\b([A-J])\b', answer_content)
         answer = extracted[-1] if extracted else None
-        correct = answer == sample["answer"]
+        correct = answer == sample.get("answer", "")
 
         return {
             "prompt": prompt,
             "raw_response": gen["raw_response"],
             "extracted_code": answer_content,
             "correct": correct,
-            "error_message": None if correct else f"Expected {sample['answer']}, got {answer}",
+            "error_message": None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
             "elapsed_time": gen["elapsed_time"],
             "tps": gen["tps"],
             "ttft": gen["ttft"],

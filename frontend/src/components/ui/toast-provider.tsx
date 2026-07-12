@@ -45,7 +45,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             }}
             className={cn(
               "fixed bottom-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-1 rounded-xl border p-4 shadow-xl transition-all duration-300 animate-fadeInUp",
-              variant === "default" && "bg-card border-border text-foreground",
               variant === "default" && "bg-card border-l-4 border-l-border text-foreground",
               variant === "success" && "bg-card border-l-4 border-l-emerald-500 text-foreground",
               variant === "error" && "bg-card border-l-4 border-l-red-500 text-foreground",

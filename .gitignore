@@ -26,6 +26,8 @@ records/*.csv
 records/.launches.json
 records/.hf_token
 records/.lb_settings
+
+# Tokens / secrets (legacy paths)
 data/.hf_token
 data/.lb_settings
 
@@ -46,6 +48,7 @@ Token-Stuff.md
 data/longbench_v2_full.json
 data/mmmu_pro_images/
 data/mmmu_pro_full.json
+data/livecodebench_full.json
 
 # Personal AI prompts (not part of the project)
 prompts/
@@ -88,14 +91,14 @@ Testing-*/
 
 # Ad-hoc debugging scripts
 test_*.py
-!test_benchmark.py
-!test_client.py
-!test_bfcl_quick.py
 
 # Old README (superseded by README.md)
 README-Old.md
 
 # Implementation plan (superseded by PROJECT_STATE.md)
 implementation_plan.md
+
+# Python egg info
+*.egg-info/
 
 

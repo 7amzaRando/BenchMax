@@ -83,7 +83,7 @@ class LiveBenchBenchmark(BaseBenchmark):
                 try:
                     instruction = cls(instr_id)
                     accepted = instruction.get_instruction_args_keys()
-                    kw = dict(kwargs_list[i]) if i < len(kwargs_list) else {}
+                    kw = dict(kwargs_list[i]) if i < len(kwargs_list) and isinstance(kwargs_list[i], dict) else {}
                     kw = {k: v for k, v in kw.items() if k in accepted and v is not None}
                     instruction.build_description(**kw)
                     args = instruction.get_instruction_args()

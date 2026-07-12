@@ -28,7 +28,7 @@ export function connectLMStudio(apiUrl: string, apiKey: string = '') {
 }
 
 export function getConnectionMetadata() {
-  return fetchJson<{ providers: Record<string, any>; benchmarks: [string, string][]; bench_names: string[]; context_length?: number; max_context_length?: number }>('/connect/metadata');
+  return fetchJson<{ providers: Record<string, any>; benchmarks: [string, string][]; bench_names: string[] }>('/connect/metadata');
 }
 
 export interface DatasetEntry {

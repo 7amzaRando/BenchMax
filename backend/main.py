@@ -32,7 +32,7 @@ else:
 app = FastAPI(
     title="BenchMax Core Engine",
     description="Backend coordinator for local LLM performance and correctness evaluations",
-    version="2.0"
+    version="alpha 1.0.1"
 )
 
 app.add_middleware(
