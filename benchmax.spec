@@ -5,58 +5,66 @@ block_cipher = None
 
 root_dir = os.path.abspath(".")
 
+def _data(src, dst):
+    """Add src→dst data file, skipping if src does not exist."""
+    path = os.path.join(root_dir, src)
+    if os.path.exists(path):
+        return (path, dst)
+    print(f"  [SKIP] {src} not found, will be downloaded on first use")
+    return None
+
 datas = [
-    # Mini datasets (bundled for Quick Test)
-    (os.path.join(root_dir, "data", "humaneval_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "mmlu_pro_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "ifeval_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "aime_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "bigcodebench_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "bigcodebench_hard_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "longbench_v2_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "mmmu_pro_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "livebench_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "livecodebench_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "personal_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "lite_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "code_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "reason_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "aider_polyglot_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "humaneval_full.json"), "data"),
-    (os.path.join(root_dir, "data", "aime_full.json"), "data"),
-    (os.path.join(root_dir, "data", "ifeval_full.json"), "data"),
-    (os.path.join(root_dir, "data", "bigcodebench_full.json"), "data"),
-    (os.path.join(root_dir, "data", "bigcodebench_hard_full.json"), "data"),
-    (os.path.join(root_dir, "data", "livebench_full.json"), "data"),
-    (os.path.join(root_dir, "data", "personal_full.json"), "data"),
-    (os.path.join(root_dir, "data", "lite_full.json"), "data"),
-    (os.path.join(root_dir, "data", "code_full.json"), "data"),
-    (os.path.join(root_dir, "data", "reason_full.json"), "data"),
-    (os.path.join(root_dir, "data", "tectonic_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "tectonic_full.json"), "data"),
-    (os.path.join(root_dir, "data", "aider_polyglot_full.json"), "data"),
-    (os.path.join(root_dir, "data", "mcp_bench", "mcp_bench_mini.json"), os.path.join("data", "mcp_bench")),
-    (os.path.join(root_dir, "data", "mcp_bench", "mcp_bench_full.json"), os.path.join("data", "mcp_bench")),
-    (os.path.join(root_dir, "data", "bfcl", "bfcl_mini.json"), os.path.join("data", "bfcl")),
-    (os.path.join(root_dir, "data", "bfcl", "bfcl_full.json"), os.path.join("data", "bfcl")),
-    (os.path.join(root_dir, "data", "safety", "safety_mini.json"), os.path.join("data", "safety")),
-    (os.path.join(root_dir, "data", "safety", "safety_full.json"), os.path.join("data", "safety")),
-    # Speed test datasets
-    (os.path.join(root_dir, "data", "writing_speed_test_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "writing_speed_test_full.json"), "data"),
-    (os.path.join(root_dir, "data", "coding_speed_test_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "coding_speed_test_full.json"), "data"),
-    # TruthfulQA datasets
-    (os.path.join(root_dir, "data", "truthfulqa_mini.json"), "data"),
-    (os.path.join(root_dir, "data", "truthfulqa_full.json"), "data"),
-    # MMMU-Pro full dataset
-    (os.path.join(root_dir, "data", "mmmu_pro_full.json"), "data"),
-    # LiveCodeBench full dataset
-    (os.path.join(root_dir, "data", "livecodebench_full.json"), "data"),
+    # Mini datasets (always bundled)
+    _data("data/humaneval_mini.json", "data"),
+    _data("data/mmlu_pro_mini.json", "data"),
+    _data("data/ifeval_mini.json", "data"),
+    _data("data/aime_mini.json", "data"),
+    _data("data/bigcodebench_mini.json", "data"),
+    _data("data/bigcodebench_hard_mini.json", "data"),
+    _data("data/longbench_v2_mini.json", "data"),
+    _data("data/mmmu_pro_mini.json", "data"),
+    _data("data/livebench_mini.json", "data"),
+    _data("data/livecodebench_mini.json", "data"),
+    _data("data/personal_mini.json", "data"),
+    _data("data/lite_mini.json", "data"),
+    _data("data/code_mini.json", "data"),
+    _data("data/reason_mini.json", "data"),
+    _data("data/aider_polyglot_mini.json", "data"),
+    _data("data/tectonic_mini.json", "data"),
+    _data("data/mcp_bench/mcp_bench_mini.json", "data/mcp_bench"),
+    _data("data/bfcl/bfcl_mini.json", "data/bfcl"),
+    _data("data/safety/safety_mini.json", "data/safety"),
+    _data("data/writing_speed_test_mini.json", "data"),
+    _data("data/coding_speed_test_mini.json", "data"),
+    _data("data/truthfulqa_mini.json", "data"),
+    # Full datasets (fetched on first use via dataset installer)
+    _data("data/humaneval_full.json", "data"),
+    _data("data/aime_full.json", "data"),
+    _data("data/ifeval_full.json", "data"),
+    _data("data/bigcodebench_full.json", "data"),
+    _data("data/bigcodebench_hard_full.json", "data"),
+    _data("data/livebench_full.json", "data"),
+    _data("data/personal_full.json", "data"),
+    _data("data/lite_full.json", "data"),
+    _data("data/code_full.json", "data"),
+    _data("data/reason_full.json", "data"),
+    _data("data/tectonic_full.json", "data"),
+    _data("data/aider_polyglot_full.json", "data"),
+    _data("data/mcp_bench/mcp_bench_full.json", "data/mcp_bench"),
+    _data("data/bfcl/bfcl_full.json", "data/bfcl"),
+    _data("data/safety/safety_full.json", "data/safety"),
+    _data("data/writing_speed_test_full.json", "data"),
+    _data("data/coding_speed_test_full.json", "data"),
+    _data("data/truthfulqa_full.json", "data"),
+    _data("data/mmmu_pro_full.json", "data"),
+    _data("data/livecodebench_full.json", "data"),
     # Frontend dist (SPA static files)
-    (os.path.join(root_dir, "frontend", "dist", "index.html"), os.path.join("frontend", "dist")),
-    (os.path.join(root_dir, "frontend", "dist", "assets"), os.path.join("frontend", "dist", "assets")),
+    _data("frontend/dist/index.html", "frontend/dist"),
+    _data("frontend/dist/assets", "frontend/dist/assets"),
 ]
+
+# Filter out None entries (missing files)
+datas = [d for d in datas if d is not None]
 
 a = Analysis(
     ['benchmax_server.py'],
