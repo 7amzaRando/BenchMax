@@ -484,6 +484,26 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
                 <div className="font-mono text-sm mt-0.5 truncate">{queueState.message || '—'}</div>
               </div>
             </div>
+            {queueState.accuracy !== undefined && (
+              <>
+                {queueState.total_samples > 0 && (
+                  <Progress value={((queueState.sample_progress || 0) / queueState.total_samples) * 100} className="w-full h-1.5" variant="gradient" />
+                )}
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { label: 'Throughput', value: queueState.avg_tps },
+                    { label: 'TTFT', value: queueState.avg_ttft },
+                    { label: 'Accuracy', value: queueState.accuracy },
+                    { label: 'Tokens', value: queueState.token_stats || '—' },
+                  ].map(m => (
+                    <div key={m.label} className="px-3 py-2 rounded-lg bg-card/60 border border-border/60">
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.label}</div>
+                      <div className="font-mono text-sm mt-0.5">{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

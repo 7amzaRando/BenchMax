@@ -317,6 +317,12 @@ export function getActiveModelQueue() {
     current_benchmark: string;
     status: string;
     message: string;
+    sample_progress?: number;
+    total_samples?: number;
+    accuracy?: string;
+    avg_tps?: number;
+    avg_ttft?: number;
+    token_stats?: string;
   }>('/model-queue/active');
 }
 

@@ -640,6 +640,7 @@ def _run_model_queue_in_thread(
 
                 with _model_queue_lock:
                     _model_queue_state["current_benchmark"] = f"{model_id} — {bn} ({bi+1}/{len(benches)})"
+                    _model_queue_state["run_id"] = run_ids_for_model[bi]
 
                 db2 = SessionLocal()
                 try:
@@ -692,6 +693,7 @@ def _run_model_queue_in_thread(
             if not _queue_halted():
                 with _model_queue_lock:
                     _model_queue_state["current_benchmark"] = f"Unloading {model_id}..."
+                    _model_queue_state.pop("run_id", None)
                 try:
                     loop.run_until_complete(client.unload_model(model_id))
                     time.sleep(1)
@@ -734,6 +736,7 @@ def _run_model_queue_in_thread(
             with _model_queue_lock:
                 _model_queue_state["status"] = "idle"
                 _model_queue_state["queue_id"] = None
+                _model_queue_state.pop("run_id", None)
             with _batch_lock:
                 global _active_batch_id, _batch_start_time
                 _active_batch_id = None
@@ -773,7 +776,33 @@ def start_model_queue(
 
 def get_model_queue_state() -> dict:
     with _model_queue_lock:
-        return dict(_model_queue_state)
+        state = dict(_model_queue_state)
+    run_id = state.get("run_id")
+    if run_id and state.get("status") in ("running", "completed", "failed"):
+        db = SessionLocal()
+        try:
+            run = db.query(Run).options(joinedload(Run.results)).filter(Run.id == run_id).first()
+            if run:
+                state["sample_progress"] = run.current_index or 0
+                state["total_samples"] = run.total_samples or 0
+                results = run.results
+                if results:
+                    n = len(results)
+                    ok = sum(1 for r in results if r.correct)
+                    state["accuracy"] = f"{round(ok/n*100, 1) if n else 0}%"
+                    tps_vals = [r.tps for r in results if r.tps and r.tps > 0]
+                    state["avg_tps"] = round(sum(tps_vals) / len(tps_vals), 1) if tps_vals else 0.0
+                    ttft_vals = [r.ttft for r in results if r.ttft and r.ttft > 0]
+                    state["avg_ttft"] = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0.0
+                    total_tk = sum((r.thinking_tokens or 0) + (r.response_tokens or 0) for r in results)
+                    think_tk = sum(r.thinking_tokens or 0 for r in results)
+                    resp_tk = sum(r.response_tokens or 0 for r in results)
+                    think_pct = round(think_tk / total_tk * 100, 1) if total_tk else 0.0
+                    resp_pct = round(resp_tk / total_tk * 100, 1) if total_tk else 0.0
+                    state["token_stats"] = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {total_tk}"
+        finally:
+            db.close()
+    return state
 
 
 def halt_model_queue() -> str:
