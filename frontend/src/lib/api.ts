@@ -90,7 +90,6 @@ export function startRun(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
-  quantization?: string;
 }) {
   return fetchJson<RunResponse>('/run/start', {
     method: 'POST',
@@ -107,7 +106,6 @@ export function startBatch(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
-  quantization?: string;
 }) {
   return fetchJson<BatchResponse>('/batch/start', {
     method: 'POST',
@@ -303,7 +301,6 @@ export function startModelQueue(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
-  quantization?: string;
 }) {
   return fetchJson<ModelQueueResponse>('/model-queue/start', {
     method: 'POST',
@@ -351,7 +348,7 @@ export interface LeaderboardEntry {
   Passed: string;
   Tokens: number;
   Date: string;
-  Quantization: string;
+  QuickTest?: boolean;
 }
 
 export function loadLeaderboard() {

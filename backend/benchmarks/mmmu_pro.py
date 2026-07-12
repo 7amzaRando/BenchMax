@@ -1,4 +1,5 @@
 import re
+import string as string_module
 import base64
 import logging
 from pathlib import Path
@@ -40,8 +41,10 @@ class MMMUProBenchmark(BaseBenchmark):
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         options = sample["options"]
+        num_options = len(options)
+        letters = list(string_module.ascii_uppercase[:num_options])
         prompt = f"{sample['question']}\n\nOptions:\n"
-        for letter, opt in zip("ABCDEFGHIJ", options):
+        for letter, opt in zip(letters, options):
             prompt += f"  {letter}. {opt}\n"
         prompt += "\nAnswer with only the letter of the correct option."
 
@@ -59,7 +62,8 @@ class MMMUProBenchmark(BaseBenchmark):
 
         ac = gen.get("answer_content", "").strip()
         answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
-        extracted = re.findall(r'\b([A-J])\b', answer_content)
+        pattern = r'\b([' + ''.join(letters) + r'])\b'
+        extracted = re.findall(pattern, answer_content)
         answer = extracted[-1] if extracted else None
         correct = answer == sample["answer"]
 

@@ -41,7 +41,6 @@ class RunRequest(BaseModel):
     max_tokens: int = 2048
     system_prompt: str = ""
     quick_test: bool = True
-    quantization: str = ""
 
 class BatchRequest(BaseModel):
     model: str
@@ -52,7 +51,6 @@ class BatchRequest(BaseModel):
     max_tokens: int = 2048
     system_prompt: str = ""
     quick_test: bool = True
-    quantization: str = ""
 
 class ModelQueueRequest(BaseModel):
     models: list[str]
@@ -63,7 +61,6 @@ class ModelQueueRequest(BaseModel):
     max_tokens: int = 2048
     system_prompt: str = ""
     quick_test: bool = True
-    quantization: str = ""
 
 class ResumeRequest(BaseModel):
     api_url: str
@@ -98,6 +95,7 @@ def _gr_update(**kwargs):
 
 @router.post("/connect")
 def api_connect(req: ConnectRequest):
+    """Connect to an LM Studio instance and list available models."""
     try:
         status_str, models_df, model_choices, metadata = connect_lm_studio(req.api_url, req.api_key)
         models = _df_to_dict(models_df)
@@ -115,6 +113,7 @@ def api_connect(req: ConnectRequest):
 
 @router.get("/connect/metadata")
 def api_get_metadata():
+    """Return available providers, benchmarks, and benchmark names for the UI connection tab."""
     return {
         "providers": PROVIDER_PRESETS,
         "benchmarks": BENCHMARKS,
@@ -123,6 +122,7 @@ def api_get_metadata():
 
 @router.get("/datasets")
 def api_scan_datasets():
+    """Scan the data/ directory and report which datasets are installed."""
     try:
         df = _scan_datasets()
         return {"datasets": _df_to_dict(df)}
@@ -131,6 +131,7 @@ def api_scan_datasets():
 
 @router.post("/datasets/install/{bench_name}")
 def api_install_dataset(bench_name: str, req: InstallRequest = Body(default=InstallRequest())):
+    """Download and install the full dataset for a given benchmark."""
     try:
         status = install_dataset(bench_name, req.hf_token)
         return {"status": status}
@@ -139,6 +140,7 @@ def api_install_dataset(bench_name: str, req: InstallRequest = Body(default=Inst
 
 @router.post("/datasets/install-all")
 def api_install_all(req: InstallRequest = Body(default=InstallRequest())):
+    """Install all missing datasets at once."""
     try:
         result = install_all_missing(req.hf_token)
         return {"status": result}
@@ -147,19 +149,21 @@ def api_install_all(req: InstallRequest = Body(default=InstallRequest())):
 
 @router.get("/hf-token")
 def api_get_hf_token():
+    """Return the stored HuggingFace API token (masked for UI display)."""
     return {"token": _load_hf_token()}
 
 @router.post("/hf-token")
 def api_set_hf_token(req: HfTokenRequest):
+    """Save a HuggingFace API token for dataset downloads."""
     return {"status": _save_hf_token(req.token)}
 
 @router.post("/run/start")
 def api_trigger_run(req: RunRequest):
+    """Start a single benchmark run with the given model and parameters."""
     try:
         run_id, msg = trigger_run(
             req.model, req.benchmark, req.api_url, req.api_key,
             req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            quantization=req.quantization,
         )
         return {"run_id": run_id, "message": msg}
     except Exception as e:
@@ -167,11 +171,11 @@ def api_trigger_run(req: RunRequest):
 
 @router.post("/batch/start")
 def api_start_batch(req: BatchRequest):
+    """Start a batch of benchmarks (multiple benchmarks, single model)."""
     try:
         first_run_id, batch_id, msg, summary_df, batch_id_display = start_batch(
             req.model, req.benchmarks, req.api_url, req.api_key,
             req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            quantization=req.quantization,
         )
         return {
             "run_id": first_run_id,
@@ -185,12 +189,12 @@ def api_start_batch(req: BatchRequest):
 
 @router.post("/model-queue/start")
 def api_start_model_queue(req: ModelQueueRequest):
+    """Start a model queue run (multiple models, multiple benchmarks, sequential)."""
     try:
         model_benchmarks = [(m, req.benchmarks) for m in req.models]
         queue_id, msg = start_model_queue(
             model_benchmarks, req.api_url, req.api_key,
             req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            quantization=req.quantization,
         )
         return {"queue_id": queue_id, "message": msg}
     except Exception as e:
@@ -198,6 +202,7 @@ def api_start_model_queue(req: ModelQueueRequest):
 
 @router.get("/model-queue/active")
 def api_active_model_queue():
+    """Get the current state of the model queue (if active)."""
     try:
         state = get_model_queue_state()
         return state
@@ -206,6 +211,7 @@ def api_active_model_queue():
 
 @router.post("/model-queue/halt")
 def api_halt_model_queue():
+    """Halt the currently running model queue and unload the active model."""
     try:
         status = halt_model_queue()
         return {"status": status}
@@ -214,6 +220,7 @@ def api_halt_model_queue():
 
 @router.post("/model-queue/skip")
 def api_skip_model_queue():
+    """Skip the currently running model and advance to the next in the queue."""
     try:
         status = skip_current_model()
         return {"status": status}
@@ -222,6 +229,7 @@ def api_skip_model_queue():
 
 @router.post("/run/{run_id}/pause")
 def api_pause_run(run_id: int):
+    """Pause an active benchmark run. Can be resumed later."""
     try:
         status = pause_run(run_id)
         return {"status": status}
@@ -230,6 +238,7 @@ def api_pause_run(run_id: int):
 
 @router.post("/run/{run_id}/resume")
 def api_resume_run(run_id: int, req: ResumeRequest):
+    """Resume a previously paused benchmark run."""
     try:
         status = resume_run(run_id, req.api_url, req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test)
         return {"status": status}
@@ -238,6 +247,7 @@ def api_resume_run(run_id: int, req: ResumeRequest):
 
 @router.post("/run/{run_id}/halt")
 def api_halt_run(run_id: int):
+    """Halt (terminate) a benchmark run. Cannot be resumed."""
     try:
         status = halt_run(run_id)
         return {"status": status}
@@ -246,6 +256,7 @@ def api_halt_run(run_id: int):
 
 @router.get("/run/{run_id}/status")
 def api_run_status(run_id: int):
+    """Get live status and aggregated metrics for a benchmark run."""
     try:
         db = SessionLocal()
         try:
@@ -292,6 +303,7 @@ def api_run_status(run_id: int):
 
 @router.get("/runs")
 def api_load_history():
+    """Load the full history of all completed/in-progress runs."""
     try:
         df = load_history()
         return {"runs": _df_to_dict(df)}
@@ -300,6 +312,7 @@ def api_load_history():
 
 @router.get("/runs/{run_id}")
 def api_load_run_details(run_id: int):
+    """Load detailed results, token charts, and histograms for a single run."""
     try:
         summary, samples_df, failed_choices, token_df, ttft_hist, tps_hist, cat_chart = load_run_details(str(run_id))
         return {
@@ -317,6 +330,7 @@ def api_load_run_details(run_id: int):
 
 @router.get("/runs/{run_id}/diff/{task_id:path}")
 def api_generate_diff(run_id: int, task_id: str):
+    """Generate a unified diff between the expected answer and model output for a specific task."""
     try:
         html = generate_diff(str(run_id), task_id)
         return {"html": html}
@@ -325,6 +339,7 @@ def api_generate_diff(run_id: int, task_id: str):
 
 @router.get("/recent-runs")
 def api_recent_runs():
+    """Return a list of the most recent run IDs for the dropdown selector."""
     try:
         choices = load_recent_runs()
         return {"runs": choices if isinstance(choices, list) else []}
@@ -333,6 +348,7 @@ def api_recent_runs():
 
 @router.get("/analyze/{run_id}")
 def api_analyze_run(run_id: int):
+    """Analyze a completed run with summary, charts, and per-sample breakdown."""
     try:
         summary, samples_df, failed_choices, token_df, ttft_hist, tps_hist, cat_chart = analyze_run(str(run_id))
         return {
@@ -349,6 +365,7 @@ def api_analyze_run(run_id: int):
 
 @router.get("/batch/active")
 def api_active_batch():
+    """Get progress of the currently active batch run."""
     _active_batch_id = get_active_batch_id()
     if not _active_batch_id:
         return {"batch_id": None, "active": False}
@@ -386,6 +403,7 @@ def api_active_batch():
 
 @router.get("/batch/{batch_id}")
 def api_batch_summary(batch_id: str):
+    """Get the summary, accuracy chart, and latency chart for a batch."""
     try:
         summary_df, chart_df, latency_df = load_batch_summary(batch_id)
         return {
@@ -398,6 +416,7 @@ def api_batch_summary(batch_id: str):
 
 @router.get("/export/runs/{run_id}")
 def api_export_results(run_id: int, format: str = Query("CSV")):
+    """Export a single run's results as CSV or JSON file download."""
     try:
         file_path, status = export_results(str(run_id), format)
         if file_path:
@@ -408,6 +427,7 @@ def api_export_results(run_id: int, format: str = Query("CSV")):
 
 @router.get("/export/batch/{batch_id}")
 def api_export_batch(batch_id: str, format: str = Query("CSV")):
+    """Export results for an entire batch as CSV or JSON file download."""
     try:
         file_path, status = export_batch_results(batch_id, format)
         if file_path:
@@ -418,6 +438,7 @@ def api_export_batch(batch_id: str, format: str = Query("CSV")):
 
 @router.get("/export/telemetry")
 def api_export_telemetry():
+    """Export telemetry history as a CSV file download."""
     try:
         file_path, status = export_telemetry()
         if file_path:
@@ -428,6 +449,7 @@ def api_export_telemetry():
 
 @router.get("/export/history")
 def api_export_history():
+    """Export all run history as a CSV file download."""
     try:
         file_path, status = export_all_history()
         if file_path:
@@ -438,6 +460,7 @@ def api_export_history():
 
 @router.get("/comparison")
 def api_comparison(run_ids: str = Query("")):
+    """Compare accuracy, latency, and tokens across multiple runs by comma-separated IDs."""
     try:
         acc_df, latency_df, token_df = load_cross_comparison(run_ids)
         return {
@@ -450,6 +473,7 @@ def api_comparison(run_ids: str = Query("")):
 
 @router.get("/leaderboard")
 def api_leaderboard():
+    """Get the local leaderboard with all completed runs."""
     try:
         df = load_leaderboard()
         return {"leaderboard": _df_to_dict(df)}
@@ -458,6 +482,7 @@ def api_leaderboard():
 
 @router.delete("/leaderboard/{run_id}")
 def api_delete_leaderboard(run_id: int):
+    """Delete a single entry from the leaderboard by run ID."""
     try:
         lb_df, status = delete_leaderboard_entry(str(run_id))
         return {"leaderboard": _df_to_dict(lb_df), "status": status}
@@ -466,6 +491,7 @@ def api_delete_leaderboard(run_id: int):
 
 @router.post("/leaderboard/clear")
 def api_clear_leaderboard(req: ConfirmClear):
+    """Clear the entire run history and leaderboard (requires confirmation text)."""
     try:
         history_df, lb_df, status = clear_all_history(req.confirm_text)
         return {
@@ -478,14 +504,17 @@ def api_clear_leaderboard(req: ConfirmClear):
 
 @router.get("/leaderboard/settings")
 def api_lb_settings():
+    """Get the stored online leaderboard sync API key."""
     return {"api_key": load_lb_settings()}
 
 @router.post("/leaderboard/settings")
 def api_save_lb_settings(req: ApiKeyRequest):
+    """Save the online leaderboard sync API key."""
     return {"status": save_lb_api_key(req.api_key)}
 
 @router.post("/leaderboard/sync")
 def api_sync_leaderboard(req: ApiKeyRequest = Body(default=ApiKeyRequest(api_key=""))):
+    """Sync the local leaderboard to the configured online endpoint."""
     try:
         status = sync_to_online_leaderboard(1, api_key=req.api_key)
         return {"status": status}
@@ -494,6 +523,7 @@ def api_sync_leaderboard(req: ApiKeyRequest = Body(default=ApiKeyRequest(api_key
 
 @router.get("/telemetry")
 def api_telemetry():
+    """Get the latest system telemetry snapshot (CPU, RAM, GPU, VRAM)."""
     try:
         metrics = get_system_metrics()
         return metrics
@@ -502,10 +532,12 @@ def api_telemetry():
 
 @router.get("/telemetry/history")
 def api_telemetry_history():
+    """Return the last 100 telemetry history entries for chart display."""
     return {"history": operations.telemetry_history[-100:]}
 
 @router.get("/poll")
 def api_poll(active_run_id: int = Query(default=0)):
+    """Combined polling endpoint: returns telemetry, run progress, and batch progress in one call."""
     try:
         (_cpu_str, _ram_str, _gpu_str, _vram_str,
          _cpu_df, _ram_df, _gpu_df, _vram_df,
@@ -561,6 +593,7 @@ def api_poll(active_run_id: int = Query(default=0)):
 
 @router.get("/context-window")
 def api_context_window(model_id: str = Query(""), metadata: str = Query("{}")):
+    """Get the context window size for a given model from LM Studio metadata."""
     try:
         meta = json.loads(metadata) if metadata else {}
         result = update_context_window(model_id, meta)
@@ -571,6 +604,7 @@ def api_context_window(model_id: str = Query(""), metadata: str = Query("{}")):
 
 @router.get("/context-warning")
 def api_context_warning(model_id: str = Query(""), max_tokens: int = Query(2048), metadata: str = Query("{}")):
+    """Check if the requested max_tokens exceeds the model's context window and return a warning."""
     try:
         meta = json.loads(metadata) if metadata else {}
         warning = update_ctx_warning(model_id, max_tokens, meta)
@@ -580,15 +614,18 @@ def api_context_warning(model_id: str = Query(""), max_tokens: int = Query(2048)
 
 @router.get("/providers")
 def api_providers():
+    """Return the list of built-in provider presets (URLs and API key requirements)."""
     return {"providers": PROVIDER_PRESETS}
 
 @router.get("/benchmarks")
 def api_benchmarks():
+    """Return the list of all available benchmarks with display labels and internal names."""
     benchmarks = [{"label": b[0], "name": b[1]} for b in BENCHMARKS]
     return {"benchmarks": benchmarks}
 
 @router.post("/runtimes/download")
 def api_download_runtimes():
+    """Download portable runtimes (Go, Rust, GCC, Java, Node) for Aider Polyglot benchmarks."""
     try:
         status = download_runtimes()
         return {"status": status}
@@ -598,6 +635,7 @@ def api_download_runtimes():
 
 @router.get("/stats")
 def api_get_stats():
+    """Return aggregate statistics: total runs, tokens, models tested, best accuracy."""
     try:
         return get_stats()
     except Exception as e:

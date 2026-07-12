@@ -80,9 +80,9 @@ class IFEvalBenchmark(BaseBenchmark):
             "ttft": gen["ttft"],
             "thinking_tokens": gen["thinking_tokens"],
             "response_tokens": gen["response_tokens"],
-            "scoring_details": json.dumps({
+            "scoring_details": {
                 "follow_instruction_list": is_following,
                 "instruction_id_list": instruction_ids,
                 "strict_correct": len(failed) == 0,
-            }),
+            },
         }

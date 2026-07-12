@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark, resolve_data_file
@@ -6,11 +5,6 @@ from backend.lm_studio.client import LMStudioClient
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
-
-PROMPT_CATEGORIES = {
-    "short": "Short (~300 tokens)",
-    "medium": "Medium (~300 tokens)",
-}
 
 
 class WritingSpeedTestBenchmark(BaseBenchmark):
@@ -47,24 +41,26 @@ class WritingSpeedTestBenchmark(BaseBenchmark):
             model_name=model_name,
         )
 
+        raw_response = gen.get("raw_response", "")
         total_tokens = (gen.get("thinking_tokens") or 0) + (gen.get("response_tokens") or 0)
+        correct = bool(raw_response.strip())
 
         return {
             "prompt": prompt,
-            "raw_response": gen.get("raw_response", ""),
+            "raw_response": raw_response,
             "extracted_code": "",
-            "correct": True,
-            "error_message": None,
+            "correct": correct,
+            "error_message": None if correct else "Empty response",
             "elapsed_time": gen.get("elapsed_time", 0.0),
             "tps": gen.get("tps", 0.0),
             "ttft": gen.get("ttft", 0.0),
             "thinking_tokens": gen.get("thinking_tokens", 0),
             "response_tokens": gen.get("response_tokens", 0),
-            "scoring_details": json.dumps({
+            "scoring_details": {
                 "category": category,
                 "target_tokens": sample.get("target_tokens", 300),
                 "generated_tokens": total_tokens,
-            }),
+            },
         }
 
 
@@ -102,22 +98,24 @@ class CodingSpeedTestBenchmark(BaseBenchmark):
             model_name=model_name,
         )
 
+        raw_response = gen.get("raw_response", "")
         total_tokens = (gen.get("thinking_tokens") or 0) + (gen.get("response_tokens") or 0)
+        correct = bool(raw_response.strip())
 
         return {
             "prompt": prompt,
-            "raw_response": gen.get("raw_response", ""),
+            "raw_response": raw_response,
             "extracted_code": "",
-            "correct": True,
-            "error_message": None,
+            "correct": correct,
+            "error_message": None if correct else "Empty response",
             "elapsed_time": gen.get("elapsed_time", 0.0),
             "tps": gen.get("tps", 0.0),
             "ttft": gen.get("ttft", 0.0),
             "thinking_tokens": gen.get("thinking_tokens", 0),
             "response_tokens": gen.get("response_tokens", 0),
-            "scoring_details": json.dumps({
+            "scoring_details": {
                 "category": category,
                 "target_tokens": sample.get("target_tokens", 300),
                 "generated_tokens": total_tokens,
-            }),
+            },
         }

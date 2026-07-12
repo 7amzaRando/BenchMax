@@ -1,0 +1,105 @@
+[
+  {
+    "question_title": "Two Sum",
+    "question_content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\nExample 1:\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n\nExample 2:\nInput: nums = [3,2,4], target = 6\nOutput: [1,2]\n\nExample 3:\nInput: nums = [3,3], target = 6\nOutput: [0,1]\n\nConstraints:\n2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nOnly one valid answer exists.",
+    "platform": "leetcode",
+    "question_id": "1",
+    "contest_id": "N/A",
+    "contest_date": "2024-06-01T00:00:00",
+    "starter_code": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:",
+    "difficulty": "easy",
+    "public_test_cases": [
+      {"input": "[2,7,11,15]\n9", "output": "[0, 1]", "testtype": "functional"},
+      {"input": "[3,2,4]\n6", "output": "[1, 2]", "testtype": "functional"},
+      {"input": "[3,3]\n6", "output": "[0, 1]", "testtype": "functional"}
+    ],
+    "private_test_cases": [
+      {"input": "[-1,-2,-3,-4,-5]\n-8", "output": "[2, 4]", "testtype": "functional"},
+      {"input": "[1,2,3,4,5,6]\n10", "output": "[3, 5]", "testtype": "functional"}
+    ],
+    "metadata": {"func_name": "twoSum"},
+    "input_output": "{\"inputs\": [\"[2,7,11,15]\\n9\", \"[3,2,4]\\n6\", \"[3,3]\\n6\", \"[-1,-2,-3,-4,-5]\\n-8\", \"[1,2,3,4,5,6]\\n10\"], \"outputs\": [\"[0, 1]\", \"[1, 2]\", \"[0, 1]\", \"[2, 4]\", \"[3, 5]\"], \"fn_name\": \"twoSum\"}"
+  },
+  {
+    "question_title": "Palindrome Number",
+    "question_content": "Given an integer x, return true if x is a palindrome, and false otherwise.\n\nExample 1:\nInput: x = 121\nOutput: true\n\nExample 2:\nInput: x = -121\nOutput: false\nExplanation: From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome.\n\nExample 3:\nInput: x = 10\nOutput: false\nExplanation: Reads 01 from right to left. Therefore it is not a palindrome.\n\nConstraints:\n-2^31 <= x <= 2^31 - 1",
+    "platform": "leetcode",
+    "question_id": "9",
+    "contest_id": "N/A",
+    "contest_date": "2024-06-01T00:00:00",
+    "starter_code": "class Solution:\n    def isPalindrome(self, x: int) -> bool:",
+    "difficulty": "easy",
+    "public_test_cases": [
+      {"input": "121", "output": "true", "testtype": "functional"},
+      {"input": "-121", "output": "false", "testtype": "functional"},
+      {"input": "10", "output": "false", "testtype": "functional"}
+    ],
+    "private_test_cases": [
+      {"input": "0", "output": "true", "testtype": "functional"},
+      {"input": "12321", "output": "true", "testtype": "functional"}
+    ],
+    "metadata": {"func_name": "isPalindrome"},
+    "input_output": "{\"inputs\": [\"121\", \"-121\", \"10\", \"0\", \"12321\"], \"outputs\": [\"true\", \"false\", \"false\", \"true\", \"true\"], \"fn_name\": \"isPalindrome\"}"
+  },
+  {
+    "question_title": "A+B",
+    "question_content": "Given two integers a and b, output their sum.\n\nInput\nThe first line contains two integers a and b separated by a space.\n\nOutput\nOutput a single integer — the sum of a and b.\n\nExample:\nInput: 3 5\nOutput: 8\n\nConstraints:\n-10^9 <= a, b <= 10^9",
+    "platform": "codeforces",
+    "question_id": "1A",
+    "contest_id": "1",
+    "contest_date": "2024-06-01T00:00:00",
+    "starter_code": "",
+    "difficulty": "easy",
+    "public_test_cases": [
+      {"input": "3 5", "output": "8", "testtype": "stdin"},
+      {"input": "0 0", "output": "0", "testtype": "stdin"},
+      {"input": "-5 10", "output": "5", "testtype": "stdin"}
+    ],
+    "private_test_cases": [
+      {"input": "1000000000 1", "output": "1000000001", "testtype": "stdin"},
+      {"input": "-1000000000 -1000000000", "output": "-2000000000", "testtype": "stdin"}
+    ],
+    "metadata": {},
+    "input_output": "{\"inputs\": [\"3 5\", \"0 0\", \"-5 10\", \"1000000000 1\", \"-1000000000 -1000000000\"], \"outputs\": [\"8\", \"0\", \"5\", \"1000000001\", \"-2000000000\"], \"fn_name\": null}"
+  },
+  {
+    "question_title": "Reverse String",
+    "question_content": "Write a function that reverses a string. The input string is given as an array of characters s.\n\nYou must do this by modifying the input array in-place with O(1) extra memory.\n\nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n\nConstraints:\n1 <= s.length <= 10^5\ns[i] is a printable ascii character.",
+    "platform": "leetcode",
+    "question_id": "344",
+    "contest_id": "N/A",
+    "contest_date": "2024-06-01T00:00:00",
+    "starter_code": "class Solution:\n    def reverseString(self, s: List[str]) -> None:",
+    "difficulty": "easy",
+    "public_test_cases": [
+      {"input": "[\"h\",\"e\",\"l\",\"l\",\"o\"]", "output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]", "testtype": "functional"},
+      {"input": "[\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]", "output": "[\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]", "testtype": "functional"}
+    ],
+    "private_test_cases": [
+      {"input": "[\"a\"]", "output": "[\"a\"]", "testtype": "functional"},
+      {"input": "[\"1\",\"2\",\"3\",\"4\"]", "output": "[\"4\",\"3\",\"2\",\"1\"]", "testtype": "functional"}
+    ],
+    "metadata": {"func_name": "reverseString"},
+    "input_output": "{\"inputs\": [\"[\\\"h\\\",\\\"e\\\",\\\"l\\\",\\\"l\\\",\\\"o\\\"]\", \"[\\\"H\\\",\\\"a\\\",\\\"n\\\",\\\"n\\\",\\\"a\\\",\\\"h\\\"]\", \"[\\\"a\\\"]\", \"[\\\"1\\\",\\\"2\\\",\\\"3\\\",\\\"4\\\"]\"], \"outputs\": [\"[\\\"o\\\",\\\"l\\\",\\\"l\\\",\\\"e\\\",\\\"h\\\"]\", \"[\\\"h\\\",\\\"a\\\",\\\"n\\\",\\\"n\\\",\\\"a\\\",\\\"H\\\"]\", \"[\\\"a\\\"]\", \"[\\\"4\\\",\\\"3\\\",\\\"2\\\",\\\"1\\\"]\"], \"fn_name\": \"reverseString\"}"
+  },
+  {
+    "question_title": "FizzBuzz",
+    "question_content": "Given an integer n, return a string array answer (1-indexed) where:\n- answer[i] == \"FizzBuzz\" if i is divisible by 3 and 5.\n- answer[i] == \"Fizz\" if i is divisible by 3.\n- answer[i] == \"Buzz\" if i is divisible by 5.\n- answer[i] == i (as a string) otherwise.\n\nExample 1:\nInput: n = 3\nOutput: [\"1\",\"2\",\"Fizz\"]\n\nExample 2:\nInput: n = 5\nOutput: [\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\"]\n\nExample 3:\nInput: n = 15\nOutput: [\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\",\"Fizz\",\"7\",\"8\",\"Fizz\",\"Buzz\",\"11\",\"Fizz\",\"13\",\"14\",\"FizzBuzz\"]\n\nConstraints:\n1 <= n <= 10^4",
+    "platform": "leetcode",
+    "question_id": "412",
+    "contest_id": "N/A",
+    "contest_date": "2024-06-01T00:00:00",
+    "starter_code": "class Solution:\n    def fizzBuzz(self, n: int) -> List[str]:",
+    "difficulty": "easy",
+    "public_test_cases": [
+      {"input": "3", "output": "[\"1\",\"2\",\"Fizz\"]", "testtype": "functional"},
+      {"input": "5", "output": "[\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\"]", "testtype": "functional"}
+    ],
+    "private_test_cases": [
+      {"input": "1", "output": "[\"1\"]", "testtype": "functional"},
+      {"input": "15", "output": "[\"1\",\"2\",\"Fizz\",\"4\",\"Buzz\",\"Fizz\",\"7\",\"8\",\"Fizz\",\"Buzz\",\"11\",\"Fizz\",\"13\",\"14\",\"FizzBuzz\"]", "testtype": "functional"}
+    ],
+    "metadata": {"func_name": "fizzBuzz"},
+    "input_output": "{\"inputs\": [\"3\", \"5\", \"1\", \"15\"], \"outputs\": [\"[\\\"1\\\",\\\"2\\\",\\\"Fizz\\\"]\", \"[\\\"1\\\",\\\"2\\\",\\\"Fizz\\\",\\\"4\\\",\\\"Buzz\\\"]\", \"[\\\"1\\\"]\", \"[\\\"1\\\",\\\"2\\\",\\\"Fizz\\\",\\\"4\\\",\\\"Buzz\\\",\\\"Fizz\\\",\\\"7\\\",\\\"8\\\",\\\"Fizz\\\",\\\"Buzz\\\",\\\"11\\\",\\\"Fizz\\\",\\\"13\\\",\\\"14\\\",\\\"FizzBuzz\\\"]\"], \"fn_name\": \"fizzBuzz\"}"
+  }
+]

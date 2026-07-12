@@ -251,7 +251,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={runDetails.token_chart} margin={{ bottom: 60 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                          <XAxis dataKey="Sample" stroke="var(--chart-axis)" tick={false} />
+
                           <YAxis stroke="var(--chart-axis)" />
                           <Tooltip />
                           <Bar dataKey="Thinking" fill="#3B82F6" name="Thinking" stackId="a" />

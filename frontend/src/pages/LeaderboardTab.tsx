@@ -23,7 +23,6 @@ const COLS: { key: keyof api.LeaderboardEntry; label: string; sortable: boolean 
   { key: 'Avg TTFT', label: 'Avg TTFT', sortable: true },
   { key: 'Passed', label: 'Passed', sortable: true },
   { key: 'Tokens', label: 'Tokens', sortable: true },
-  { key: 'Quantization', label: 'Quantization', sortable: true },
   { key: 'Date', label: 'Date', sortable: true },
 ]
 
@@ -39,7 +38,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
   const [showTrend, setShowTrend] = useState(false)
   const [trendModel, setTrendModel] = useState('')
   const [trendBenchmark, setTrendBenchmark] = useState('')
-  const [trendQuant, setTrendQuant] = useState('')
+  const [hideQuickTests, setHideQuickTests] = useState(false)
 
   useEffect(() => {
     loadLeaderboard()
@@ -172,10 +171,10 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
                 <option value="">All benchmarks</option>
                 {[...new Set(entries.map(e => e.Benchmark))].map(b => <option key={b} value={b}>{b}</option>)}
               </select>
-              <select className="ml-2 h-7 text-xs rounded-md border border-border bg-card px-2" value={trendQuant} onChange={e => setTrendQuant(e.target.value)}>
-                <option value="">All quantizations</option>
-                {[...new Set(entries.map(e => e.Quantization).filter(Boolean))].map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <label className="flex items-center gap-1 text-xs ml-2 cursor-pointer select-none">
+                <input type="checkbox" className="accent-primary" checked={hideQuickTests} onChange={e => setHideQuickTests(e.target.checked)} />
+                Hide Quick Tests
+              </label>
             </CardTitle>
           </CardHeader>
           <CardContent className={trendBenchmark && !trendModel ? 'h-48' : 'h-64'}>
@@ -184,7 +183,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
                 .filter(e => {
                   if (trendModel && e.Model !== trendModel) return false
                   if (trendBenchmark && e.Benchmark !== trendBenchmark) return false
-                  if (trendQuant && e.Quantization !== trendQuant) return false
+                  if (hideQuickTests && e.QuickTest) return false
                   return e.Date
                 })
                 .sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime())
@@ -206,11 +205,11 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
               )
             })() : trendBenchmark ? (() => {
               const benchModels = [...new Set(entries
-                .filter(e => e.Benchmark === trendBenchmark && e.Date && (!trendQuant || e.Quantization === trendQuant))
+                .filter(e => e.Benchmark === trendBenchmark && e.Date && (!hideQuickTests || !e.QuickTest))
                 .map(e => e.Model))]
               if (!benchModels.length) return <div className="text-sm text-muted-foreground text-center pt-8">No data for this benchmark</div>
               const grouped: Record<string, number[]> = {}
-              entries.filter(e => e.Benchmark === trendBenchmark && e.Date && (!trendQuant || e.Quantization === trendQuant)).forEach(e => {
+              entries.filter(e => e.Benchmark === trendBenchmark && e.Date && (!hideQuickTests || !e.QuickTest)).forEach(e => {
                 const acc = parseFloat(String(e.Accuracy).replace(/[^0-9.-]/g, ''))
                 if (!isNaN(acc)) {
                   if (!grouped[e.Model]) grouped[e.Model] = []
@@ -265,7 +264,6 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
                   <td className="p-2">{e['Avg TTFT']}</td>
                   <td className="p-2">{e.Passed}</td>
                   <td className="p-2">{e.Tokens}</td>
-                  <td className="p-2 text-xs font-mono">{e.Quantization || '-'}</td>
                   <td className="p-2 text-xs">{e.Date}</td>
                   <td className="p-2">
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(e['Run ID'])}>Delete</Button>

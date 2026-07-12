@@ -173,11 +173,6 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
     b.label.toLowerCase().includes(benchSearch.toLowerCase())
   )
 
-  function getQuantization(modelId: string): string {
-    const m = connection.metadata?.[modelId]
-    return m?.quantization || ''
-  }
-
   async function handleStart() {
     if (!connection.selectedModel && mode !== 'model-queue') return
     try {
@@ -186,32 +181,27 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
           setRunMsg('Select at least one model and one benchmark.')
           return
         }
-        const quant = getQuantization(selectedQueueModels[0])
         const result = await api.startModelQueue({
           models: selectedQueueModels,
           benchmarks: selectedBatchBenches,
           api_url: connection.apiUrl, api_key: connection.apiKey,
           temperature: useCustomTemp ? temperature / 100 : undefined, max_tokens: maxTokens,
           system_prompt: systemPrompt, quick_test: quickTest,
-          quantization: quant,
         })
         setActiveRunId(null)
         setActiveBatchId(null)
         setRunMsg(result.message)
       } else if (mode === 'batch' && selectedBatchBenches.length >= 2) {
-        const quant = getQuantization(connection.selectedModel)
         const result = await api.startBatch({
           model: connection.selectedModel, benchmarks: selectedBatchBenches,
           api_url: connection.apiUrl, api_key: connection.apiKey,
           temperature: useCustomTemp ? temperature / 100 : undefined, max_tokens: maxTokens,
           system_prompt: systemPrompt, quick_test: quickTest,
-          quantization: quant,
         })
         if (result.run_id) setActiveRunId(result.run_id)
         if (result.batch_id) setActiveBatchId(result.batch_id)
         setRunMsg(result.message)
       } else {
-        const quant = getQuantization(connection.selectedModel)
         const result = await api.startRun({
           model: connection.selectedModel,
           benchmark: selectedBenchmark,
@@ -221,7 +211,6 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
           max_tokens: maxTokens,
           system_prompt: systemPrompt,
           quick_test: quickTest,
-          quantization: quant,
         })
         setActiveRunId(result.run_id)
         setActiveBatchId(null)

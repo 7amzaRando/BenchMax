@@ -1,16 +1,21 @@
+import ast
 import contextlib
 import faulthandler
 import io
+import json
 import logging
 import multiprocessing
 import os
 import platform
+import signal
+import subprocess
 import sys
 import tempfile
 import threading
 import unittest
 import types
 from typing import Dict, Any, List
+from unittest.mock import patch
 
 logger = logging.getLogger(__name__)
 
@@ -203,4 +208,156 @@ def check_correctness_bigcodebench(
         "passed": result[0] == "passed",
         "result": result[0],
         "details": list(details),
+    }
+
+
+_LCB_IMPORTS = (
+    "from string import *\nfrom re import *\nfrom datetime import *\n"
+    "from collections import *\nfrom heapq import *\nfrom bisect import *\n"
+    "from copy import *\nfrom math import *\nfrom random import *\n"
+    "from statistics import *\nfrom itertools import *\nfrom functools import *\n"
+    "from operator import *\nfrom io import *\nfrom json import *\n"
+    "from builtins import *\nfrom typing import *\nimport string\nimport re\n"
+    "import datetime\nimport collections\nimport heapq\nimport bisect\nimport copy\n"
+    "import math\nimport random\nimport statistics\nimport itertools\nimport functools\n"
+    "import operator\nimport io\nimport sys\nimport json\n"
+    "sys.setrecursionlimit(50000)\n"
+)
+
+_LEETCODE_IMPORTS = (
+    "from typing import *\nimport math\nimport sys\nimport collections\n"
+    "import heapq\nimport bisect\nimport itertools\nimport functools\n"
+    "import random\nimport statistics\n"
+)
+
+
+def _clean_if_name(code: str) -> str:
+    try:
+        tree = ast.parse(code)
+        last = tree.body[-1]
+        if isinstance(last, ast.If) and ast.unparse(last.test).strip() == "__name__ == '__main__'":
+            return ast.unparse(tree.body[:-1]) + "\n" + ast.unparse(last.body)
+    except Exception:
+        pass
+    return code
+
+
+def _wrap_in_function(code: str) -> str:
+    try:
+        tree = ast.parse(code)
+        stmts = tree.body
+        func = ast.FunctionDef(
+            name="wrapped_function",
+            args=ast.arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]),
+            body=stmts,
+            decorator_list=[],
+            lineno=-1,
+        )
+        return _LCB_IMPORTS + "\n" + ast.unparse(func)
+    except Exception:
+        return code
+
+
+def _unsafe_execute_livecodebench(
+    code: str,
+    input_output: str,
+    timeout: float,
+    result_container: list,
+):
+    with _create_tempdir():
+        _reliability_guard()
+
+        try:
+            in_outs = json.loads(input_output)
+            inputs = in_outs["inputs"]
+            outputs = in_outs["outputs"]
+            fn_name = in_outs.get("fn_name")
+
+            if fn_name:
+                all_inputs = []
+                for inp in inputs:
+                    args = [json.loads(line) for line in inp.split("\n")]
+                    all_inputs.append(args)
+                all_outputs = [json.loads(out) for out in outputs]
+
+                full_code = _LCB_IMPORTS + "\n" + code
+                exec_globals = {}
+                exec(compile(full_code, "lcb_solution.py", "exec"), exec_globals)
+
+                if "Solution" in code:
+                    sol = exec_globals.get("Solution")
+                    if sol:
+                        instance = sol()
+                        method = getattr(instance, fn_name, None)
+                    else:
+                        method = None
+                else:
+                    method = exec_globals.get(fn_name)
+
+                if method is None:
+                    result_container.append("failed: function not found")
+                    return
+
+                for args, expected in zip(all_inputs, all_outputs):
+                    with _time_limit(timeout):
+                        prediction = method(*args)
+                    if isinstance(prediction, tuple):
+                        prediction = list(prediction)
+                    if prediction != expected:
+                        result_container.append(f"failed: wrong answer")
+                        return
+            else:
+                clean_code = _clean_if_name(code)
+                wrapped_code = _wrap_in_function(clean_code)
+                exec_globals = {}
+                exec(compile(wrapped_code, "lcb_solution.py", "exec"), exec_globals)
+                method = exec_globals.get("wrapped_function")
+                if method is None:
+                    result_container.append("failed: could not wrap code")
+                    return
+
+                for inp_str, expected in zip(inputs, outputs):
+                    mock_stdin = io.StringIO(inp_str)
+                    captured = io.StringIO()
+                    with patch("sys.stdin", mock_stdin), patch("sys.stdout", captured):
+                        with _time_limit(timeout):
+                            method()
+                    actual = captured.getvalue()
+                    expected_lines = [l.strip() for l in expected.strip().split("\n") if l.strip()]
+                    actual_lines = [l.strip() for l in actual.strip().split("\n") if l.strip()]
+                    if expected_lines != actual_lines:
+                        result_container.append(f"failed: output mismatch")
+                        return
+
+            result_container.append("passed")
+        except TimeoutException:
+            result_container.append("timed out")
+        except BaseException as e:
+            result_container.append(f"failed: {e}")
+
+
+def check_correctness_livecodebench(
+    code: str,
+    input_output: str,
+    timeout: float = 10.0,
+) -> Dict[str, Any]:
+    manager = multiprocessing.Manager()
+    result = manager.list()
+
+    p = multiprocessing.Process(
+        target=_unsafe_execute_livecodebench,
+        args=(code, input_output, timeout, result),
+    )
+    p.start()
+    p.join(timeout=timeout + 5)
+    if p.is_alive():
+        p.kill()
+        p.join()
+
+    if not result:
+        result.append("timed out")
+
+    return {
+        "passed": result[0] == "passed",
+        "result": result[0],
     }

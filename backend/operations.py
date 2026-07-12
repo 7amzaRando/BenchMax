@@ -157,6 +157,9 @@ def _instantiate_benchmark(benchmark_name: str, db, client, quick_test=False, ha
     elif benchmark_name == "LiveBench":
         from backend.benchmarks.livebench import LiveBenchBenchmark
         return LiveBenchBenchmark(db, client, quick_test)
+    elif benchmark_name == "LiveCodeBench":
+        from backend.benchmarks.livecodebench import LiveCodeBenchBenchmark
+        return LiveCodeBenchBenchmark(db, client, quick_test)
     elif benchmark_name == "BenchMax Personal":
         from backend.benchmarks.personal import BenchMaxPersonalBenchmark
         return BenchMaxPersonalBenchmark(db, client, quick_test)
@@ -399,7 +402,7 @@ def _scan_datasets() -> pd.DataFrame:
 
 
 def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFrame, list, dict]:
-    """Hits /v1/models (simple list) and /api/v0/models (metadata: context length, quantization) and merges them."""
+    """Hits /v1/models (simple list) and /api/v0/models (metadata: context length) and merges them."""
     from backend.lm_studio.client import LMStudioClient
     metadata = {}
     error_msg = ""
@@ -442,16 +445,14 @@ def trigger_run(
     max_tokens: int = 2048,
     sys_prompt: str = "",
     quick_test: bool = False,
-    quantization: str = "",
 ) -> tuple[int | None, str]:
     """Creates a Run row in DB, spawns a daemon thread for evaluation, and returns (run_id, message). Daemon thread so it does not block process exit."""
     db = SessionLocal()
     try:
         params_dict = {"api_url": api_url, "max_completion_tokens": max_tokens, "system_prompt": sys_prompt}
-        if quantization:
-            params_dict["quantization"] = quantization
         if temp is not None:
             params_dict["temperature"] = temp
+        params_dict["quick_test"] = quick_test
         run = Run(
             model_name=selected_model,
             benchmark_name=benchmark_name,
@@ -485,7 +486,6 @@ def start_batch(
     max_tokens: int = 2048,
     sys_prompt: str = "",
     quick_test: bool = False,
-    quantization: str = "",
 ) -> tuple[int | None, str, str, pd.DataFrame, str]:
     """Creates one Run per benchmark with a shared batch_id UUID, chains them sequentially via _remaining_ids. Captures api_url/api_key in each Run's parameters so resumes are independent."""
     if not selected_benchmarks:
@@ -497,10 +497,9 @@ def start_batch(
     try:
         for bn in selected_benchmarks:
             params_dict = {"api_url": api_url, "max_completion_tokens": max_tokens, "system_prompt": sys_prompt}
-            if quantization:
-                params_dict["quantization"] = quantization
             if temp is not None:
                 params_dict["temperature"] = temp
+            params_dict["quick_test"] = quick_test
             run = Run(
                 model_name=selected_model,
                 benchmark_name=bn,
@@ -551,7 +550,6 @@ def _run_model_queue_in_thread(
     max_tokens: int,
     sys_prompt: str,
     quick_test: bool,
-    quantization: str = "",
 ):
     """
     Loops through (model, benchmarks) pairs: loads model via LM Studio API, runs all benchmarks
@@ -613,10 +611,9 @@ def _run_model_queue_in_thread(
             try:
                 for bn in benches:
                     mparams = {"api_url": api_url, "max_completion_tokens": max_tokens, "system_prompt": sys_prompt}
-                    if quantization:
-                        mparams["quantization"] = quantization
                     if temp is not None:
                         mparams["temperature"] = temp
+                    mparams["quick_test"] = quick_test
                     run = Run(
                         model_name=model_id,
                         benchmark_name=bn,
@@ -756,7 +753,6 @@ def start_model_queue(
     max_tokens: int = 2048,
     sys_prompt: str = "",
     quick_test: bool = False,
-    quantization: str = "",
 ) -> tuple[str, str]:
     if not model_benchmarks:
         return "", "No models selected."
@@ -767,7 +763,7 @@ def start_model_queue(
 
     thread = threading.Thread(
         target=_run_model_queue_in_thread,
-        args=(queue_id, model_benchmarks, api_url, api_key, temp, max_tokens, sys_prompt, quick_test, quantization),
+        args=(queue_id, model_benchmarks, api_url, api_key, temp, max_tokens, sys_prompt, quick_test),
         daemon=True,
     )
     thread.start()
@@ -978,11 +974,10 @@ def load_run_details(run_id_str: str) -> tuple[str, pd.DataFrame, list, pd.DataF
         resp_tk = sum(r.response_tokens or 0 for r in results)
 
         params_dict = run.get_parameters()
-        quantization = params_dict.get("quantization", "")
-        quant_note = f"Quantization: `{quantization}`  \n" if quantization else ""
+        quick_test = params_dict.get("quick_test", False)
 
         summary_md = (
-            f"**Run {run.id} — {run.benchmark_name}**  \n"
+            f"**Run {run.id} — {run.benchmark_name}  \n"
             f"Model: `{run.model_name}`  \n"
             f"Status: **{run.status}**  |  "
             f"Accuracy: **{ok}/{n} ({round(ok/n*100, 1) if n else 0}%)**  \n"
@@ -991,7 +986,6 @@ def load_run_details(run_id_str: str) -> tuple[str, pd.DataFrame, list, pd.DataF
             f"Total Tokens: {total_tk}  "
             f"(Thinking: {round(think_tk / (think_tk + resp_tk) * 100, 1) if (think_tk + resp_tk) else 0}%, "
             f"Response: {round(resp_tk / (think_tk + resp_tk) * 100, 1) if (think_tk + resp_tk) else 0}%)  \n"
-            f"{quant_note}"
             f"Created: {run.created_at.strftime('%Y-%m-%d %H:%M:%S') if run.created_at else 'N/A'}"
         )
 
@@ -1076,7 +1070,7 @@ def load_leaderboard() -> pd.DataFrame:
             avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0
             total_tk = sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
             params = r.get_parameters()
-            quantization = params.get("quantization", "")
+            quick_test = params.get("quick_test", False)
             rows.append({
                 "Run ID": r.id,
                 "Model": r.model_name,
@@ -1088,7 +1082,7 @@ def load_leaderboard() -> pd.DataFrame:
                 "Tokens": total_tk,
                 "Date": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
                 "status": r.status,
-                "Quantization": quantization,
+                "QuickTest": quick_test,
             })
         return pd.DataFrame(rows) if rows else pd.DataFrame()
     finally:

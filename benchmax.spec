@@ -16,6 +16,7 @@ datas = [
     (os.path.join(root_dir, "data", "longbench_v2_mini.json"), "data"),
     (os.path.join(root_dir, "data", "mmmu_pro_mini.json"), "data"),
     (os.path.join(root_dir, "data", "livebench_mini.json"), "data"),
+    (os.path.join(root_dir, "data", "livecodebench_mini.json"), "data"),
     (os.path.join(root_dir, "data", "personal_mini.json"), "data"),
     (os.path.join(root_dir, "data", "lite_mini.json"), "data"),
     (os.path.join(root_dir, "data", "code_mini.json"), "data"),
@@ -50,6 +51,8 @@ datas = [
     (os.path.join(root_dir, "data", "truthfulqa_full.json"), "data"),
     # MMMU-Pro full dataset
     (os.path.join(root_dir, "data", "mmmu_pro_full.json"), "data"),
+    # LiveCodeBench full dataset
+    (os.path.join(root_dir, "data", "livecodebench_full.json"), "data"),
     # Frontend dist (SPA static files)
     (os.path.join(root_dir, "frontend", "dist", "index.html"), os.path.join("frontend", "dist")),
     (os.path.join(root_dir, "frontend", "dist", "assets"), os.path.join("frontend", "dist", "assets")),
@@ -120,6 +123,7 @@ a = Analysis(
         'backend.benchmarks.aider_polyglot',
         'backend.benchmarks.mmmu_pro',
         'backend.benchmarks.livebench',
+        'backend.benchmarks.livecodebench',
         'backend.benchmarks.personal',
         'backend.benchmarks.lite',
         'backend.benchmarks.code_bench',

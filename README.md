@@ -180,9 +180,6 @@ Optionally omit temperature to use the provider's default, or set a custom value
 </td>
 <td width="50%">
 
-#### Quantization Tracking
-Model quantization (Q4_K_M, Q8_0, etc.) captured from API metadata and shown in run summaries and leaderboard
-
 </td>
 </tr>
 </table>

@@ -287,6 +287,7 @@ class BFCLBenchmark(BaseBenchmark):
             "raw_response": raw_response,
             "extracted_code": json.dumps(actual_calls),
             "correct": correct,
+            "error_message": score_data.get("error_message"),
             "elapsed_time": generation.get("elapsed_time", 0.0),
             "tps": generation.get("tps", 0.0),
             "ttft": generation.get("ttft", 0.0),
