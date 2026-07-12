@@ -112,17 +112,6 @@ Pause, resume, or halt any run or queue — state persisted to SQLite, resumes f
 <tr>
 <td width="50%">
 
-#### Multimodal Vision
-MMMU-Pro sends images to vision models via the API (base64 PNG, 1,200 samples)
-
-</td>
-<td width="50%">
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
 #### On-Demand Datasets
 Download full benchmark datasets from the UI — no manual fetching required
 
@@ -156,6 +145,9 @@ Optionally omit temperature to use the provider's default, or set a custom value
 
 </td>
 <td width="50%">
+
+#### Multimodal Vision
+MMMU-Pro sends images to vision models via the API (base64 PNG, 1,200 samples)
 
 </td>
 </tr>
