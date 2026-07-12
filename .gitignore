@@ -51,7 +51,6 @@ data/mmmu_pro_full.json
 data/livecodebench_full.json
 
 # Personal AI prompts (not part of the project)
-prompts/
 
 # Agent documentation (internal, not for GitHub)
 PROJECT_STATE.md
