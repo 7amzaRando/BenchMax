@@ -41,7 +41,10 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                 "LiveCodeBench dataset not found. "
                 "Run 'scripts/fetch_livecodebench.py' to download it."
             )
-        return self._load_json_cached(self.dataset_path)
+        raw = self._load_json_cached(self.dataset_path)
+        for s in raw:
+            s.setdefault("task_id", s.get("question_id", "unknown"))
+        return raw
 
     def _extract_code(self, text: str) -> str:
         if not text:
@@ -146,3 +149,27 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
             "thinking_tokens": generation["thinking_tokens"],
             "response_tokens": generation["response_tokens"],
         }
+
+    def generate_diff(self, sample: dict, result_data: dict) -> str:
+        import html as html_mod, json
+        code = result_data.get("extracted_code", "")
+        raw = result_data.get("raw_response", "")
+        parts = ["<p><strong>LiveCodeBench — Test-Based Scoring</strong></p>"]
+        io_str = sample.get("input_output", "{}")
+        try:
+            io = json.loads(io_str) if isinstance(io_str, str) else io_str
+            fn_name = io.get("fn_name", "")
+            inputs = io.get("inputs", [])
+            outputs = io.get("outputs", [])
+            parts.append(f"<p>Function: <code>{html_mod.escape(fn_name)}</code> — {len(inputs)} test case(s)</p>")
+            for i, (inp, out) in enumerate(zip(inputs, outputs)):
+                parts.append(f"<pre><b>Test {i}:</b>\n  Input:    {html_mod.escape(str(inp))}\n  Expected: {html_mod.escape(str(out))}</pre>")
+        except Exception:
+            parts.append("<p>Could not parse test cases.</p>")
+        if code:
+            parts.append("<p><strong>Extracted Code:</strong></p>")
+            parts.append(f"<pre>{html_mod.escape(code)}</pre>")
+        elif raw:
+            parts.append("<p><strong>Raw Response:</strong></p>")
+            parts.append(f"<pre>{html_mod.escape(raw[:2000])}</pre>")
+        return "".join(parts)

@@ -1278,7 +1278,14 @@ def generate_diff(run_id_str: str, task_id: str) -> str:
         dataset = bench.load_dataset()
         sample = next((s for s in dataset if s.get("task_id") == task_id), None)
         if not sample:
-            return f"<p>Dataset record for {task_id} not found.</p>"
+            import re
+            m = re.match(r"sample_(\d+)", task_id)
+            if m:
+                idx = int(m.group(1))
+                if 0 <= idx < len(dataset):
+                    sample = dataset[idx]
+            if not sample:
+                return f"<p>Dataset record for {task_id} not found.</p>"
         result = db.query(Result).filter(
             Result.run_id == run_id, Result.task_id == task_id
         ).first()
