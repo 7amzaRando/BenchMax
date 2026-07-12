@@ -1070,7 +1070,9 @@ def load_leaderboard() -> pd.DataFrame:
             avg_ttft = round(sum(ttft_vals) / len(ttft_vals), 3) if ttft_vals else 0
             total_tk = sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
             params = r.get_parameters()
-            quick_test = params.get("quick_test", False)
+            quick_test = params.get("quick_test")
+            if quick_test is None:
+                quick_test = (r.total_samples or 0) <= 10
             rows.append({
                 "Run ID": r.id,
                 "Model": r.model_name,
