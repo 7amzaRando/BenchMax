@@ -39,33 +39,13 @@ Created by [**Rando**](https://github.com/7amzaRando).
 ## Screenshots
 
 <p align="center">
-  <strong>Connection Tab</strong><br>
-  <img src="Connection-Tab.png" alt="Connection Tab" width="700">
-</p>
-
-<p align="center">
-  <strong>Run Benchmark Tab</strong><br>
-  <img src="Benchmark-Tab-Screenshot.png" alt="Run Benchmark Tab" width="700">
-</p>
-
-<p align="center">
   <strong>Hardware Monitor Tab</strong><br>
   <img src="Hardware-Monitor-Tab.png" alt="Hardware Tab" width="700">
 </p>
 
 <p align="center">
-  <strong>History & Results — Diff Viewer</strong><br>
-  <img src="Solution-vs-Answer.png" alt="Solution vs Answer Diff" width="700">
-</p>
-
-<p align="center">
   <strong>History & Results — Charts & Stats</strong><br>
   <img src="Benchmark-Graph-Stats.png" alt="Benchmark Graphs and Statistics" width="700">
-</p>
-
-<p align="center">
-  <strong>Leaderboard Tab</strong><br>
-  <img src="Leaderboard-Tab.png" alt="Leaderboard Tab" width="700">
 </p>
 
 ---
@@ -132,14 +112,11 @@ Pause, resume, or halt any run or queue — state persisted to SQLite, resumes f
 <tr>
 <td width="50%">
 
-#### Quick Test Mode
-Run any benchmark on a 5-sample mini dataset for rapid iteration
+#### Multimodal Vision
+MMMU-Pro sends images to vision models via the API (base64 PNG, 1,200 samples)
 
 </td>
 <td width="50%">
-
-#### Multimodal Vision
-MMMU-Pro sends images to vision models via the API (base64 PNG, 1,200 samples)
 
 </td>
 </tr>
