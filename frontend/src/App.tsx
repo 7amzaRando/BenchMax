@@ -88,9 +88,10 @@ function AppContent() {
 
   const handleConnect = useCallback(async () => {
     const result = await api.connectLMStudio(connection.apiUrl, connection.apiKey)
-    if (!result.status.startsWith('🟢')) {
+    if (result.status.startsWith('Connection failed')) {
       setConnection(prev => ({ ...prev, connected: false, models: [] }))
       toast({ title: "Connection Failed", description: result.status, variant: "error" })
+      return
     }
     setConnection(prev => ({
       ...prev,
