@@ -43,12 +43,18 @@ if %errorlevel% neq 0 (
 )
 cd /d "%~dp0"
 
-:: 4. Install PyInstaller
-echo [4/5] Installing PyInstaller...
-".venv\Scripts\python.exe" -m pip install pyinstaller -q
+:: 4. Install PyInstaller (skip if already present)
+echo [4/5] Checking PyInstaller...
+".venv\Scripts\python.exe" -m PyInstaller --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ERROR: Failed to install PyInstaller.
-    exit /b 1
+    echo [4/5] Installing PyInstaller...
+    ".venv\Scripts\python.exe" -m pip install pyinstaller -q
+    if %errorlevel% neq 0 (
+        echo ERROR: Failed to install PyInstaller.
+        exit /b 1
+    )
+) else (
+    echo [4/5] PyInstaller already installed, skipping.
 )
 
 :: 5. Build the executable

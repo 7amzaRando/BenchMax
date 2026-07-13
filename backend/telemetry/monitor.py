@@ -25,6 +25,8 @@ except ImportError:
 # Telemetry cache to avoid expensive GPU counter queries every call
 _telemetry_cache: dict = {}
 _telemetry_cache_ttl = 3.5  # seconds (slightly longer than frontend 3s poll interval)
+import threading
+_telemetry_cache_lock = threading.Lock()
 
 
 def _get_gpu_counters_typeperf() -> dict:
@@ -111,7 +113,7 @@ def _get_vram_total_from_registry(gpu_name: str) -> int | None:
                 except OSError:
                     break
     except Exception:
-        pass
+        logger.debug("GPU detection failed", exc_info=True)
     return None
 
 
@@ -280,20 +282,21 @@ def get_system_metrics() -> dict:
     """
     global _telemetry_cache
     now = time.time()
-    cached = _telemetry_cache.get("last_result")
-    cached_at = _telemetry_cache.get("cached_at", 0)
-    if cached and (now - cached_at) < _telemetry_cache_ttl:
-        # Update cheap CPU/RAM values even from cache, but skip expensive GPU
-        try:
-            cached["cpu_percent"] = psutil.cpu_percent(interval=None)
-            vm = psutil.virtual_memory()
-            cached["ram_total_gb"] = round(vm.total / (1024 ** 3), 2)
-            cached["ram_used_gb"] = round(vm.used / (1024 ** 3), 2)
-            cached["ram_percent"] = vm.percent
-        except Exception:
-            pass
-        return cached
+    with _telemetry_cache_lock:
+        cached = _telemetry_cache.get("last_result")
+        cached_at = _telemetry_cache.get("cached_at", 0)
+        if cached and (now - cached_at) < _telemetry_cache_ttl:
+            # Update cheap CPU/RAM values even from cache, but skip expensive GPU
+            try:
+                cached["cpu_percent"] = psutil.cpu_percent(interval=None)
+                vm = psutil.virtual_memory()
+                cached["ram_total_gb"] = round(vm.total / (1024 ** 3), 2)
+                cached["ram_used_gb"] = round(vm.used / (1024 ** 3), 2)
+                cached["ram_percent"] = vm.percent
+            except Exception:
+                logger.debug("Failed to gather fresh CPU/RAM metrics", exc_info=True)
+            return cached
 
-    fresh = _gather_system_metrics_fresh()
-    _telemetry_cache = {"last_result": fresh, "cached_at": now}
-    return fresh
+        fresh = _gather_system_metrics_fresh()
+        _telemetry_cache = {"last_result": fresh, "cached_at": now}
+        return fresh

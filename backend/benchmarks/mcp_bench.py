@@ -327,7 +327,7 @@ class MCPBenchBenchmark(BaseBenchmark):
         result = {
             "prompt": system_prompt + "\n\n" + task_description,
             "raw_response": raw_response,
-            "extracted_code": json.dumps(extracted_call),
+            "extracted_code": json.dumps(extracted_call) if extracted_call is not None else "",
             "elapsed_time": generation.get("elapsed_time", 0.0),
             "tps": generation.get("tps", 0.0),
             "ttft": generation.get("ttft", 0.0),

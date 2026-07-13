@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useToast } from '@/components/ui/toast-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -67,12 +67,19 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [mode, setMode] = useState<'single' | 'batch' | 'model-queue'>('single')
   const [benchSearch, setBenchSearch] = useState('')
+  const [modelSearch, setModelSearch] = useState('')
   const [selectedQueueModels, setSelectedQueueModels] = useState<string[]>([])
   const [queueState, setQueueState] = useState<any>(null)
   const [liveOverride, setLiveOverride] = useState<any>(null)
   const [haltConfirmOpen, setHaltConfirmOpen] = useState(false)
   const [queueHaltConfirmOpen, setQueueHaltConfirmOpen] = useState(false)
   const [queueSkipConfirmOpen, setQueueSkipConfirmOpen] = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     if (pendingRerun) {
@@ -154,8 +161,10 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
   useEffect(() => {
     if (mode !== 'model-queue') { setQueueState(null); queueNotifiedRef.current = false; return }
     const interval = setInterval(async () => {
+      if (!mountedRef.current) return
       try {
         const data = await api.getActiveModelQueue()
+        if (!mountedRef.current) return
         setQueueState(data)
         if ((data.status === 'completed' || data.status === 'failed' || data.status === 'halted') && !queueNotifiedRef.current) {
           queueNotifiedRef.current = true
@@ -170,8 +179,11 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
     return () => clearInterval(interval)
   }, [mode, toast])
 
-  const filteredBenches = benchmarks.filter(b =>
-    b.label.toLowerCase().includes(benchSearch.toLowerCase())
+  const filteredBenches = useMemo(() =>
+    benchmarks.filter(b =>
+      b.label.toLowerCase().includes(benchSearch.toLowerCase())
+    ),
+    [benchmarks, benchSearch]
   )
 
   async function handleStart() {
@@ -222,7 +234,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
 
   async function handlePause() {
     if (!activeRunId) return
-    try { const r = await api.pauseRun(activeRunId); setRunMsg(r.status) } catch { console.warn('pauseRun failed') }
+    try { const r = await api.pauseRun(activeRunId); setRunMsg(r.status) } catch { setRunMsg('Pause failed'); console.warn('pauseRun failed') }
   }
 
   async function handleResume() {
@@ -234,20 +246,20 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
         system_prompt: systemPrompt, quick_test: quickTest,
       })
       setRunMsg(r.status)
-    } catch { console.warn('resumeRun failed') }
+    } catch { setRunMsg('Resume failed'); console.warn('resumeRun failed') }
   }
 
   async function handleHalt() {
     if (!activeRunId) return
-    try { const r = await api.haltRun(activeRunId); setRunMsg(r.status) } catch { console.warn('haltRun failed') }
+    try { const r = await api.haltRun(activeRunId); setRunMsg(r.status) } catch { setRunMsg('Halt failed'); console.warn('haltRun failed') }
   }
 
   async function handleHaltModelQueue() {
-    try { const r = await api.haltModelQueue(); setRunMsg(r.status) } catch { console.warn('haltModelQueue failed') }
+    try { const r = await api.haltModelQueue(); setRunMsg(r.status) } catch { setRunMsg('Halt model queue failed'); console.warn('haltModelQueue failed') }
   }
 
   async function handleSkipModelQueue() {
-    try { const r = await api.skipModelQueue(); setRunMsg(r.status) } catch { console.warn('skipModelQueue failed') }
+    try { const r = await api.skipModelQueue(); setRunMsg(r.status) } catch { setRunMsg('Skip model failed'); console.warn('skipModelQueue failed') }
   }
 
   const displayStatus = liveOverride || localRunStatus
@@ -265,9 +277,9 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
           )}
         </div>
         <div className="flex bg-card/80 border border-border rounded-lg p-0.5">
-          <button role="tab" aria-pressed={mode === 'single'} onClick={() => setMode('single')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'single' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Single</button>
-          <button role="tab" aria-pressed={mode === 'batch'} onClick={() => setMode('batch')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'batch' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Batch</button>
-          <button role="tab" aria-pressed={mode === 'model-queue'} onClick={() => setMode('model-queue')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'model-queue' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Model Queue</button>
+          <button role="tab" aria-selected={mode === 'single'} tabIndex={mode === 'single' ? 0 : -1} onClick={() => setMode('single')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'single' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Single</button>
+          <button role="tab" aria-selected={mode === 'batch'} tabIndex={mode === 'batch' ? 0 : -1} onClick={() => setMode('batch')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'batch' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Batch</button>
+          <button role="tab" aria-selected={mode === 'model-queue'} tabIndex={mode === 'model-queue' ? 0 : -1} onClick={() => setMode('model-queue')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${mode === 'model-queue' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Model Queue</button>
         </div>
       </div>
 
@@ -292,10 +304,10 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
               </label>
               {mode === 'model-queue' ? (
                 <div className="space-y-1.5">
-                  <Input placeholder="Search models..." value={benchSearch} onChange={e => setBenchSearch(e.target.value)} className="h-8 text-xs" />
+                  <Input placeholder="Search models..." value={modelSearch} onChange={e => setModelSearch(e.target.value)} className="h-8 text-xs" />
                   <div className="max-h-36 overflow-y-auto border border-border rounded-md p-1 space-y-0.5 bg-card/50">
-                    {(benchSearch
-                      ? connection.models.filter(m => m.toLowerCase().includes(benchSearch.toLowerCase()))
+                    {(modelSearch
+                      ? connection.models.filter(m => m.toLowerCase().includes(modelSearch.toLowerCase()))
                       : connection.models
                     ).map(m => (
                       <label key={m} className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${selectedQueueModels.includes(m) ? 'bg-primary/20 text-primary' : 'hover:bg-accent/10'}`}>
@@ -323,6 +335,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
               </div>
               {mode === 'single' ? (
                 <select className="flex h-9 w-full rounded-md border border-border bg-card px-2.5 py-1.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={selectedBenchmark} onChange={e => setSelectedBenchmark(e.target.value)}>
+                  {benchmarks.length === 0 && <option value="">No benchmarks loaded</option>}
                   {benchmarks.map(b => <option key={b.name} value={b.name} title={BENCHMARK_INFO[b.name]?.description || b.label}>{b.label}</option>)}
                 </select>
               ) : (
@@ -353,11 +366,11 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
 
           {/* Advanced toggle */}
           <div className="border-t border-border pt-3">
-            <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-xs text-primary hover:underline flex items-center gap-1">
+            <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-xs text-primary hover:underline flex items-center gap-1" aria-expanded={showAdvanced} aria-controls="advanced-settings-panel">
               {showAdvanced ? '▼' : '▶'} {showAdvanced ? 'Hide' : 'Show'} advanced settings
             </button>
             {showAdvanced && (
-              <div className="mt-3 grid grid-cols-2 gap-4 p-4 rounded-lg bg-card/50 border border-border">
+              <div id="advanced-settings-panel" className="mt-3 grid grid-cols-2 gap-4 p-4 rounded-lg bg-card/50 border border-border">
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-2 text-xs text-muted-foreground col-span-2">
                     <input type="checkbox" checked={useCustomTemp} onChange={e => setUseCustomTemp(e.target.checked)} className="rounded" />
@@ -447,7 +460,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
       </Card>
 
       {mode === 'model-queue' && queueState && (queueState.status === 'running' || queueState.status === 'completed' || queueState.status === 'failed' || queueState.status === 'halted') && (
-        <Card variant="glass">
+        <Card variant="glass" aria-live="polite">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${queueState.status === 'running' ? 'bg-green-400 animate-pulse' : queueState.status === 'completed' ? 'bg-green-500' : 'bg-red-400'}`} />
@@ -501,7 +514,7 @@ export default function RunBenchmarkTab({ connection, setConnection, activeRunId
 
       {/* Rendered only when displayStatus is truthy */}
       {mode !== 'model-queue' && (displayStatus) && (
-        <Card variant="glass">
+        <Card variant="glass" aria-live="polite">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${displayStatus.status?.includes('RUNNING') ? 'bg-green-400 animate-pulse' : 'bg-muted-foreground'}`} />

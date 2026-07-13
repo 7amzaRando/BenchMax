@@ -164,6 +164,3 @@ class LiveBenchBenchmark(BaseBenchmark):
             "thinking_tokens": gen["thinking_tokens"],
             "response_tokens": gen["response_tokens"]
         }
-
-    def cleanup(self) -> None:
-        pass

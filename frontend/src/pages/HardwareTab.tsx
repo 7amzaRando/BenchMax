@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getTelemetry } from '@/lib/api'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts'
 
 function MetricChart({ title, data, dataKey, color, unit }: {
@@ -12,15 +12,40 @@ function MetricChart({ title, data, dataKey, color, unit }: {
     color?: string;
     unit?: string;
 }) {
-    const chartColor = color || '#3b82f6';
+    const chartColor = color || '#3b82f6'
+    const key = dataKey || 'v'
+    const gradId = `grad-${title.replace(/\s+/g, '')}`
+    const latest = data.length ? data[data.length - 1][key] : 0
+    const max = data.length ? Math.max(...data.map(d => d[key])) : 0
+    const min = data.length ? Math.min(...data.map(d => d[key])) : 0
     return (
-        <div className="bg-card border border-border rounded-lg p-3">
-            <h3 className="text-sm font-medium text-foreground mb-2">{title}</h3>
-            <ResponsiveContainer width="100%" height={120}>
-                <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="t" tick={false} axisLine={false} />
-                    <YAxis tick={false} axisLine={false} domain={[0, 'auto']} />
+        <div className="relative bg-card border border-border rounded-xl p-4 overflow-hidden">
+            <div
+                className="absolute inset-0 opacity-[0.12] pointer-events-none"
+                style={{ background: `radial-gradient(circle at top right, ${chartColor}, transparent 70%)` }}
+            />
+            <div className="relative flex items-start justify-between mb-1">
+                <div>
+                    <h3 className="text-sm font-medium text-foreground">{title}</h3>
+                    <div className="text-2xl font-bold leading-tight" style={{ color: chartColor }}>
+                        {latest.toFixed(1)}<span className="text-base font-medium text-muted-foreground ml-0.5">{unit}</span>
+                    </div>
+                </div>
+                <div className="text-right text-[10px] text-muted-foreground font-mono space-y-0.5">
+                    <div>max {max.toFixed(0)}{unit}</div>
+                    <div>min {min.toFixed(0)}{unit}</div>
+                </div>
+            </div>
+            <ResponsiveContainer width="100%" height={100}>
+                <AreaChart data={data} margin={{ top: 6, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={chartColor} stopOpacity={0.4} />
+                            <stop offset="100%" stopColor={chartColor} stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <XAxis dataKey="t" hide />
+                    <YAxis hide domain={[0, 100]} />
                     <Tooltip
                         contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
@@ -31,15 +56,17 @@ function MetricChart({ title, data, dataKey, color, unit }: {
                         formatter={(value: number) => [`${value}${unit || ''}`, title]}
                         labelFormatter={() => ''}
                     />
-                    <Line
+                    <Area
                         type="monotone"
-                        dataKey={dataKey || 'v'}
+                        dataKey={key}
                         stroke={chartColor}
-                        strokeWidth={2}
-                        dot={false}
+                        strokeWidth={2.5}
+                        fill={`url(#${gradId})`}
                         isAnimationActive={false}
+                        dot={false}
+                        activeDot={{ r: 3, fill: chartColor, strokeWidth: 0 }}
                     />
-                </LineChart>
+                </AreaChart>
             </ResponsiveContainer>
         </div>
     );
@@ -50,18 +77,23 @@ export default function HardwareTab({ telemetryPaused, setTelemetryPaused }: { t
   const historyRef = useRef<any[]>([])
   const [history, setHistory] = useState<any[]>([])
   const tickRef = useRef(0)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
+    mountedRef.current = true
     tickRef.current = 0
     historyRef.current = []
     setHistory([])
+    return () => { mountedRef.current = false }
   }, [])
 
   useEffect(() => {
     if (telemetryPaused) return
     const interval = setInterval(async () => {
+      if (!mountedRef.current) return
       try {
         const t = await getTelemetry()
+        if (!mountedRef.current) return
         setCurrent(t)
         const pt = {
           t: tickRef.current++,

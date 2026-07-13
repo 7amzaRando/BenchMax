@@ -45,19 +45,11 @@ def score_free_form(response: str, answer: str) -> Tuple[bool, str]:
         return False, f"Missing keywords: {', '.join(missing[:3])}"
     return True, ""
 
-def score_function_call(response: str, answer: str) -> Tuple[bool, str]:
-    if not response or not response.strip():
-        return False, "Empty response"
-    if answer.strip().lower() in response.lower():
-        return True, ""
-    return False, f"Function call '{answer}' not found"
-
 def get_scorer(sample_type: str) -> Callable:
     scorers = {
         "mcq": score_mcq,
         "code": score_code,
         "exact": score_exact,
         "free_form": score_free_form,
-        "function_call": score_function_call,
     }
     return scorers.get(sample_type, score_free_form)

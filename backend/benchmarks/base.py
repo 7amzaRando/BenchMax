@@ -94,6 +94,12 @@ class BaseBenchmark(ABC):
         run.total_samples = len(dataset)
         self.db.commit()
 
+        if not dataset:
+            logger.error(f"Benchmark run {run_id} ({run.benchmark_name}) loaded an empty dataset — marking run as FAILED.")
+            run.status = "FAILED"
+            self.db.commit()
+            return
+
         start_index = run.current_index
         model_name = run.model_name
 
@@ -181,7 +187,8 @@ class BaseBenchmark(ABC):
                                      "thinking_content", "answer_content"}
                     extra = {k: v for k, v in result_data.items() if k not in standard_keys}
                     if "scoring_details" in result_data:
-                        scoring_details = json.dumps(result_data["scoring_details"])
+                        sd = result_data["scoring_details"]
+                        scoring_details = json.dumps(sd) if not isinstance(sd, str) else sd
                     elif extra:
                         scoring_details = json.dumps(extra)
                     else:
@@ -212,6 +219,8 @@ class BaseBenchmark(ABC):
                         # Commit frequently so Live Progress reflects real-time progress
                         self.db.commit()
 
+                except (SystemExit, KeyboardInterrupt):
+                    raise
                 except Exception as exc:
                     logger.error(f"Error evaluating sample {i}: {exc}")
                     _flush_batch(i)

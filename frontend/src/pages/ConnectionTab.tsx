@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -44,6 +44,7 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [exitMsg, setExitMsg] = useState('')
   const [runtimesLoading, setRuntimesLoading] = useState(false)
+  const [datasetFilter, setDatasetFilter] = useState('')
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -141,8 +142,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Provider</label>
+            <label htmlFor="provider-select" className="text-sm font-medium">Provider</label>
             <select
+              id="provider-select"
               className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={currentProvider?.label ?? ''}
               onChange={e => onProviderChange(e.target.value)}
@@ -155,8 +157,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Base URL</label>
+            <label htmlFor="api-url" className="text-sm font-medium">Base URL</label>
             <Input
+              id="api-url"
               placeholder="http://127.0.0.1:1234/v1"
               value={connection.apiUrl}
               onChange={e => setConnection(prev => ({ ...prev, apiUrl: e.target.value }))}
@@ -164,8 +167,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">API Key</label>
+            <label htmlFor="api-key" className="text-sm font-medium">API Key</label>
             <Input
+              id="api-key"
               type="password"
               placeholder="sk-..."
               value={connection.apiKey}
@@ -174,8 +178,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">HuggingFace Token</label>
+            <label htmlFor="hf-token" className="text-sm font-medium">HuggingFace Token</label>
             <Input
+              id="hf-token"
               type="password"
               placeholder="hf_..."
               value={hfToken}
@@ -193,9 +198,11 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
             <Button variant="glow" onClick={handleConnect} disabled={connecting}>
               {connecting ? 'Connecting...' : 'Connect'}
             </Button>
-            {connection.connected && !connectError && <Badge variant="default">🟢 Connected</Badge>}
-            {connectError && <div className="text-sm px-3 py-2 rounded-md bg-red-500/10 text-red-600 dark:text-red-300 border border-red-500/50">{connectError}</div>}
-            {!connection.connected && !connectError && !connecting && <span className="text-sm text-muted-foreground">Not connected</span>}
+            <div aria-live="polite" className="inline-flex items-center gap-3">
+              {connection.connected && !connectError && <Badge variant="default">🟢 Connected</Badge>}
+              {connectError && <div className="text-sm px-3 py-2 rounded-md bg-red-500/10 text-red-600 dark:text-red-300 border border-red-500/50">{connectError}</div>}
+              {!connection.connected && !connectError && !connecting && <span className="text-sm text-muted-foreground">Not connected</span>}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -244,9 +251,16 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
             <Button size="sm" onClick={handleInstallAll} disabled={installingAll}>
               {installingAll ? 'Installing...' : 'Install All Missing'}
             </Button>
+            <Input
+              id="dataset-filter"
+              placeholder="Filter datasets..."
+              value={datasetFilter}
+              onChange={e => setDatasetFilter(e.target.value)}
+              className="max-w-[220px]"
+            />
           </div>
 
-          {datasets.length > 0 && (
+          {datasets.filter(d => d.Benchmark.toLowerCase().includes(datasetFilter.toLowerCase())).length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -258,7 +272,9 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
                   </tr>
                 </thead>
                 <tbody>
-                  {datasets.map((d, i) => (
+                  {datasets
+                    .filter(d => d.Benchmark.toLowerCase().includes(datasetFilter.toLowerCase()))
+                    .map((d, i) => (
                     <tr key={i} className="border-b border-border hover:bg-accent/50">
                       <td className="py-2 px-3">{d.Benchmark}</td>
                       <td className="py-2 px-3">
@@ -272,6 +288,7 @@ export default function ConnectionTab({ connection, setConnection, onConnect }: 
                           variant="outline"
                           size="sm"
                           disabled={d.Installed === '✅' || installingAll || installingSingle.has(d.Benchmark)}
+                          aria-label={`Install ${d.Benchmark}`}
                           onClick={async () => {
                             setInstallingSingle(prev => new Set(prev).add(d.Benchmark))
                             try {

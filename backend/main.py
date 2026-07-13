@@ -1,4 +1,4 @@
-import logging, json, os, sys
+import logging, os, sys
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -71,9 +71,9 @@ import threading
 @app.get("/api/shutdown")
 def shutdown():
     def _die():
-        import os, time
+        import sys, time
         time.sleep(0.5)
-        os._exit(0)
+        sys.exit(0)
     threading.Thread(target=_die, daemon=True).start()
     return {"status": "shutting_down"}
 

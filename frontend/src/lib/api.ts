@@ -27,10 +27,6 @@ export function connectLMStudio(apiUrl: string, apiKey: string = '') {
   });
 }
 
-export function getConnectionMetadata() {
-  return fetchJson<{ providers: Record<string, any>; benchmarks: [string, string][]; bench_names: string[] }>('/connect/metadata');
-}
-
 export interface DatasetEntry {
   Benchmark: string;
   Installed: string;
@@ -235,16 +231,8 @@ export function loadRunDetails(runId: number) {
   return fetchJson<RunDetails>(`/runs/${runId}`);
 }
 
-export function loadRecentRuns() {
-  return fetchJson<{ runs: string[] }>('/recent-runs');
-}
-
 export function getDiff(runId: number, taskId: string) {
   return fetchJson<{ html: string }>(`/runs/${runId}/diff/${encodeURIComponent(taskId)}`);
-}
-
-export function analyzeRun(runId: number) {
-  return fetchJson<RunDetails>(`/analyze/${runId}`);
 }
 
 export interface BatchSummary {
@@ -257,30 +245,12 @@ export function loadBatchSummary(batchId: string) {
   return fetchJson<BatchSummary>(`/batch/${batchId}`);
 }
 
-export interface ActiveBatch {
-  batch_id: string | null;
-  active: boolean;
-  completed: number;
-  total: number;
-  current_benchmark: string | null;
-  eta: string;
-  progress: number;
-}
-
-export function getActiveBatch() {
-  return fetchJson<ActiveBatch>('/batch/active');
-}
-
 export function exportResults(runId: number, format: string = 'CSV') {
   return fetch(`${BASE}/export/runs/${runId}?format=${format}`);
 }
 
 export function exportBatch(batchId: string, format: string = 'CSV') {
   return fetch(`${BASE}/export/batch/${batchId}?format=${format}`);
-}
-
-export function exportTelemetryLink() {
-  return `${BASE}/export/telemetry`;
 }
 
 export function exportHistoryLink() {
@@ -409,35 +379,12 @@ export function getTelemetry() {
   return fetchJson<TelemetryData>('/telemetry');
 }
 
-export function getTelemetryHistory() {
-  return fetchJson<{ history: any[] }>('/telemetry/history');
-}
-
-export function getProviders() {
-  return fetchJson<{ providers: Record<string, { url: string; needs_key: boolean }> }>('/providers');
-}
-
 export function getBenchmarks() {
   return fetchJson<{ benchmarks: { label: string; name: string }[] }>('/benchmarks');
-}
-
-export interface StatsData {
-  total_runs: number;
-  completed_runs: number;
-  total_tokens_generated: number;
-  benchmarks_run: string[];
-  models_tested: string[];
-  best_accuracy: {
-    model: string;
-    benchmark: string;
-    accuracy: number;
-  };
 }
 
 export function downloadRuntimes() {
   return fetchJson<{ status: string }>('/runtimes/download', { method: 'POST' });
 }
 
-export function getStats() {
-  return fetchJson<StatsData>('/stats');
-}
+

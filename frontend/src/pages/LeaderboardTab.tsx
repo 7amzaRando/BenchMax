@@ -63,19 +63,21 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
     try {
       const data = await api.loadLeaderboard()
       setEntries(data.leaderboard || [])
-    } catch { console.warn('Failed to load leaderboard') }
+    } catch { setSyncStatus('Failed to load leaderboard'); console.warn('Failed to load leaderboard') }
   }
 
   // Filter entries by Run ID, Model name, or Benchmark name (case-insensitive)
   const filtered = useMemo(() => {
-    if (!filter.trim()) return entries
+    let list = entries
+    if (hideQuickTests) list = list.filter(e => !e.QuickTest)
+    if (!filter.trim()) return list
     const q = filter.toLowerCase()
-    return entries.filter(e =>
+    return list.filter(e =>
       String(e['Run ID']).includes(q) ||
       (e.Model || '').toLowerCase().includes(q) ||
       (e.Benchmark || '').toLowerCase().includes(q)
     )
-  }, [entries, filter])
+  }, [entries, filter, hideQuickTests])
 
   // Sort entries by active column — numeric columns parse floats, Date column compares timestamps, strings use localeCompare
   const sorted = useMemo(() => {
@@ -106,7 +108,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
       const data = await api.deleteLeaderboardEntry(runId)
       setEntries(data.leaderboard || [])
       onDelete?.()
-    } catch { console.warn('Failed to delete leaderboard entry') }
+    } catch { setSyncStatus('Failed to delete entry'); console.warn('Failed to delete leaderboard entry') }
   }
 
   /** Persists the leaderboard API key to localStorage and server settings. */
@@ -274,7 +276,7 @@ export default function LeaderboardTab({ onDelete }: { onDelete?: () => void }) 
                   <td className="p-2">{e.Tokens}</td>
                   <td className="p-2 text-xs">{e.Date}</td>
                   <td className="p-2">
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(e['Run ID'])}>Delete</Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(e['Run ID'])} aria-label={`Delete run ${e['Run ID']}`}>Delete</Button>
                   </td>
                 </tr>
               ))}

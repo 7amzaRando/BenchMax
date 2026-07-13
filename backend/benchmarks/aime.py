@@ -61,7 +61,7 @@ class AIMEBenchmark(BaseBenchmark):
         return self._load_json_cached(self.dataset_path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        prompt = f"{sample['problem']}\n\n"
+        prompt = f"{sample.get('problem', '')}\n\n"
         prompt += "Think step by step, then provide your final answer as 'Answer: N' where N is the integer between 0 and 999."
 
         gen = await self.client.generate_completion(

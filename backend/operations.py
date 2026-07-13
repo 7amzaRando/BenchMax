@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 import httpx
 from sqlalchemy import text as sa_text
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 
 from backend.config import ROOT, EXE_DIR, BENCHMARKS, BENCH_NAMES, DATASETS, PROVIDER_PRESETS
 from backend.database import SessionLocal, Run, Result, init_db
@@ -33,11 +33,11 @@ _history_cache: dict = {"data": None, "timestamp": 0.0}
 _recent_runs_cache: dict = {"data": None, "timestamp": 0.0}
 _CACHE_TTL = 5.0  # seconds
 _EMA_ALPHA = 0.15
-_telemetry_state = {"smooth_cpu": 0.0, "smooth_gpu": 0.0}
 _LB_SUPABASE_KEY = ""
 _LB_API_URL = "https://bcbrrsghpynsvsxdsrjn.supabase.co/rest/v1/leaderboard"
 _batch_lock = threading.Lock()
 _halt_events_lock = threading.Lock()
+_telemetry_lock = threading.Lock()
 
 # Model queue state
 _model_queue_state: dict = {
@@ -51,7 +51,7 @@ _model_queue_state: dict = {
     "message": "",
     "skip_model": False,
 }
-_model_queue_lock = threading.Lock()
+_model_queue_lock = threading.RLock()
 
 
 def _queue_skip_model_requested() -> bool:
@@ -65,14 +65,12 @@ def _clear_skip_model_flag():
 
 
 def _update_telemetry_history(smooth_cpu=0.0, smooth_gpu=0.0) -> tuple[dict, float, float]:
-    global telemetry_history, _telemetry_state
+    global telemetry_history
     metrics = get_system_metrics()
     raw_cpu = metrics.get("cpu_percent", 0.0)
     raw_gpu = metrics.get("gpu_load", 0.0)
     smooth_cpu = smooth_cpu + _EMA_ALPHA * (raw_cpu - smooth_cpu) if smooth_cpu else raw_cpu
     smooth_gpu = smooth_gpu + _EMA_ALPHA * (raw_gpu - smooth_gpu) if smooth_gpu else raw_gpu
-    _telemetry_state["smooth_cpu"] = smooth_cpu
-    _telemetry_state["smooth_gpu"] = smooth_gpu
     entry = {
         "timestamp": time.time(),
         "cpu_percent": smooth_cpu,
@@ -82,9 +80,10 @@ def _update_telemetry_history(smooth_cpu=0.0, smooth_gpu=0.0) -> tuple[dict, flo
         "vram_used_mb": metrics.get("vram_used_mb", 0.0),
         "vram_total_mb": metrics.get("vram_total_mb", 0.0),
     }
-    telemetry_history.append(entry)
-    if len(telemetry_history) > MAX_HISTORY_LEN:
-        telemetry_history = telemetry_history[-MAX_HISTORY_LEN:]
+    with _telemetry_lock:
+        telemetry_history.append(entry)
+        if len(telemetry_history) > MAX_HISTORY_LEN:
+            telemetry_history = telemetry_history[-MAX_HISTORY_LEN:]
     return metrics, smooth_cpu, smooth_gpu
 
 
@@ -100,6 +99,46 @@ def _add_scoring_columns(row: dict, result) -> dict:
         except (json.JSONDecodeError, TypeError):
             pass
     return row
+
+
+def _compute_run_progress(run) -> dict:
+    total = run.total_samples or 1
+    current = run.current_index or 0
+    results = run.results
+    stats = _compute_result_stats(results) if results else None
+    return {
+        "prog_val": min(current / total, 1.0),
+        "status_md": f"**{run.benchmark_name}** — {run.status}  ({current}/{total})",
+        "active_task": run.benchmark_name,
+        "avg_tps": stats["avg_tps"] if stats else 0.0,
+        "avg_ttft": stats["avg_ttft"] if stats else 0.0,
+        "accuracy": f"{stats['accuracy']}%" if stats else "",
+        "token_stats": _build_token_stats_str(stats) if stats else "",
+    }
+
+
+def _build_token_stats_str(stats: dict) -> str:
+    think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+    resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
+    return f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
+
+
+def _result_to_export_dict(r) -> dict:
+    row = {
+        "run_id": r.run_id,
+        "task_id": r.task_id,
+        "correct": r.correct,
+        "elapsed_time": r.elapsed_time,
+        "tps": r.tps,
+        "ttft": r.ttft,
+        "thinking_tokens": r.thinking_tokens,
+        "response_tokens": r.response_tokens,
+        "error_message": r.error_message,
+        "prompt": r.prompt,
+        "raw_response": r.raw_response,
+        "extracted_code": r.extracted_code,
+    }
+    return _add_scoring_columns(row, r)
 
 
 def _compute_result_stats(results):
@@ -220,7 +259,10 @@ def _start_benchmark_thread(
                 loop.run_until_complete(bench.run_evaluation(run_id, params))
             finally:
                 loop.run_until_complete(client.aclose())
-                loop.close()
+                try:
+                    loop.close()
+                except RuntimeError:
+                    pass
         except Exception as e:
             logger.error(f"Benchmark thread fatal error: {e}", exc_info=True)
             try:
@@ -228,8 +270,8 @@ def _start_benchmark_thread(
                 if run and run.status not in ("COMPLETED", "HALTED", "FAILED"):
                     run.status = "FAILED"
                     db.commit()
-            except Exception:
-                pass
+            except Exception as e_inner:
+                logger.warning(f"Failed to mark run as FAILED: {e_inner}")
         finally:
             db.close()
         if _remaining_ids:
@@ -330,7 +372,7 @@ def _build_per_category_chart(results, benchmark_name="") -> pd.DataFrame:
         if r.scoring_details:
             try:
                 extra = json.loads(r.scoring_details)
-            except Exception:
+            except (json.JSONDecodeError, TypeError):
                 pass
         cat = extra.get("category", r.task_id.split("/")[0] if "/" in r.task_id else benchmark_name)
         rows.append({"Category": cat, "Correct": 1 if r.correct else 0, "Total": 1})
@@ -372,6 +414,7 @@ def _scan_datasets() -> pd.DataFrame:
                     data = _json.loads(p.read_text(encoding="utf-8"))
                     sample_count = str(len(data)) if isinstance(data, list) else str(len(data.keys()))
                 except Exception:
+                    logger.warning(f"Failed to read dataset file {p}", exc_info=True)
                     sample_count = "?"
                 break
         rows.append({
@@ -382,15 +425,20 @@ def _scan_datasets() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFrame, list, dict]:
+async def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFrame, list, dict]:
     """Hits /v1/models (simple list) and /api/v0/models (metadata: context length) and merges them."""
     from backend.lm_studio.client import LMStudioClient
     metadata = {}
-    error_msg = ""
     try:
         client = LMStudioClient(base_url=api_url, api_key=api_key or None)
-        models_raw = client.get_loaded_models()
-        models_raw = asyncio.run(models_raw) if hasattr(models_raw, '__await__') else models_raw
+        try:
+            models_raw, meta = await asyncio.gather(
+                client.get_loaded_models(),
+                client.get_models_metadata(),
+            )
+        finally:
+            await client.aclose()
+
         if not models_raw:
             status = "Connected, but no models loaded."
             df = pd.DataFrame(columns=["id"])
@@ -399,20 +447,18 @@ def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.DataFram
             model_ids = [m.get("id", f"model_{i}") for i, m in enumerate(models_raw)]
             df = pd.DataFrame({"id": model_ids, "Model": model_ids})
             choices = model_ids
-            status = f"🟢 Connected — {len(model_ids)} model(s) loaded."
+            status = f"Connected — {len(model_ids)} model(s) loaded."
 
-        meta = client.get_models_metadata()
-        meta = asyncio.run(meta) if hasattr(meta, '__await__') else meta
         if meta:
             metadata = meta
             for mid in meta:
                 ctx = meta[mid].get("max_context_length", "?")
                 status += f"\n  {mid}: context={ctx}"
     except Exception as e:
+        logger.error(f"connect_lm_studio failed: {e}", exc_info=True)
         status = f"Connection failed: {e}"
         df = pd.DataFrame(columns=["id"])
         choices = []
-        error_msg = str(e)
 
     return status, df, choices, metadata
 
@@ -706,7 +752,10 @@ def _run_model_queue_in_thread(
                     try:
                         hloop.run_until_complete(halt_client.unload_model(model_to_unload))
                     finally:
-                        hloop.close()
+                        try:
+                            hloop.close()
+                        except RuntimeError:
+                            pass
                     logger.info(f"Halt cleanup: unloaded model {model_to_unload}")
                 except Exception as e:
                     logger.warning(f"Halt cleanup: unload of {model_to_unload} failed: {e}")
@@ -720,9 +769,12 @@ def _run_model_queue_in_thread(
                 _batch_start_time = None
         try:
             loop.run_until_complete(client.aclose())
-        except Exception:
+        except Exception as e_close:
+            logger.warning(f"Error closing HTTP client: {e_close}")
+        try:
+            loop.close()
+        except RuntimeError:
             pass
-        loop.close()
 
 
 def start_model_queue(
@@ -768,9 +820,7 @@ def get_model_queue_state() -> dict:
                     state["accuracy"] = f"{stats['accuracy']}%"
                     state["avg_tps"] = stats["avg_tps"]
                     state["avg_ttft"] = stats["avg_ttft"]
-                    think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                    resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                    state["token_stats"] = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
+                    state["token_stats"] = _build_token_stats_str(stats)
         finally:
             db.close()
     return state
@@ -1021,11 +1071,6 @@ def load_run_details(run_id_str: str) -> tuple[str, pd.DataFrame, list, pd.DataF
         db.close()
 
 
-def analyze_run(run_id_str: str) -> tuple[str, pd.DataFrame, list, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Alias for load_run_details — provided for API endpoint parity (Results Analyzer)."""
-    return load_run_details(run_id_str)
-
-
 def load_batch_summary(batch_id_str: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     summary_df = _build_batch_summary(batch_id_str)
     db = SessionLocal()
@@ -1197,21 +1242,7 @@ def export_results(run_id_str: str, format_type: str) -> tuple[str | None, str]:
         if not run:
             return None, "Run not found."
         results = db.query(Result).filter(Result.run_id == run_id).order_by(Result.id).all()
-        rows = []
-        for r in results:
-            row = {
-                "run_id": r.run_id,
-                "task_id": r.task_id,
-                "correct": r.correct,
-                "elapsed_time": r.elapsed_time,
-                "tps": r.tps,
-                "ttft": r.ttft,
-                "thinking_tokens": r.thinking_tokens,
-                "response_tokens": r.response_tokens,
-                "error_message": r.error_message,
-            }
-            row = _add_scoring_columns(row, r)
-            rows.append(row)
+        rows = [_result_to_export_dict(r) for r in results]
         if not rows:
             return None, "No results to export."
         df = pd.DataFrame(rows)
@@ -1230,21 +1261,7 @@ def export_batch_results(batch_id: str, format_type: str) -> tuple[str | None, s
         results = db.query(Result).filter(
             Result.run_id.in_([r.id for r in runs])
         ).order_by(Result.run_id, Result.id).all()
-        rows = []
-        for r in results:
-            row = {
-                "run_id": r.run_id,
-                "task_id": r.task_id,
-                "correct": r.correct,
-                "elapsed_time": r.elapsed_time,
-                "tps": r.tps,
-                "ttft": r.ttft,
-                "thinking_tokens": r.thinking_tokens,
-                "response_tokens": r.response_tokens,
-                "error_message": r.error_message,
-            }
-            row = _add_scoring_columns(row, r)
-            rows.append(row)
+        rows = [_result_to_export_dict(r) for r in results]
         if not rows:
             return None, "No results to export."
         df = pd.DataFrame(rows)
@@ -1253,17 +1270,9 @@ def export_batch_results(batch_id: str, format_type: str) -> tuple[str | None, s
         db.close()
 
 
-def export_telemetry() -> tuple[str | None, str]:
-    """Exports the in-memory telemetry history buffer as CSV (timestamp, CPU, RAM, GPU load, VRAM)."""
-    if not telemetry_history:
-        return None, "No telemetry data recorded."
-    df = pd.DataFrame(telemetry_history)
-    return _export_dataframe(df, "telemetry", "CSV")
-
-
-def export_all_history() -> tuple[str | None, str]:
-    """Exports all completed/failed runs as CSV via load_history(). Includes per-run summary metrics."""
-    return _export_dataframe(load_history(), "all_history", "CSV")
+def export_all_history(format_type: str = "CSV") -> tuple[str | None, str]:
+    """Exports all completed/failed runs as CSV or JSON via load_history(). Includes per-run summary metrics."""
+    return _export_dataframe(load_history(), "all_history", format_type)
 
 
 def generate_diff(run_id_str: str, task_id: str) -> str:
@@ -1303,7 +1312,7 @@ def generate_diff(run_id_str: str, task_id: str) -> str:
         db.close()
 
 
-def install_dataset(bench_name: str, hf_token: str = "") -> str:
+async def install_dataset(bench_name: str, hf_token: str = "") -> str:
     entry = DATASETS.get(bench_name)
     if not entry:
         return f"No dataset entry for {bench_name}."
@@ -1319,22 +1328,23 @@ def install_dataset(bench_name: str, hf_token: str = "") -> str:
         env["HF_TOKEN"] = hf_token
 
     try:
-        result = subprocess.run(
+        result = await asyncio.to_thread(
+            subprocess.run,
             [sys.executable, str(script)],
             capture_output=True, text=True, timeout=120, env=env,
         )
         output = (result.stdout + "\n" + result.stderr).strip()
         if result.returncode == 0:
-            return f"✅ {bench_name} installed successfully."
+            return f"{bench_name} installed successfully."
         else:
-            return f"❌ Installation failed:\n{output[:500]}"
+            return f"Installation failed:\n{output[:500]}"
     except subprocess.TimeoutExpired:
-        return f"❌ Installation timed out for {bench_name}."
+        return f"Installation timed out for {bench_name}."
     except Exception as e:
-        return f"❌ Error: {e}"
+        return f"Error: {e}"
 
 
-def install_all_missing(hf_token: str = "") -> str:
+async def install_all_missing(hf_token: str = "") -> str:
     results = []
     for name in BENCH_NAMES:
         entry = DATASETS.get(name)
@@ -1351,17 +1361,18 @@ def install_all_missing(hf_token: str = "") -> str:
                 break
         if found:
             continue
-        status = install_dataset(name, hf_token)
+        status = await install_dataset(name, hf_token)
         results.append(f"{name}: {status}")
     return "\n".join(results) if results else "All datasets already installed."
 
 
-def download_runtimes() -> str:
+async def download_runtimes() -> str:
     script = ROOT / "scripts" / "setup_runtimes.py"
     if not script.exists():
         return "Setup script not found: scripts/setup_runtimes.py"
     try:
-        result = subprocess.run(
+        result = await asyncio.to_thread(
+            subprocess.run,
             [sys.executable, str(script)],
             capture_output=True, text=True, timeout=300,
         )
@@ -1376,29 +1387,6 @@ def download_runtimes() -> str:
         return f"Error: {e}"
 
 
-def update_context_window(model_id: str, metadata: dict) -> str:
-    if not model_id:
-        return "N/A"
-    ctx = None
-    if metadata and model_id in metadata:
-        ctx = metadata[model_id].get("max_context_length")
-    if ctx:
-        if ctx >= 1024:
-            return f"{round(ctx / 1024)}K"
-        return str(ctx)
-    return "N/A"
-
-
-def update_ctx_warning(model_id: str, max_tokens: int, metadata: dict) -> str:
-    if not model_id or not metadata:
-        return ""
-    meta = metadata.get(model_id, {})
-    ctx = meta.get("max_context_length")
-    if ctx and max_tokens and max_tokens > ctx:
-        return f"⚠️ Max tokens ({max_tokens}) exceeds context window ({ctx})"
-    return ""
-
-
 HF_TOKEN_FILE = ROOT / "records" / ".hf_token"
 
 
@@ -1407,7 +1395,7 @@ def _load_hf_token() -> str:
         try:
             return HF_TOKEN_FILE.read_text(encoding="utf-8").strip()
         except Exception:
-            pass
+            logger.warning(f"Failed to read HF token file {HF_TOKEN_FILE}", exc_info=True)
     return ""
 
 
@@ -1436,17 +1424,16 @@ def save_lb_api_key(key: str) -> str:
 
 def load_lb_settings() -> str:
     global _LB_SUPABASE_KEY
-    if _LB_SUPABASE_KEY:
-        return _LB_SUPABASE_KEY
-    if LB_SETTINGS_FILE.exists():
-        try:
-            _LB_SUPABASE_KEY = LB_SETTINGS_FILE.read_text(encoding="utf-8").strip()
-        except Exception:
-            pass
+    if not _LB_SUPABASE_KEY:
+        if LB_SETTINGS_FILE.exists():
+            try:
+                _LB_SUPABASE_KEY = LB_SETTINGS_FILE.read_text(encoding="utf-8").strip()
+            except Exception:
+                logger.warning(f"Failed to read leaderboard settings {LB_SETTINGS_FILE}", exc_info=True)
     return _LB_SUPABASE_KEY
 
 
-def sync_to_online_leaderboard(_trigger=0, api_key: str | None = None) -> str:
+async def sync_to_online_leaderboard(_trigger=0, api_key: str | None = None) -> str:
     try:
         key = api_key or load_lb_settings()
         if not key:
@@ -1484,28 +1471,18 @@ def sync_to_online_leaderboard(_trigger=0, api_key: str | None = None) -> str:
             "apikey": key,
             "Authorization": f"Bearer {key}",
         }
-        res = httpx.post(
-            _LB_API_URL,
-            json=records,
-            headers=headers,
-            timeout=30,
-        )
+        async with httpx.AsyncClient(timeout=30) as hclient:
+            res = await hclient.post(
+                _LB_API_URL,
+                json=records,
+                headers=headers,
+            )
         if res.status_code in (200, 201):
             return f"Synced {len(records)} entries."
         else:
             return f"Sync failed ({res.status_code}): {res.text[:200]}"
     except Exception as e:
         return f"Sync error: {e}"
-
-
-def get_active_batch_id():
-    with _batch_lock:
-        return _active_batch_id
-
-
-def get_batch_start_time():
-    with _batch_lock:
-        return _batch_start_time
 
 
 def poll(
@@ -1521,10 +1498,12 @@ def poll(
     gpu_text = f"GPU: {metrics.get('gpu_name', 'N/A')} ({metrics.get('gpu_load', 0):.1f}%)"
     vram_text = f"VRAM: {metrics.get('vram_used_mb', 0):.0f}/{metrics.get('vram_total_mb', 0):.0f} MB"
 
-    cpu_df = pd.DataFrame(telemetry_history[-60:]) if telemetry_history else pd.DataFrame()
+    with _telemetry_lock:
+        hist_slice = telemetry_history[-60:] if telemetry_history else []
+    cpu_df = pd.DataFrame(hist_slice) if hist_slice else pd.DataFrame()
     ram_df = cpu_df[["timestamp", "ram_used_gb", "ram_total_gb"]].copy() if not cpu_df.empty else pd.DataFrame()
-    gpu_df = pd.DataFrame(telemetry_history[-60:])[["timestamp", "gpu_load"]].copy() if telemetry_history else pd.DataFrame()
-    vram_df = pd.DataFrame(telemetry_history[-60:])[["timestamp", "vram_used_mb", "vram_total_mb"]].copy() if telemetry_history else pd.DataFrame()
+    gpu_df = pd.DataFrame(hist_slice)[["timestamp", "gpu_load"]].copy() if hist_slice else pd.DataFrame()
+    vram_df = pd.DataFrame(hist_slice)[["timestamp", "vram_used_mb", "vram_total_mb"]].copy() if hist_slice else pd.DataFrame()
 
     prog_val = 0.0
     status_md = ""
@@ -1534,29 +1513,6 @@ def poll(
     accuracy = ""
     token_stats = ""
 
-    if active_run_id:
-        db = SessionLocal()
-        try:
-            run = db.query(Run).options(joinedload(Run.results)).filter(Run.id == active_run_id).first()
-            if run:
-                total = run.total_samples or 1
-                current = run.current_index or 0
-                prog_val = min(current / total, 1.0)
-                status_md = f"**{run.benchmark_name}** — {run.status}  ({current}/{total})"
-                active_task = run.benchmark_name
-
-                results = run.results  # already loaded via joinedload
-                if results:
-                    stats = _compute_result_stats(results)
-                    avg_tps = stats["avg_tps"]
-                    avg_ttft = stats["avg_ttft"]
-                    accuracy = f"{stats['accuracy']}%"
-                    think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                    resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                    token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
-        finally:
-            db.close()
-
     batch_prog_val = 0.0
     batch_status_md = ""
     batch_eta_str = ""
@@ -1565,16 +1521,40 @@ def poll(
     batch_done = 0
     batch_total = 0
     batch_current_name = ""
+    active_run_override = None
 
     with _batch_lock:
         bid = _active_batch_id
         bst = _batch_start_time
 
-    if bid:
-        batch_id_val = bid
-        db = SessionLocal()
-        try:
-            runs = db.query(Run).filter(Run.batch_id == bid).order_by(Run.id).all()
+    # Use a single DB session for all queries
+    db = SessionLocal()
+    try:
+        if active_run_id:
+            run = db.query(Run).options(
+                joinedload(Run.results).load_only(
+                    Result.tps, Result.ttft, Result.thinking_tokens,
+                    Result.response_tokens, Result.correct,
+                )
+            ).filter(Run.id == active_run_id).first()
+            if run:
+                rp = _compute_run_progress(run)
+                prog_val = rp["prog_val"]
+                status_md = rp["status_md"]
+                active_task = rp["active_task"]
+                avg_tps = rp["avg_tps"]
+                avg_ttft = rp["avg_ttft"]
+                accuracy = rp["accuracy"]
+                token_stats = rp["token_stats"]
+
+        if bid:
+            batch_id_val = bid
+            runs = db.query(Run).options(
+                joinedload(Run.results).load_only(
+                    Result.tps, Result.ttft, Result.thinking_tokens,
+                    Result.response_tokens, Result.correct,
+                )
+            ).filter(Run.batch_id == bid).order_by(Run.id).all()
             if runs:
                 batch_total = len(runs)
                 batch_done = sum(1 for r in runs if r.status in ("COMPLETED", "FAILED", "HALTED"))
@@ -1592,39 +1572,53 @@ def poll(
                         est = int(avg * total_remaining)
                         batch_eta_str = f"{est // 60}m{est % 60}s" if est > 60 else f"~{est}s"
 
-                batch_summary_df = _build_batch_summary(bid)
-        finally:
-            db.close()
+                rows = []
+                for r in runs:
+                    res = r.results
+                    stats = _compute_result_stats(res)
+                    rows.append({
+                        "Run ID": r.id,
+                        "Benchmark": r.benchmark_name,
+                        "Status": r.status,
+                        "Correct": stats["correct"],
+                        "Total": stats["total"],
+                        "Accuracy": f"{stats['accuracy']}%" if stats["total"] else "0%",
+                        "Avg TPS": stats["avg_tps"],
+                        "Avg TTFT": f"{stats['avg_ttft']}s" if stats["ttft_vals"] else "0s",
+                        "Total Tokens": stats["total_tk"],
+                    })
+                batch_summary_df = pd.DataFrame(rows) if rows else pd.DataFrame()
 
-    # If the active run is done but the batch is still running, show the
-    # currently RUNNING run's data so live progress stays current.
-    active_run_override: int | None = None
-    if active_run_id and bid:
-        db3 = SessionLocal()
-        try:
-            orig_run = db3.query(Run).filter(Run.id == active_run_id).first()
-            if orig_run and orig_run.status in ("COMPLETED", "FAILED", "HALTED"):
-                running = db3.query(Run).options(joinedload(Run.results)).filter(
-                    Run.batch_id == bid, Run.status == "RUNNING"
-                ).order_by(Run.id).first()
-                if running:
-                    total = running.total_samples or 1
-                    current = running.current_index or 0
-                    prog_val = min(current / total, 1.0)
-                    status_md = f"**{running.benchmark_name}** — {running.status}  ({current}/{total})"
-                    active_task = running.benchmark_name
-                    results = running.results
-                    if results:
-                        stats = _compute_result_stats(results)
-                        avg_tps = stats["avg_tps"]
-                        avg_ttft = stats["avg_ttft"]
-                        accuracy = f"{stats['accuracy']}%"
-                        think_pct = round(stats["think_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                        resp_pct = round(stats["resp_tk"] / stats["total_tk"] * 100, 1) if stats["total_tk"] else 0.0
-                        token_stats = f"🧠 {think_pct}% | 💬 {resp_pct}% | Σ {stats['total_tk']}"
-                    active_run_override = running.id
-        finally:
-            db3.close()
+            # active_run_override: if active run is done but batch continues
+            if active_run_id:
+                orig_run = db.query(Run).filter(Run.id == active_run_id).first()
+                if orig_run and orig_run.status in ("COMPLETED", "FAILED", "HALTED"):
+                    running = db.query(Run).options(
+                        joinedload(Run.results).load_only(
+                            Result.tps, Result.ttft, Result.thinking_tokens,
+                            Result.response_tokens, Result.correct,
+                        )
+                    ).filter(
+                        Run.batch_id == bid, Run.status == "RUNNING"
+                    ).order_by(Run.id).first()
+                    if running:
+                        rp = _compute_run_progress(running)
+                        prog_val = rp["prog_val"]
+                        status_md = rp["status_md"]
+                        active_task = rp["active_task"]
+                        avg_tps = rp["avg_tps"]
+                        avg_ttft = rp["avg_ttft"]
+                        accuracy = rp["accuracy"]
+                        token_stats = rp["token_stats"]
+                        active_run_override = running.id
+                    else:
+                        active_run_override = None
+                else:
+                    active_run_override = None
+            else:
+                active_run_override = None
+    finally:
+        db.close()
 
     now = time.time()
     if now - _history_cache["timestamp"] > _CACHE_TTL:
@@ -1637,88 +1631,15 @@ def poll(
     recent_runs_list = _recent_runs_cache["data"]
 
     return {
-        "cpu_text": cpu_text,
-        "ram_text": ram_text,
-        "gpu_text": gpu_text,
-        "vram_text": vram_text,
-        "cpu_df": cpu_df,
-        "ram_df": ram_df,
-        "gpu_df": gpu_df,
-        "vram_df": vram_df,
-        "prog_val": prog_val,
-        "status_md": status_md,
-        "active_task": active_task,
-        "avg_tps": avg_tps,
-        "avg_ttft": avg_ttft,
-        "accuracy": accuracy,
-        "token_stats": token_stats,
-        "batch_prog_val": batch_prog_val,
-        "batch_status_md": batch_status_md,
-        "batch_eta_str": batch_eta_str,
-        "batch_summary_df": batch_summary_df,
-        "new_smooth_cpu": new_smooth_cpu,
-        "new_smooth_gpu": new_smooth_gpu,
-        "history_df": history_df,
-        "recent_runs_list": recent_runs_list,
-        "batch_id_val": batch_id_val,
-        "batch_done": batch_done,
-        "batch_total": batch_total,
-        "batch_current_name": batch_current_name,
-        "active_run_override": active_run_override,
+        "cpu_text": cpu_text, "ram_text": ram_text, "gpu_text": gpu_text, "vram_text": vram_text,
+        "cpu_df": cpu_df, "ram_df": ram_df, "gpu_df": gpu_df, "vram_df": vram_df,
+        "prog_val": prog_val, "status_md": status_md, "active_task": active_task,
+        "avg_tps": avg_tps, "avg_ttft": avg_ttft, "accuracy": accuracy, "token_stats": token_stats,
+        "batch_prog_val": batch_prog_val, "batch_status_md": batch_status_md,
+        "batch_eta_str": batch_eta_str, "batch_summary_df": batch_summary_df,
+        "new_smooth_cpu": new_smooth_cpu, "new_smooth_gpu": new_smooth_gpu,
+        "history_df": history_df, "recent_runs_list": recent_runs_list,
+        "batch_id_val": batch_id_val, "batch_done": batch_done, "batch_total": batch_total,
+        "batch_current_name": batch_current_name, "active_run_override": active_run_override,
         "metrics": metrics,
     }
-
-
-def get_stats() -> dict:
-    db = SessionLocal()
-    try:
-        runs = db.query(Run).options(joinedload(Run.results)).all()
-        total_runs = len(runs)
-        completed_runs = sum(1 for r in runs if r.status == "COMPLETED")
-
-        total_tokens = 0
-        benchmarks = set()
-        models = set()
-        best_acc = 0.0
-        best_model = "—"
-        best_bench = "—"
-
-        for r in runs:
-            benchmarks.add(r.benchmark_name)
-            models.add(r.model_name)
-            results = r.results
-            n = len(results)
-            if n:
-                total_tokens += sum((res.thinking_tokens or 0) + (res.response_tokens or 0) for res in results)
-                if r.status in ("COMPLETED", "FAILED", "HALTED"):
-                    ok = sum(1 for res in results if res.correct)
-                    acc = (ok / n * 100)
-                    if acc > best_acc:
-                        best_acc = round(acc, 1)
-                        best_model = r.model_name
-                        best_bench = r.benchmark_name
-
-        return {
-            "total_runs": total_runs,
-            "completed_runs": completed_runs,
-            "total_tokens_generated": total_tokens,
-            "benchmarks_run": sorted(list(benchmarks)),
-            "models_tested": sorted(list(models)),
-            "best_accuracy": {
-                "model": best_model,
-                "benchmark": best_bench,
-                "accuracy": best_acc
-            }
-        }
-    except Exception as e:
-        logger.error(f"get_stats error: {e}", exc_info=True)
-        return {
-            "total_runs": 0,
-            "completed_runs": 0,
-            "total_tokens_generated": 0,
-            "benchmarks_run": [],
-            "models_tested": [],
-            "best_accuracy": {"model": "—", "benchmark": "—", "accuracy": 0.0}
-        }
-    finally:
-        db.close()

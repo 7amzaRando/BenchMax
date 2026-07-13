@@ -88,31 +88,37 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
   async function loadDetails(runId: number) {
     setSelectedRunId(runId)
     setDiffHtml('')
+    setRunDetails(null)
+    setLoadError(null)
     try {
       const data = await api.loadRunDetails(runId)
       if (!mountedRef.current) return
       setRunDetails(data)
       if (data.failed_tasks?.length) setSelectedTask(data.failed_tasks[0])
-    } catch { console.warn('Failed to load run details') }
+    } catch { setLoadError('Failed to load run details'); console.warn('Failed to load run details') }
   }
 
   async function handleDiff() {
     if (!selectedRunId || !selectedTask) return
-    try { const data = await api.getDiff(selectedRunId, selectedTask); if (mountedRef.current) setDiffHtml(data.html) } catch { console.warn('Failed to generate diff') }
+    setLoadError(null)
+    try { const data = await api.getDiff(selectedRunId, selectedTask); if (mountedRef.current) setDiffHtml(data.html) } catch { setLoadError('Failed to generate diff'); console.warn('Failed to generate diff') }
   }
 
   async function loadBatch() {
     if (!batchId) return
-    try { const data = await api.loadBatchSummary(batchId); if (mountedRef.current) setBatchSummary(data) } catch { console.warn('Failed to load batch summary') }
+    setLoadError(null)
+    try { const data = await api.loadBatchSummary(batchId); if (mountedRef.current) setBatchSummary(data) } catch { setLoadError('Failed to load batch summary'); console.warn('Failed to load batch summary') }
   }
 
   async function handleCompare() {
     if (!compareIds?.trim()) return
-    try { const data = await api.loadComparison(compareIds); if (mountedRef.current) setComparison(data) } catch { console.warn('Failed to load comparison') }
+    setLoadError(null)
+    try { const data = await api.loadComparison(compareIds); if (mountedRef.current) setComparison(data) } catch { setLoadError('Failed to load comparison'); console.warn('Failed to load comparison') }
   }
 
   async function handleClear() {
-    try { const data = await api.clearAllHistory(clearConfirm); if (mountedRef.current) { setRuns(data.history || []); setClearConfirm('') } } catch { console.warn('Failed to clear history') }
+    setLoadError(null)
+    try { const data = await api.clearAllHistory(clearConfirm); if (mountedRef.current) { setRuns(data.history || []); setClearConfirm('') } } catch { setLoadError('Failed to clear history'); console.warn('Failed to clear history') }
   }
 
   return (
@@ -175,7 +181,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
             <thead className="bg-muted sticky top-0">
               <tr>
                 {['Run ID', 'Model', 'Benchmark', 'Status', 'Progress', 'Accuracy', 'Avg TPS', 'Avg TTFT', 'Avg Tokens', 'Duration', 'Batch', 'Created', 'Actions'].map(col => (
-                  <th key={col} className="p-2 text-left cursor-pointer select-none hover:text-primary transition-colors" onClick={() => handleSort(col)}>
+                  <th key={col} className="p-2 text-left cursor-pointer select-none hover:text-primary transition-colors" onClick={() => handleSort(col)} onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleSort(col) } }} role="button" tabIndex={0}>
                     {col}{sortColumn === col && <span className="ml-1 text-primary">{sortDir === 'asc' ? '▲' : '▼'}</span>}
                   </th>
                 ))}
@@ -183,7 +189,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
             </thead>
             <tbody>
               {filteredRuns.map(r => (
-                <tr key={r['Run ID']} className={`border-t border-border cursor-pointer hover:bg-primary/15 ${selectedRunId === r['Run ID'] ? 'bg-primary/20 border-primary/30' : ''}`} onClick={() => loadDetails(r['Run ID'])}>
+                <tr key={r['Run ID']} className={`border-t border-border cursor-pointer hover:bg-primary/15 ${selectedRunId === r['Run ID'] ? 'bg-primary/20 border-primary/30' : ''}`} onClick={() => loadDetails(r['Run ID'])} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); loadDetails(r['Run ID']) } }}>
                   <td className="p-2 font-mono text-xs"><span className="flex items-center gap-1"><CopyButton value={String(r['Run ID'])} />{r['Run ID']}</span></td>
                   <td className="p-2"><span className="flex items-center gap-1"><CopyButton value={r.Model} />{r.Model}</span></td>
                   <td className="p-2">{r.Benchmark}</td>
@@ -230,7 +236,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
                     {runDetails.samples.map((s: any, i: number) => (
                       <tr key={i} className="border-t border-border">
                         <td className="p-2 font-mono text-xs">{s.Task || s.task_id}</td>
-                        <td className="p-2">{s.Correct === '✅' ? '✅' : '❌'}</td>
+                        <td className="p-2"><span aria-label={s.Correct === '✅' ? 'Correct' : 'Incorrect'}>{s.Correct === '✅' ? '✅' : '❌'}</span></td>
                         <td className="p-2">{s['TTFT (s)'] || s.ttft || '—'}</td>
                         <td className="p-2">{s.TPS || s.tps || '—'}</td>
                         <td className="p-2">{s.Elapsed || s.elapsed_time || '—'}</td>
@@ -251,7 +257,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
                   <Button size="sm" onClick={handleDiff}>Generate Diff</Button>
                 </div>
               )}
-              {diffHtml && <div className="border border-border rounded-md p-4 overflow-auto max-h-96 text-xs" dangerouslySetInnerHTML={{ __html: diffHtml }} />}
+              {diffHtml && <pre className="border border-border rounded-md p-4 overflow-auto max-h-96 text-xs whitespace-pre-wrap font-mono bg-card/60">{diffHtml.replace(/<\/?[^>]+(>|$)/g, '')}</pre>}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 {runDetails.token_chart?.length > 0 && (
                   <Card><CardHeader><CardTitle className="text-sm">Token Distribution</CardTitle></CardHeader>
@@ -320,7 +326,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
         <CardHeader><CardTitle>Batch Summary</CardTitle></CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4">
-            <Input placeholder="Batch ID" value={batchId} onChange={e => setBatchId(e.target.value)} />
+            <Input placeholder="Batch ID" value={batchId} onChange={e => setBatchId(e.target.value)} aria-label="Batch ID" />
             <Button onClick={loadBatch}>Load</Button>
           </div>
           {batchSummary && (
@@ -346,7 +352,7 @@ export default function HistoryResultsTab({ onRerun, activeTab, historyRefreshKe
         <CardHeader><CardTitle>Cross-Run Comparison</CardTitle></CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4">
-            <Input placeholder="Run IDs (comma-separated, e.g. 1,2,3)" value={compareIds} onChange={e => setCompareIds(e.target.value)} />
+            <Input placeholder="Run IDs (comma-separated, e.g. 1,2,3)" value={compareIds} onChange={e => setCompareIds(e.target.value)} aria-label="Run IDs" />
             <Button onClick={handleCompare}>Compare</Button>
           </div>
           {comparison && (

@@ -1,20 +1,51 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, ReactNode } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import ConnectionTab from '@/pages/ConnectionTab'
-import RunBenchmarkTab from '@/pages/RunBenchmarkTab'
-import HardwareTab from '@/pages/HardwareTab'
-import HistoryResultsTab from '@/pages/HistoryResultsTab'
-import LeaderboardTab from '@/pages/LeaderboardTab'
+
+function LoadingFallback({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>{children}</Suspense>
+}
+const ConnectionTab = lazy(() => import('@/pages/ConnectionTab'))
+const RunBenchmarkTab = lazy(() => import('@/pages/RunBenchmarkTab'))
+const HardwareTab = lazy(() => import('@/pages/HardwareTab'))
+const HistoryResultsTab = lazy(() => import('@/pages/HistoryResultsTab'))
+const LeaderboardTab = lazy(() => import('@/pages/LeaderboardTab'))
 import Background from '@/components/ui/background'
 import { Zap, Play, Activity, BarChart3, Trophy, Sun, Moon } from '@/components/ui/icons'
 import * as api from '@/lib/api'
 import { ToastProvider, useToast } from '@/components/ui/toast-provider'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import React from 'react'
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props)
+    this.state = {hasError: false}
+  }
+  static getDerivedStateFromError() { return {hasError: true} }
+  componentDidCatch(error: Error) { console.warn('App crash:', error) }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold">Something went wrong</h1>
+            <p className="text-muted-foreground">The app encountered an unexpected error. Please refresh the page.</p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90">
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 export default function App() {
   return (
     <ToastProvider>
-      <AppContent />
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </ToastProvider>
   )
 }
@@ -39,6 +70,7 @@ function AppContent() {
   const [sparkData, setSparkData] = useState<{ cpu: number; gpu: number }[]>([])
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [pendingRerun, setPendingRerun] = useState<{ model: string; benchmark: string; params: any } | null>(null)
+  const pollMountedRef = useRef(true)
   const prevBatchIdRef = useRef<string | null>(null)
   const wasConnectedRef = useRef(false)
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
@@ -70,13 +102,26 @@ function AppContent() {
     toast({ title: "Connected", description: `Successfully connected to ${connection.apiUrl}`, variant: "success" })
   }, [connection.apiUrl, connection.apiKey, toast])
 
+  useEffect(() => {
+    pollMountedRef.current = true
+    return () => { pollMountedRef.current = false }
+  }, [])
+
   const pollInterval = 3000
   useEffect(() => {
     if (!activeRunId && !activeBatchId) return
     const interval = setInterval(async () => {
+      if (!pollMountedRef.current) return
       try {
         const data = await api.poll(activeRunId || undefined)
+        if (!pollMountedRef.current) return
         setRunStatus(data)
+        if (data.telemetry) {
+          setSparkData(prev => [...prev.slice(-14), {
+            cpu: data.telemetry.cpu_percent || 0,
+            gpu: data.telemetry.gpu_available ? (data.telemetry.gpu_load || 0) : 0,
+          }])
+        }
 
         // Batch run transition: follow the chain to the currently running run
         if (data.active_run_override != null && typeof data.active_run_override === 'number') {
@@ -116,17 +161,6 @@ function AppContent() {
     return () => clearInterval(interval)
   }, [activeRunId, activeBatchId, toast])
 
-  useEffect(() => {
-    if (telemetryPaused) return
-    const interval = setInterval(async () => {
-      try {
-        const t = await api.getTelemetry()
-        setSparkData(prev => [...prev.slice(-14), { cpu: t.cpu_percent || 0, gpu: t.gpu_available ? (t.gpu_load || 0) : 0 }])
-      } catch { console.warn('Telemetry fetch failed') }
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [telemetryPaused])
-
   // Wrapped setter: tracks user intent for visibility handler
   const handleSetTelemetryPaused = useCallback((paused: boolean) => {
     userPausedRef.current = paused
@@ -147,8 +181,10 @@ function AppContent() {
 
   useEffect(() => {
     const interval = setInterval(async () => {
+      if (!pollMountedRef.current) return
       try {
         await api.poll()
+        if (!pollMountedRef.current) return
         if (!connection.connected) {
           setConnection(prev => ({ ...prev, connected: true }))
           if (wasConnectedRef.current) {
@@ -198,6 +234,11 @@ function AppContent() {
       if (e.key === 'Escape') {
         setShowShortcuts(false)
       }
+      if (e.ctrlKey && e.key === '.') {
+        e.preventDefault()
+        const haltBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent?.includes('Halt') || b.textContent?.includes('Stop'))
+        haltBtn?.click()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -216,7 +257,7 @@ function AppContent() {
         <div className="max-w-[1600px] mx-auto px-6 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight gradient-text">BenchMax</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Local LLM Benchmarker v2.0</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Local LLM Benchmarker alpha 1.0.1</p>
           </div>
 
           <div className="flex items-center gap-5">
@@ -224,23 +265,19 @@ function AppContent() {
               <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-mono">
                 <div className="flex items-center gap-1.5 bg-card/40 px-2 py-1 rounded border border-border/40">
                   <span>CPU</span>
-                  <div className="w-16 h-6">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={sparkData}>
-                        <Line type="monotone" dataKey="cpu" stroke="#3B82F6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <div className="flex gap-px items-end h-6 w-16">
+                    {sparkData.slice(-16).map((d, i) => (
+                      <div key={i} className="w-1 rounded-t" style={{ height: `${Math.max(d.cpu, 2)}%`, background: '#3B82F6', opacity: 0.4 + 0.6 * (i / Math.max(sparkData.slice(-16).length - 1, 1)) }} />
+                    ))}
                   </div>
                   <span>{Math.round(sparkData[sparkData.length - 1].cpu)}%</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-card/40 px-2 py-1 rounded border border-border/40">
                   <span>GPU</span>
-                  <div className="w-16 h-6">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={sparkData}>
-                        <Line type="monotone" dataKey="gpu" stroke="#fbbf24" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <div className="flex gap-px items-end h-6 w-16">
+                    {sparkData.slice(-16).map((d, i) => (
+                      <div key={i} className="w-1 rounded-t" style={{ height: `${Math.max(d.gpu, 2)}%`, background: '#fbbf24', opacity: 0.4 + 0.6 * (i / Math.max(sparkData.slice(-16).length - 1, 1)) }} />
+                    ))}
                   </div>
                   <span>{Math.round(sparkData[sparkData.length - 1].gpu)}%</span>
                 </div>
@@ -248,7 +285,7 @@ function AppContent() {
             )}
 
             {connection.connected && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400" aria-live="polite">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 Connected
               </span>
@@ -267,7 +304,7 @@ function AppContent() {
 
       <main className="relative z-10 p-4 max-w-[1600px] mx-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-5 mb-6 gap-1 px-2 py-1.5 backdrop-blur-2xl bg-card/95 border border-primary/10 rounded-lg">
+          <TabsList className="flex flex-wrap mb-6 gap-1 px-2 py-1.5 backdrop-blur-2xl bg-card/95 border border-primary/10 rounded-lg">
             <TabsTrigger value="connection" icon={<Zap size={14} />}>Connection</TabsTrigger>
             <TabsTrigger value="run" icon={<Play size={14} />}>Run Benchmark</TabsTrigger>
             <TabsTrigger value="hardware" icon={<Activity size={14} />}>Hardware</TabsTrigger>
@@ -276,40 +313,41 @@ function AppContent() {
           </TabsList>
 
           <TabsContent forceMount value="connection">
-            <ConnectionTab connection={connection} setConnection={setConnection} onConnect={handleConnect} />
+            <LoadingFallback><ConnectionTab connection={connection} setConnection={setConnection} onConnect={handleConnect} /></LoadingFallback>
           </TabsContent>
 
           <TabsContent forceMount value="run">
-            <RunBenchmarkTab
-              connection={connection} setConnection={setConnection}
-              activeRunId={activeRunId} setActiveRunId={setActiveRunId}
-              activeBatchId={activeBatchId} setActiveBatchId={setActiveBatchId}
-              runStatus={runStatus}
-              pendingRerun={pendingRerun}
-              clearPendingRerun={() => setPendingRerun(null)}
-            />
+            <LoadingFallback><RunBenchmarkTab
+                connection={connection} setConnection={setConnection}
+                activeRunId={activeRunId} setActiveRunId={setActiveRunId}
+                activeBatchId={activeBatchId} setActiveBatchId={setActiveBatchId}
+                runStatus={runStatus}
+                pendingRerun={pendingRerun}
+                clearPendingRerun={() => setPendingRerun(null)}
+              />
+            </LoadingFallback>
           </TabsContent>
 
           <TabsContent forceMount value="hardware">
-            <HardwareTab telemetryPaused={telemetryPaused} setTelemetryPaused={handleSetTelemetryPaused} />
+            <LoadingFallback><HardwareTab telemetryPaused={telemetryPaused} setTelemetryPaused={handleSetTelemetryPaused} /></LoadingFallback>
           </TabsContent>
 
           <TabsContent forceMount value="history">
-            <HistoryResultsTab onRerun={handleRerun} activeTab={activeTab} historyRefreshKey={historyRefreshKey} />
+            <LoadingFallback><HistoryResultsTab onRerun={handleRerun} activeTab={activeTab} historyRefreshKey={historyRefreshKey} /></LoadingFallback>
           </TabsContent>
 
           <TabsContent forceMount value="leaderboard">
-            <LeaderboardTab onDelete={refreshHistory} />
+            <LoadingFallback><LeaderboardTab onDelete={refreshHistory} /></LoadingFallback>
           </TabsContent>
         </Tabs>
       </main>
 
       {showShortcuts && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowShortcuts(false)}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowShortcuts(false)} role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" onKeyDown={(e) => { if (e.key === 'Escape') setShowShortcuts(false) }}>
           <div className="bg-card border border-border p-6 rounded-xl shadow-2xl max-w-sm w-full space-y-4 animate-fadeInUp" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-lg">Keyboard Shortcuts</h3>
-              <button className="text-muted-foreground hover:text-foreground font-bold" onClick={() => setShowShortcuts(false)}>×</button>
+              <button className="text-muted-foreground hover:text-foreground font-bold" aria-label="Close shortcuts" onClick={() => setShowShortcuts(false)}>×</button>
             </div>
             <div className="space-y-2 text-sm font-mono">
               <div className="flex justify-between border-b border-border/40 pb-1">
@@ -322,7 +360,7 @@ function AppContent() {
               </div>
               <div className="flex justify-between border-b border-border/40 pb-1">
                 <span>Escape</span>
-                <span className="text-muted-foreground">Close diff panel</span>
+                <span className="text-muted-foreground">Close this dialog</span>
               </div>
               <div className="flex justify-between">
                 <span>?</span>

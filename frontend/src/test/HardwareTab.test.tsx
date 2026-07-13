@@ -27,7 +27,7 @@ describe('HardwareTab', () => {
     render(<HardwareTab />)
     expect(screen.getByText('CPU')).toBeInTheDocument()
     expect(screen.getByText('System RAM')).toBeInTheDocument()
-    expect(screen.getByText('GPU Load')).toBeInTheDocument()
+    expect(screen.getAllByText('GPU Load').length).toBeGreaterThan(0)
     expect(screen.getByText('VRAM')).toBeInTheDocument()
   })
 
@@ -38,9 +38,9 @@ describe('HardwareTab', () => {
 
   it('shows chart sections', () => {
     render(<HardwareTab />)
-    expect(screen.getByText('CPU %')).toBeInTheDocument()
-    expect(screen.getByText('RAM %')).toBeInTheDocument()
-    expect(screen.getByText('GPU Load %')).toBeInTheDocument()
-    expect(screen.getByText('VRAM %')).toBeInTheDocument()
+    expect(screen.getByText('CPU Usage')).toBeInTheDocument()
+    expect(screen.getByText('RAM Usage')).toBeInTheDocument()
+    expect(screen.getAllByText('GPU Load').length).toBeGreaterThan(0)
+    expect(screen.getByText('VRAM Usage')).toBeInTheDocument()
   })
 })

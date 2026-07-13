@@ -22,7 +22,7 @@ class LMStudioClient:
         if api_key:
             self._headers["Authorization"] = f"Bearer {api_key}"
         self._client = httpx.AsyncClient(timeout=None, headers=self._headers)
-        logger.info(f"[DEBUG] LMStudioClient.__init__: received={base_url} -> stored as '{self.base_url}'")
+        logger.debug(f"[DEBUG] LMStudioClient.__init__: received={base_url} -> stored as '{self.base_url}'")
 
         # Repetition detection state
         self._rep_buffer = ""        # Sliding buffer of accumulated output (last 1000 chars)
@@ -153,8 +153,8 @@ class LMStudioClient:
                         # If reasoning_content was split out, answer is just content
                         answer = msg.get("content", "")
                         return thinking, answer
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Reasoning/answer parse (choices) failed: {e}")
 
         # 2. Fallback to parsing <think> tags from full text
         if "<think>" in full_text:
@@ -168,6 +168,7 @@ class LMStudioClient:
                     answer = ""
             except Exception:
                 # If splitting fails, return full text as answer
+                logger.debug("Failed to split reasoning/answer on think tags", exc_info=True)
                 pass
         
         return thinking, answer

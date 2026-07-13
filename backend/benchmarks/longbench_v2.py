@@ -64,7 +64,7 @@ class LongBenchV2Benchmark(BaseBenchmark):
         answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
         extracted = re.findall(r'\b([A-D])\b', answer_content)
         answer = extracted[-1] if extracted else None
-        correct = answer == sample["answer"]
+        correct = answer == sample.get("answer", "")
 
         bucket = sample.get("length", "unknown")
 
@@ -73,7 +73,7 @@ class LongBenchV2Benchmark(BaseBenchmark):
             "raw_response": gen["raw_response"],
             "extracted_code": answer_content,
             "correct": correct,
-            "error_message": None if correct else f"Expected {sample['answer']}, got {answer}",
+            "error_message": None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
             "elapsed_time": gen["elapsed_time"],
             "tps": gen["tps"],
             "ttft": gen["ttft"],

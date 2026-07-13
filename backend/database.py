@@ -56,6 +56,7 @@ class Run(Base):
             try:
                 return json.loads(self.parameters)
             except Exception:
+                logger.warning("Failed to parse run parameters JSON", exc_info=True)
                 return {}
         return {}
 

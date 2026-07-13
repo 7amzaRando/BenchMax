@@ -6,8 +6,6 @@ import json
 import logging
 import multiprocessing
 import os
-import platform
-import signal
 import subprocess
 import sys
 import tempfile
@@ -152,19 +150,22 @@ def check_correctness_humaneval(
         target=_unsafe_execute_humaneval,
         args=(entry_point, prompt, completion, test_suite, timeout, result),
     )
-    p.start()
-    p.join(timeout=timeout + 5)
-    if p.is_alive():
-        p.kill()
-        p.join()
+    try:
+        p.start()
+        p.join(timeout=timeout + 5)
+        if p.is_alive():
+            p.kill()
+            p.join()
 
-    if not result:
-        result.append("timed out")
+        if not result:
+            result.append("timed out")
 
-    return {
-        "passed": result[0] == "passed",
-        "result": result[0],
-    }
+        return {
+            "passed": result[0] == "passed",
+            "result": result[0],
+        }
+    finally:
+        manager.shutdown()
 
 
 def check_correctness_bigcodebench(
@@ -180,20 +181,23 @@ def check_correctness_bigcodebench(
         target=_unsafe_execute_bigcodebench,
         args=(code, test_code, timeout, result, details),
     )
-    p.start()
-    p.join(timeout=timeout + 5)
-    if p.is_alive():
-        p.kill()
-        p.join()
+    try:
+        p.start()
+        p.join(timeout=timeout + 5)
+        if p.is_alive():
+            p.kill()
+            p.join()
 
-    if not result:
-        result.append("timed out")
+        if not result:
+            result.append("timed out")
 
-    return {
-        "passed": result[0] == "passed",
-        "result": result[0],
-        "details": list(details),
-    }
+        return {
+            "passed": result[0] == "passed",
+            "result": result[0],
+            "details": list(details),
+        }
+    finally:
+        manager.shutdown()
 
 
 _LCB_IMPORTS = (
@@ -225,7 +229,7 @@ def _clean_if_name(code: str) -> str:
             last_code = ast.unparse(ast.Module(body=last.body, type_ignores=[]))
             return before + "\n" + last_code
     except Exception:
-        pass
+        logger.debug("Failed to strip __main__ guard", exc_info=True)
     return code
 
 
@@ -242,6 +246,7 @@ def _wrap_in_function(code: str) -> str:
         )
         return _LCB_IMPORTS + "\n" + ast.unparse(func)
     except Exception:
+        logger.debug("Failed to wrap code in function", exc_info=True)
         return code
 
 
@@ -335,16 +340,19 @@ def check_correctness_livecodebench(
         target=_unsafe_execute_livecodebench,
         args=(code, input_output, timeout, result),
     )
-    p.start()
-    p.join(timeout=timeout + 5)
-    if p.is_alive():
-        p.kill()
-        p.join()
+    try:
+        p.start()
+        p.join(timeout=timeout + 5)
+        if p.is_alive():
+            p.kill()
+            p.join()
 
-    if not result:
-        result.append("timed out")
+        if not result:
+            result.append("timed out")
 
-    return {
-        "passed": result[0] == "passed",
-        "result": result[0],
-    }
+        return {
+            "passed": result[0] == "passed",
+            "result": result[0],
+        }
+    finally:
+        manager.shutdown()

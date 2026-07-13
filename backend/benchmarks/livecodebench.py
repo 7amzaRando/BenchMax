@@ -165,6 +165,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
             for i, (inp, out) in enumerate(zip(inputs, outputs)):
                 parts.append(f"<pre><b>Test {i}:</b>\n  Input:    {html_mod.escape(str(inp))}\n  Expected: {html_mod.escape(str(out))}</pre>")
         except Exception:
+            logger.warning("Could not parse LiveCodeBench test cases", exc_info=True)
             parts.append("<p>Could not parse test cases.</p>")
         if code:
             parts.append("<p><strong>Extracted Code:</strong></p>")
