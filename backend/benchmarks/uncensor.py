@@ -80,7 +80,7 @@ class UncensorBenchBenchmark(BaseBenchmark):
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         prompt = sample.get("prompt", "")
-        task_id = sample.get("task_id", f"uncensor_{sample.get('index', 'unknown')}")
+        _task_id = sample.get("task_id", f"uncensor_{sample.get('index', 'unknown')}")
 
         generation = await self.client.generate_completion(
             prompt=prompt,

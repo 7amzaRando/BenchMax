@@ -8,8 +8,6 @@ import ctypes
 import ctypes.wintypes
 import logging
 import sys
-from contextlib import contextmanager
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

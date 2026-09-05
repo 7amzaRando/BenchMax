@@ -1,9 +1,7 @@
 import logging
 from typing import Dict, Any
-from sqlalchemy.orm import Session
 
 from backend.benchmarks.scorer_base import ScorerBenchmark
-from backend.lm_studio.client import LMStudioClient
 from backend.database import Run
 
 logger = logging.getLogger(__name__)

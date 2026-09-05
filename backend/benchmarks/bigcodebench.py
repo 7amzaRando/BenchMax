@@ -1,6 +1,4 @@
 import logging
-import re
-import textwrap
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark
 from backend.benchmarks.humaneval import extract_python_code
@@ -18,7 +16,7 @@ class BigCodeBenchBenchmark(BaseBenchmark):
         suffix = "_hard" if self.hard else ""
         full_name = f"bigcodebench{suffix}_full.json"
         mini_name = f"bigcodebench{suffix}_mini.json"
-        suffix_str = "-Hard" if self.hard else ""
+        _suffix_str = "-Hard" if self.hard else ""
         fetch_hint = f"Run 'scripts/fetch_bigcodebench{'_hard' if self.hard else ''}.py' to download it."
         path = self._resolve_dataset(full_name, mini_name=mini_name, fetch_hint=fetch_hint)
         return self._load_json_cached(path)

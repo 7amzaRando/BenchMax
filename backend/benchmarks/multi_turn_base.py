@@ -19,15 +19,13 @@ The base class handles:
     - Anti-loop detection (delegated to client per generation call)
 """
 
-import json
 import logging
 import threading
 import time
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from backend.benchmarks.base import BaseBenchmark
-from backend.database import Run, Result
 
 logger = logging.getLogger(__name__)
 

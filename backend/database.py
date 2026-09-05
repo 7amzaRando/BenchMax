@@ -1,7 +1,5 @@
 import os
-import sys
 import logging
-from pathlib import Path
 from datetime import datetime
 import json
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, Text, DateTime, ForeignKey, Index
@@ -17,7 +15,7 @@ DATABASE_URL = f"sqlite:///{ROOT / 'records' / 'benchmax.db'}"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 15})
 # Enable WAL mode for concurrent read/write from multiple threads
-from sqlalchemy import text as _sa_text_wal
+from sqlalchemy import text as _sa_text_wal  # noqa: E402
 with engine.connect() as conn:
     conn.execute(_sa_text_wal("PRAGMA journal_mode=WAL"))
     conn.execute(_sa_text_wal("PRAGMA synchronous=NORMAL"))

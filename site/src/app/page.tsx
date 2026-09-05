@@ -107,7 +107,7 @@ export default function HomePage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-semibold text-primary">
                   <Sparkles className="w-3.5 h-3.5" /> Free & open-source · AGPL v3
                 </span>
-                <span className="inline-flex items-center rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1 text-xs font-medium text-muted-fg">v1.1 · 30 benchmarks</span>
+                <span className="inline-flex items-center rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1 text-xs font-medium text-muted-fg">v2.0 · 30 benchmarks</span>
               </motion.div>
 
               <motion.h1 variants={fade} transition={{ duration: 0.55, delay: 0.05 }} className="text-[40px] sm:text-[52px] lg:text-[58px] font-extrabold leading-[0.95] tracking-[-0.03em]">

@@ -20,7 +20,6 @@ import importlib
 import io
 import json
 import logging
-import multiprocessing
 import os
 import re
 import secrets
@@ -40,7 +39,6 @@ logger = logging.getLogger(__name__)
 try:
     from backend.sandbox.job_sandbox import JobSandbox
     from backend.sandbox.appcontainer import (
-        AppContainerSandbox,
         create_locked_down_sandbox,
         create_aider_sandbox,
         write_runner_script,
@@ -51,8 +49,6 @@ try:
         SANDBOX_ENABLED,
         SANDBOX_MEMORY_LIMIT_MB,
         SANDBOX_CPU_TIME_SEC,
-        SANDBOX_BLOCK_NETWORK,
-        SANDBOX_BLOCK_CHILD_PROCESSES,
         SANDBOX_USE_APPCONTAINER,
         SANDBOX_USE_DOCKER,
     )
@@ -68,7 +64,6 @@ try:
     from backend.sandbox.docker_executor import (
         run_in_container,
         run_aider_in_container,
-        ensure_image,
         _docker_available as docker_daemon_running,
     )
     DOCKER_AVAILABLE = True

@@ -1,6 +1,5 @@
 import time
 import json
-import asyncio
 import re
 import orjson as _orjson
 import logging
@@ -453,8 +452,8 @@ class LMStudioClient:
         ttft = 0.0
         start_time = time.time()
         first_chunk_received = False
-        last_token_time = time.time()
-        stream_timed_out = False
+        _last_token_time = time.time()
+        _stream_timed_out = False
         
         # We will parse usage info if sent at the end of the stream, or estimate it
         prompt_tokens_est = int(len(prompt) / 4)
@@ -501,7 +500,7 @@ class LMStudioClient:
                                         self._rep_buffer += rc
                                         if len(self._rep_buffer) > self._rep_max_len:
                                             self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    last_token_time = time.time()
+                                    _last_token_time = time.time()
                                     self._rep_chunk_count += 1
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         logger.warning("Repetition detected in reasoning — model may be looping.")
@@ -509,7 +508,7 @@ class LMStudioClient:
                                         break
                                 content = delta.get("content")
                                 if content is not None:
-                                    last_token_time = time.time()
+                                    _last_token_time = time.time()
                                     full_text_parts.append(content)
                                     if not self._rep_disabled:
                                         self._rep_buffer += content
@@ -668,7 +667,7 @@ class LMStudioClient:
         ttft = 0.0
         start_time = time.time()
         first_chunk_received = False
-        last_token_time = time.time()
+        _last_token_time = time.time()
         thinking_parts: list[str] = []
         completion_tokens_est = 0
 
@@ -703,14 +702,14 @@ class LMStudioClient:
                                         self._rep_buffer += rc
                                         if len(self._rep_buffer) > self._rep_max_len:
                                             self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    last_token_time = time.time()
+                                    _last_token_time = time.time()
                                     self._rep_chunk_count += 1
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         self._repetition_detected = True
                                         break
                                 content = delta.get("content")
                                 if content is not None:
-                                    last_token_time = time.time()
+                                    _last_token_time = time.time()
                                     full_text_parts.append(content)
                                     if not self._rep_disabled:
                                         self._rep_buffer += content

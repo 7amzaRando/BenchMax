@@ -6,7 +6,7 @@ import sys
 import threading
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from backend.database import Run, Result
 from backend.lm_studio.client import LMStudioClient

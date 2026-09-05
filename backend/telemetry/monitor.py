@@ -40,7 +40,7 @@ except ImportError:
 # Telemetry cache to avoid expensive GPU counter queries every call
 _telemetry_cache: dict = {}
 _telemetry_cache_ttl = 5.0  # seconds — covers 1-2 frontend poll intervals (3s each)
-import threading
+import threading  # noqa: E402
 _telemetry_cache_lock = threading.Lock()
 
 

@@ -95,7 +95,7 @@ class HumanEvalBenchmark(BaseBenchmark):
         prompt = sample.get("prompt", "")
         entry_point = sample.get("entry_point", "")
         test_suite = sample.get("test", "")
-        task_id = sample.get("task_id", "")
+        _task_id = sample.get("task_id", "")
 
         generation = await self._generate(prompt, params, model_name, stop_tokens=["\nif __name__"])
 

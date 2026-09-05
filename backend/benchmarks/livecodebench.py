@@ -66,7 +66,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         prompt = _build_prompt(question_content, starter_code)
         task_id = sample.get("question_id", "unknown")
 
-        system_prompt = (
+        _system_prompt = (
             "You are an expert Python programmer. You will be given a question "
             "(problem specification) and will generate a correct Python program "
             "that matches the specification and passes all tests."
@@ -109,7 +109,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                             scoring_details={"category": cat, "platform": sample.get("platform", ""), "difficulty": cat})
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
-        import html as html_mod, json
+        import html as html_mod
         code = result_data.get("extracted_code", "")
         raw = result_data.get("raw_response", "")
         parts = ["<p><strong>LiveCodeBench — Test-Based Scoring</strong></p>"]

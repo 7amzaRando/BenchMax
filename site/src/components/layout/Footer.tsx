@@ -39,7 +39,7 @@ export default function Footer() {
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="pill bg-white/[0.06] border-white/[0.08] text-muted-fg">AGPL v3</span>
-              <span className="pill bg-primary/10 border-primary/20 text-primary">v1.1</span>
+              <span className="pill bg-primary/10 border-primary/20 text-primary">v2.0</span>
             </div>
           </div>
 

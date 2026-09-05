@@ -1,4 +1,7 @@
-import asyncio, json, logging, math
+import asyncio
+import json
+import logging
+import math
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query, Body
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
@@ -13,8 +16,8 @@ _EXPORT_MIME = {
     "JSON": "application/json",
     "XLSX": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
-from backend.telemetry.monitor import get_system_metrics
-from backend.operations import (
+from backend.telemetry.monitor import get_system_metrics  # noqa: E402
+from backend.operations import (  # noqa: E402
     connect_lm_studio, trigger_run, start_batch, pause_run, resume_run, halt_run,
     load_history, load_run_details, load_batch_summary,
     load_leaderboard, delete_leaderboard_entry,
@@ -31,7 +34,7 @@ from backend.operations import (
     check_benchmark_readiness,
     build_docker_image, get_docker_status,
 )
-from backend.config import BENCHMARKS, BENCH_NAMES, PROVIDER_PRESETS, DATASETS
+from backend.config import BENCHMARKS  # noqa: E402
 logger = logging.getLogger(__name__)
 
 

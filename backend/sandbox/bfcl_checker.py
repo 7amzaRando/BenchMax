@@ -4,7 +4,7 @@ Adapted from bfcl-eval's ast_checker.py to avoid importing the full bfcl_eval
 package (which pulls in anthropic, openai, google-generativeai, etc.).
 """
 import re
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 PYTHON_TYPE_MAPPING = {
     "string": str, "integer": int, "float": float, "boolean": bool,
@@ -60,7 +60,7 @@ def _type_checker(param, value, possible_answer, expected_type_desc, expected_ty
     if possible_answer_type is not None and possible_answer_type != expected_type:
         result["is_variable"] = True
 
-    if type(value) == expected_type:
+    if type(value) is expected_type:
         if nested_type is None:
             result["is_variable"] = result.get("is_variable", False)
             return result
@@ -76,7 +76,7 @@ def _type_checker(param, value, possible_answer, expected_type_desc, expected_ty
                 return {"valid": True, "error": [], "is_variable": result.get("is_variable", False)}
         return {"valid": False, "error": [f"Nested type check failed for {param}"], "error_type": "nested"}
 
-    if possible_answer_type is not None and type(value) == possible_answer_type:
+    if possible_answer_type is not None and type(value) is possible_answer_type:
         result["is_variable"] = True
         return result
 
@@ -134,19 +134,19 @@ def _simple_function_checker(func_description, model_output, possible_answer, mo
             return tc
 
         if not tc.get("is_variable", False):
-            if expected_type == dict:
+            if expected_type is dict:
                 dcr = _dict_checker(param, value, possible_answer[param])
                 if not dcr["valid"]:
                     return dcr
-            elif expected_type_desc == "array" and nested_type == dict:
+            elif expected_type_desc == "array" and nested_type is dict:
                 ldr = _list_dict_checker(param, value, possible_answer[param])
                 if not ldr["valid"]:
                     return ldr
-            elif expected_type == str:
+            elif expected_type is str:
                 scr = _string_checker(param, value, possible_answer[param])
                 if not scr["valid"]:
                     return scr
-            elif expected_type == list:
+            elif expected_type is list:
                 lcr = _list_checker(param, value, possible_answer[param])
                 if not lcr["valid"]:
                     return lcr
@@ -253,18 +253,18 @@ def multi_turn_simplified_checker(
         for mc in model_calls:
             if isinstance(mc, dict):
                 mc_name = mc.get("name", "")
-                mc_args = mc.get("arguments", {})
+                _mc_args = mc.get("arguments", {})
             elif isinstance(mc, str):
                 parsed = _parse_func_call_string(mc)
                 if parsed:
                     mc_name = parsed["name"]
-                    mc_args = parsed["arguments"]
+                    _mc_args = parsed["arguments"]
                 else:
                     mc_name = mc
-                    mc_args = {}
+                    _mc_args = {}
             else:
                 mc_name = str(mc)
-                mc_args = {}
+                _mc_args = {}
 
             if mc_name in excluded_funcs:
                 return {

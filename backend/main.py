@@ -1,4 +1,6 @@
-import logging, os, sys
+import logging
+import os
+import sys
 import secrets as _secrets
 from pathlib import Path
 from fastapi import FastAPI
@@ -9,8 +11,8 @@ from backend.logging_setup import configure_logging
 configure_logging()
 logger = logging.getLogger(__name__)
 
-from backend.database import init_db, get_db
-from backend.api import SafeJSONResponse
+from backend.database import init_db, get_db  # noqa: E402
+from backend.api import SafeJSONResponse  # noqa: E402
 
 ENABLE_DIAG = False
 ROOT = Path(__file__).parent.parent
@@ -65,7 +67,7 @@ except Exception as e:
 def health_check():
     return {"status": "healthy", "app": "BenchMax", "database": "connected"}
 
-import threading
+import threading  # noqa: E402
 @app.post("/api/shutdown")
 def shutdown(token: str = ""):
     """Shut down the server. Token optional for localhost; wrong token is rejected."""
@@ -73,14 +75,16 @@ def shutdown(token: str = ""):
         from fastapi.responses import JSONResponse
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     def _die():
-        import os, sys, time
+        import sys
+        import time
         time.sleep(0.6)
         # Only kill the reloader parent when --reload is active; otherwise
         # ppid is the cmd.exe running run.bat and killing it triggers the
         # "Terminate batch job (Y/N)?" prompt.
         if os.environ.get("BENCHMAX_RELOAD") == "1":
             try:
-                import signal, subprocess
+                import signal
+                import subprocess
                 ppid = os.getppid()
                 if sys.platform == "win32":
                     subprocess.run(["taskkill", "/PID", str(ppid), "/T", "/F"], capture_output=True, timeout=2)
@@ -93,7 +97,7 @@ def shutdown(token: str = ""):
     return {"status": "shutting_down"}
 
 # Register all REST API routes from api.py
-from backend.api import router as api_router
+from backend.api import router as api_router  # noqa: E402
 app.include_router(api_router, prefix="/api")
 
 # Diagnostic endpoints

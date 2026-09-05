@@ -18,7 +18,6 @@ import logging
 from typing import Any, Dict, List
 
 from backend.benchmarks.multi_turn_base import MultiTurnBenchmark
-from backend.benchmarks.base import resolve_data_file
 
 logger = logging.getLogger(__name__)
 

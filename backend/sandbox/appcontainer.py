@@ -26,9 +26,6 @@ import os
 import secrets
 import subprocess
 import sys
-import tempfile
-import time
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -64,7 +61,9 @@ TRUSTEE_IS_SID = 0
 TRUSTEE_IS_USER = 1
 
 # HRESULT error codes
-HRESULT_FROM_WIN32 = lambda x: x  # simplified for error checking
+def HRESULT_FROM_WIN32(x):
+    """Simplified HRESULT conversion for error checking."""
+    return x
 ERROR_ALREADY_EXISTS = 183
 
 # Process creation flags

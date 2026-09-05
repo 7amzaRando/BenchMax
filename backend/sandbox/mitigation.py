@@ -8,7 +8,7 @@ import ctypes
 import ctypes.wintypes
 import logging
 import sys
-from typing import List, Optional
+from typing import List
 
 logger = logging.getLogger(__name__)
 

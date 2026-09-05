@@ -68,7 +68,7 @@ class AIMEBenchmark(BaseBenchmark):
         error_msg = None
         if not correct:
             if extracted == -1:
-                error_msg = f"No valid integer answer found in response"
+                error_msg = "No valid integer answer found in response"
             else:
                 error_msg = f"Expected {expected}, extracted {extracted}"
 
