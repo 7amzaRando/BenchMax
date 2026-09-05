@@ -160,6 +160,7 @@ class TestCommunicateMatch:
 
 # ── Gold replay (needs data) ────────────────────────────────────────
 
+@pytest.mark.timeout(300)
 class TestGoldReplay:
     @needs_data
     def test_all_tasks_replay_deterministically(self):
