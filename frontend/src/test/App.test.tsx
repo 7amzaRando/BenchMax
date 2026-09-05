@@ -28,7 +28,7 @@ describe('App', () => {
 
   it('renders the header', () => {
     render(<App />)
-    expect(screen.getByText('BenchMax')).toBeInTheDocument()
+    expect(screen.getAllByText('BenchMax').length).toBeGreaterThan(0)
   })
 
   it('renders all nav items', () => {

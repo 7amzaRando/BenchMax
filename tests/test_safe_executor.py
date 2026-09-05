@@ -5,6 +5,7 @@ They verify the actual sandbox behavior, not mocked paths.
 """
 import os
 import shutil
+import subprocess
 import tempfile
 import time
 import pytest
@@ -14,6 +15,24 @@ from backend.sandbox.safe_executor import (
     check_correctness_bigcodebench,
     _safe_humaneval_import,
     _cleanup_dir,
+)
+
+
+def _docker_image_available() -> bool:
+    """Check if the benchmax-sandbox Docker image exists locally."""
+    try:
+        r = subprocess.run(
+            ["docker", "image", "inspect", "benchmax-sandbox:latest"],
+            capture_output=True, timeout=10,
+        )
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
+needs_docker = pytest.mark.skipif(
+    not _docker_image_available(),
+    reason="benchmax-sandbox Docker image not built",
 )
 
 
@@ -52,6 +71,7 @@ class TestSafeHumanevalImport:
 
 # ── check_correctness_humaneval ────────────────────────────────────
 
+@needs_docker
 class TestHumanEval:
     def test_pass_trivial(self):
         result = check_correctness_humaneval(
@@ -122,6 +142,7 @@ class TestHumanEval:
 
 # ── check_correctness_bigcodebench ─────────────────────────────────
 
+@needs_docker
 class TestBigCodeBench:
     def test_unittest_import_allowed(self):
         """BigCodeBench tests require 'import unittest' — must be allowed."""

@@ -1,8 +1,27 @@
 import json
+import subprocess
 import pytest
 from backend.sandbox.safe_executor import check_correctness_livecodebench
 
 
+def _docker_image_available() -> bool:
+    try:
+        r = subprocess.run(
+            ["docker", "image", "inspect", "benchmax-sandbox:latest"],
+            capture_output=True, timeout=10,
+        )
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
+needs_docker = pytest.mark.skipif(
+    not _docker_image_available(),
+    reason="benchmax-sandbox Docker image not built",
+)
+
+
+@needs_docker
 class TestLCBInputParsing:
     """Bug 1: input strings contain literal \n that need unescaping before splitting."""
 
@@ -57,6 +76,7 @@ def factorial(n):
         assert result["passed"], f"Expected pass but got: {result}"
 
 
+@needs_docker
 class TestLCBImportStar:
     """Bug 2: _safe_lcb_import crashes on 'from module import *' with 'No module named string.*'."""
 
