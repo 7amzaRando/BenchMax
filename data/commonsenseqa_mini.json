@@ -1,0 +1,67 @@
+[
+  {
+    "task_id": "commonsenseqa/0",
+    "question": "A revolving door is convenient for two direction travel, but it also serves as a security measure at a what?",
+    "options": [
+      "bank",
+      "library",
+      "department store",
+      "mall",
+      "new york"
+    ],
+    "answer": "A",
+    "category": "revolving door"
+  },
+  {
+    "task_id": "commonsenseqa/1",
+    "question": "What do people aim to do at work?",
+    "options": [
+      "complete job",
+      "learn from each other",
+      "kill animals",
+      "wear hats",
+      "talk to each other"
+    ],
+    "answer": "A",
+    "category": "people"
+  },
+  {
+    "task_id": "commonsenseqa/2",
+    "question": "Where would you find magazines along side many other printed works?",
+    "options": [
+      "doctor",
+      "bookstore",
+      "market",
+      "train station",
+      "mortuary"
+    ],
+    "answer": "B",
+    "category": "magazines"
+  },
+  {
+    "task_id": "commonsenseqa/3",
+    "question": "Where are  you likely to find a hamburger?",
+    "options": [
+      "fast food restaurant",
+      "pizza",
+      "ground up dead cows",
+      "mouth",
+      "cow carcus"
+    ],
+    "answer": "A",
+    "category": "hamburger"
+  },
+  {
+    "task_id": "commonsenseqa/4",
+    "question": "James was looking for a good place to buy farmland.  Where might he look?",
+    "options": [
+      "midwest",
+      "countryside",
+      "estate",
+      "farming areas",
+      "illinois"
+    ],
+    "answer": "A",
+    "category": "farmland"
+  }
+]

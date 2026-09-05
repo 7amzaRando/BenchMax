@@ -1,37 +1,69 @@
 [
-  {
-    "task_id": "tectonic_coding_01",
-    "category": "Coding",
-    "type": "mcq",
-    "prompt": "What is the amortized cost per operation for the link-cut tree data structure when using splay trees as auxiliary trees?\nA) O(log n) amortized for all tree operations (link, cut, findroot, path aggregate)\nB) O(log^2 n) amortized for all operations due to the nested splay complexity\nC) O(log n) amortized for all operations, but findroot requires O(log^2 n)\nD) O(log n) expected, O(log^2 n) worst-case for all operations",
-    "answer": "A"
-  },
-  {
-    "task_id": "tectonic_coding_02",
-    "category": "Coding",
-    "type": "mcq",
-    "prompt": "In the Hopcroft-Karp algorithm for maximum bipartite matching, what is the maximum number of phases (BFS + maximal set of shortest augmenting paths) required in the worst case?\nA) O(sqrt(V))\nB) O(log V)\nC) O(V^{2/3})\nD) O(V^{1/3} log V)",
-    "answer": "A"
-  },
-  {
-    "task_id": "tectonic_coding_03",
-    "category": "Coding",
-    "type": "mcq",
-    "prompt": "In a Palindromic Tree (Eertree), what is the maximum number of distinct palindromic substrings of a string of length n, and what is the amortized number of suffix link traversals during construction?\nA) At most n distinct palindromic substrings, O(1) amortized suffix link traversals per character\nB) At most 2n distinct palindromic substrings, O(log n) amortized suffix link traversals per character\nC) At most n distinct palindromic substrings, O(log n) amortized suffix link traversals per character\nD) At most 2n distinct palindromic substrings, O(1) amortized suffix link traversals per character",
-    "answer": "A"
-  },
-  {
-    "task_id": "tectonic_coding_04",
-    "category": "Coding",
-    "type": "mcq",
-    "prompt": "When constructing a suffix automaton for a string of length n over an alphabet of size at least 2, what are the tight bounds on the number of states and transitions?\nA) At most 2n-1 states and at most 3n-4 transitions\nB) At most n states and at most 2n transitions\nC) At most 2n states and at most 2n transitions\nD) At most 3n states and at most 4n transitions",
-    "answer": "A"
-  },
-  {
-    "task_id": "tectonic_coding_05",
-    "category": "Coding",
-    "type": "mcq",
-    "prompt": "In Duval's algorithm for Lyndon factorization, what characterization of Lyndon words does the algorithm exploit?\nA) A string w is Lyndon iff it is strictly smaller than all its proper suffixes. Duval's algorithm factors the input by greedily extracting the longest Lyndon prefix in O(n) time with O(1) extra space.\nB) A string w is Lyndon iff it is strictly smaller than all its proper rotations. Duval's algorithm uses a stack-based approach in O(n) time.\nC) A string w is Lyndon iff it is strictly greater than all its proper prefixes. Duval's algorithm repeatedly removes the smallest non-Lyndon suffix.\nD) A string w is Lyndon iff it is lexicographically minimal among its conjugates. Duval's algorithm runs in O(n log n) using suffix arrays.",
-    "answer": "A"
-  }
+ {
+  "task_id": "tectonic_coding_19",
+  "category": "Coding",
+  "type": "exact",
+  "prompt": "Consider this Python program:\n```python\nprint((6 & 3 | 4 ^ 1) * 100 + (5 ^ 3 & 2))\n```\nWhat number is printed? Respond with ONLY the number.",
+  "answer": "707",
+  "match": "numeric"
+ },
+ {
+  "task_id": "tectonic_logic_09",
+  "category": "Logic/Reasoning",
+  "type": "mcq",
+  "prompt": "On the island of Veridia, knights always tell the truth and knaves always lie. 5 inhabitants make one statement each:\nHollis says: \"Dain is a knight.\"\nMoss says: \"If Dain is a knight then Greta is a knave.\"\nGreta says: \"At least one of Dain and Hollis is a knave.\"\nDain says: \"Greta and Hollis are the same type.\"\nCleo says: \"Moss is a knight.\"\nWho is who?\nA. Cleo=knight, Dain=knave, Greta=knight, Hollis=knave, Moss=knave\nB. Cleo=knight, Dain=knave, Greta=knave, Hollis=knave, Moss=knight\nC. Cleo=knave, Dain=knave, Greta=knight, Hollis=knave, Moss=knight\nD. Cleo=knight, Dain=knave, Greta=knight, Hollis=knave, Moss=knight\nE. Cleo=knight, Dain=knight, Greta=knight, Hollis=knave, Moss=knight\nF. Cleo=knight, Dain=knave, Greta=knight, Hollis=knight, Moss=knight\n\nAnswer with ONLY the letter (A-F).",
+  "answer": "D",
+  "valid_letters": "A-F"
+ },
+ {
+  "type": "mcq",
+  "prompt": "Which planet has the highest average surface temperature, and why?\nA. Earth, because of anthropogenic warming exceeding all other planets\nB. Venus, due to a runaway CO2 greenhouse effect trapping infrared radiation\nC. Mercury, because it is closest to the Sun\nD. Jupiter, due to gravitational compression heating its core\nE. Mars, because its thin atmosphere cannot shed heat at night\nF. Saturn, due to helium rain releasing potential energy\n\nAnswer with ONLY the letter (A-F).",
+  "answer": "B",
+  "valid_letters": "A-F",
+  "task_id": "tectonic_knowledge_01",
+  "category": "Knowledge"
+ },
+ {
+  "task_id": "tectonic_tool_01",
+  "category": "Tool Calling",
+  "type": "exact_multi",
+  "prompt": "You are a tool-calling agent. Available function:\nFunction transfer_funds(from_account: string REQUIRED, to_account: string REQUIRED, amount_cents: integer REQUIRED (whole cents, NOT dollars), memo: string OPTIONAL, dry_run: boolean OPTIONAL (true/false))\nUser: \"Send $25.00 from my checking account to savings.\"\nRespond with ONLY the argument mapping as comma-separated key=value pairs with NO spaces, no braces, no quotes (example: from_account=checking,to_account=savings,amount_cents=2500). Include every required argument the request justifies; omit optional arguments the request does not mention.",
+  "answers": [
+   "from_account=checking",
+   "to_account=savings",
+   "amount_cents=2500"
+  ],
+  "match": "numeric"
+ },
+ {
+  "task_id": "tectonic_instruction_26",
+  "category": "Instruction Following",
+  "type": "constraint",
+  "prompt": "Explain ice ages.\nYour response MUST satisfy ALL of the following rules:\n1. Your response must contain exactly 18 words.\n2. Your response must have 'snow' as its 7th word (1-indexed, punctuation ignored).\n3. Your response must contain exactly 3 comma(s).\n4. Your response must have no two consecutive words starting with the same letter (case-insensitive).\n5. Your response must NOT contain any of these (case-insensitive): 'dinosaur', 'meteor'.",
+  "constraints": [
+   {
+    "rule": "word_count",
+    "eq": 18
+   },
+   {
+    "rule": "nth_word",
+    "n": 7,
+    "word": "snow"
+   },
+   {
+    "rule": "comma_count",
+    "eq": 3
+   },
+   {
+    "rule": "no_consecutive_initial"
+   },
+   {
+    "rule": "forbidden",
+    "words": [
+     "dinosaur",
+     "meteor"
+    ]
+   }
+  ]
+ }
 ]

@@ -1,12 +1,11 @@
 import sys, os, traceback, logging
 from datetime import datetime
 
-# Log crashes to a file
-_log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crash.log")
-logging.basicConfig(
-    filename=_log_path, level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+# Set env so backend.logging_setup uses JSON file logging for .exe builds
+os.environ.setdefault("BENCHMAX_LOG_LEVEL", "DEBUG")
+
+from backend.logging_setup import configure_logging
+configure_logging()
 logging.info("Starting BenchMax...")
 logging.info(f"sys.executable: {sys.executable}")
 logging.info(f"sys.argv: {sys.argv}")
@@ -25,7 +24,7 @@ try:
     import uvicorn
     from backend.main import app
     logging.info("App imported successfully, starting uvicorn...")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
 except Exception:
     traceback.print_exc()
     logging.exception("Fatal startup error")

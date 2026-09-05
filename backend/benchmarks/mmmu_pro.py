@@ -5,7 +5,7 @@ import logging
 import sys
 from pathlib import Path
 from typing import Dict, Any, List
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 
 logger = logging.getLogger(__name__)
 
@@ -15,18 +15,8 @@ class MMMUProBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        filename = "mmmu_pro_mini.json" if self.quick_test else "mmmu_pro_full.json"
-        self.dataset_path = resolve_data_file(__file__, filename)
-        if not self.dataset_path:
-            logger.warning("Full MMMU-Pro dataset not found, falling back to mini dataset")
-            fallback = "mmmu_pro_mini.json"
-            self.dataset_path = resolve_data_file(__file__, fallback)
-        if not self.dataset_path:
-            raise FileNotFoundError(
-                "MMMU-Pro dataset not found. "
-                "Run 'scripts/fetch_mmmu_pro.py' to download it."
-            )
-        return self._load_json_cached(self.dataset_path)
+        path = self._resolve_dataset("mmmu_pro_full.json", fetch_hint="Run 'scripts/fetch_mmmu_pro.py' to download it.")
+        return self._load_json_cached(path)
 
     def _find_data_dir(self) -> Path:
         """Find data directory, handling PyInstaller frozen builds."""
@@ -66,15 +56,7 @@ class MMMUProBenchmark(BaseBenchmark):
 
         images = self._load_images(sample)
 
-        gen = await self.client.generate_completion(
-            prompt=prompt,
-            system_prompt=params.get("system_prompt"),
-            temperature=params.get("temperature", 0.0),
-            max_completion_tokens=params.get("max_completion_tokens"),
-            stop_tokens=params.get("stop_tokens"),
-            model_name=model_name,
-            images=images if images else None,
-        )
+        gen = await self._generate(prompt, params, model_name, images=images if images else None)
 
         ac = gen.get("answer_content", "").strip()
         answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
@@ -83,15 +65,11 @@ class MMMUProBenchmark(BaseBenchmark):
         answer = extracted[-1] if extracted else None
         correct = answer == sample.get("answer", "")
 
-        return {
-            "prompt": prompt,
-            "raw_response": gen["raw_response"],
-            "extracted_code": answer_content,
-            "correct": correct,
-            "error_message": None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
-            "elapsed_time": gen["elapsed_time"],
-            "tps": gen["tps"],
-            "ttft": gen["ttft"],
-            "thinking_tokens": gen["thinking_tokens"],
-            "response_tokens": gen["response_tokens"]
-        }
+        cat = sample.get("subject", "unknown")
+        return self._result(
+            prompt, gen,
+            extracted_code=answer_content,
+            correct=correct,
+            error_message=None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
+            scoring_details={"category": cat},
+        )

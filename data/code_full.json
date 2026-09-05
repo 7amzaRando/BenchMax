@@ -2,701 +2,918 @@
   {
     "task_id": "code_algorithms_01",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the push-relabel maximum flow algorithm with the highest-label selection rule, consider the effect of the gap heuristic. Which of the following correctly explains why the gap heuristic improves performance?\n\nA) It eliminates the need for BFS to rebuild the level graph by detecting when a height value has no vertices assigned to it, causing all vertices above that height to be marked as unreachable from the sink.\nB) It reduces the number of saturating pushes by preferentially selecting edges with higher residual capacity.\nC) It replaces the global relabeling step with localized height updates that propagate along reverse edges.\nD) It prevents the algorithm from pushing flow out of vertices whose height exceeds the maximum possible shortest-path distance from source to sink.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. First determine what each lambda captures, then what the rebinding after the loop does to those captures.\n\n```python\nfuncs = []\nfor i in range(4):\n    funcs.append(lambda: i)\ni = 99\nprint(sum(f() for f in funcs))\n```\n\nOutput only the number.",
+    "answer": "396"
   },
   {
     "task_id": "code_algorithms_02",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the Hopcroft-Karp algorithm for maximum bipartite matching. Which condition guarantees that the BFS phase of the algorithm has found a maximal set of vertex-disjoint shortest augmenting paths?\n\nA) The BFS proceeds until all vertices at distance d from the source are exhausted, where d is the distance to the farthest reachable unmatched vertex.\nB) The BFS builds a layered graph from all free left vertices, and each DFS augmentation saturates one edge at the current shortest distance, after which that edge is removed from the layered graph.\nC) The algorithm terminates when the number of augmenting paths found in a single DFS phase is less than the size of the matching.\nD) The BFS phase constructs the layered graph from all free left vertices and terminates when all free right vertices are at the same minimum distance.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "prompt": "Consider the following Python snippet. Track which calls share the default list object and which call gets a fresh list, noting that previously returned references observe later mutations.\n\n```python\ndef f(x, acc=[]):\n    acc.append(x)\n    return acc\na = f(1)\nb = f(2)\nc = f(3, [])\nd = f(4)\nprint(len(a), len(b), len(d), len(c))\n```\n\nOutput only the four lengths in order, space-separated.",
+    "answer": "3 3 3 1"
   },
   {
     "task_id": "code_algorithms_03",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the context of Delaunay triangulation of a set of points in the plane in general position (no three collinear, no four cocircular), which of the following statements is true about the relationship between the Delaunay triangulation and the Euclidean minimum spanning tree (EMST)?\n\nA) The EMST is always a superset of the Delaunay triangulation, containing all Delaunay edges plus additional edges necessary for connectivity.\nB) The Delaunay triangulation is always a subgraph of the EMST, and all EMST edges are Delaunay edges.\nC) The EMST is a subgraph of the Delaunay triangulation, meaning every edge of the EMST appears in the Delaunay triangulation.\nD) There is no guaranteed containment relationship; the EMST and Delaunay triangulation are independent structures.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Trace the generator protocol: what the first next() yields, what send() injects as the value of the yield expression, and what is yielded next.\n\n```python\ndef gen():\n    x = yield 10\n    yield x + 1\ng = gen()\na = next(g)\nb = g.send(41)\nprint(a + b)\n```\n\nOutput only the number.",
+    "answer": "52"
   },
   {
     "task_id": "code_algorithms_04",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the A* search algorithm for graph traversal, suppose the heuristic h(n) is admissible but NOT consistent (monotonic). Which of the following best describes the consequences for optimality and the required modifications?\n\nA) A* with an admissible but inconsistent heuristic is guaranteed to find the optimal path without any modifications, because admissibility alone suffices for optimality.\nB) A* may fail to find the optimal path with an inconsistent heuristic and must be modified to use a bidirectional search instead.\nC) A* with an admissible but inconsistent heuristic remains optimal only if the algorithm re-opens closed nodes when a better g-value is discovered, which may increase the running time.\nD) An inconsistent heuristic cannot be admissible, so this situation cannot arise.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Determine which block (try, except, else, finally) produces the return value, and whether the assignment in the finally block alters an already-decided return.\n\n```python\ndef f(v):\n    try:\n        x = int(v)\n    except ValueError:\n        return -1\n    else:\n        return x * 2\n    finally:\n        x = 0\nprint(f(\"21\"))\n```\n\nOutput only the number.",
+    "answer": "42"
   },
   {
     "task_id": "code_algorithms_05",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the Li Chao segment tree for dynamic convex hull trick queries. In which scenario does the Li Chao tree maintain its O(log C) per-operation guarantee (where C is the coordinate range) while a deque-based CHT implementation fails?\n\nA) When slopes are inserted in arbitrary order and query x-coordinates are also arbitrary.\nB) When slopes are inserted in monotonic order but queries are in arbitrary order.\nC) When both slopes and queries are monotonic in the same direction.\nD) When slopes are inserted in arbitrary order but queries are monotonic.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Distinguish augmented assignment (which mutates in place through an existing alias) from plain assignment (which rebinds one name to a new object).\n\n```python\na = [1, 2, 3]\nb = a\nb += [4]\na = a + [5]\nc = b\nc *= 2\nprint(len(b))\nprint(len(a))\nprint(b[0])\n```\n\nOutput only the three numbers, one per line.",
+    "answers": [
+      "8",
+      "5",
+      "1"
+    ]
   },
   {
     "task_id": "code_algorithms_06",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "For the divide-and-conquer DP optimization to apply to the recurrence dp[i][j] = min_{k < j} (dp[i-1][k] + cost(k+1, j)), which of the following conditions must hold?\n\nA) The cost function satisfies the quadrangle inequality: cost(a, c) + cost(b, d) <= cost(a, d) + cost(b, c) for all a <= b <= c <= d.\nB) The optimal decision point opt[i][j] = argmin_k (dp[i-1][k] + cost(k+1, j)) is monotonic in j for each fixed i.\nC) The cost function is convex in its second argument.\nD) Both conditions A and B must hold simultaneously.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "D"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Recall how dict keys compare for equality: True, 1 and 1.0 are equal keys, and tuples compare element-wise, so (1, 2) and (True, 2) are the same key.\n\n```python\nd = {}\nd[True] = 'a'\nd[1] = 'b'\nd[1.0] = 'c'\nd[(1, 2)] = 'x'\nd[(True, 2)] = 'y'\nprint(len(d))\n```\n\nOutput only the number.",
+    "answer": "2"
   },
   {
     "task_id": "code_algorithms_07",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the 2-SAT algorithm using implication graphs and strongly connected components, which of the following conditions is both necessary and sufficient for the Boolean formula to be unsatisfiable?\n\nA) The implication graph contains any directed cycle.\nB) There exists a variable x such that the nodes representing x and not x belong to the same strongly connected component.\nC) The number of clauses exceeds the number of variables by a factor greater than 2.\nD) The implication graph, when viewed as an undirected graph, is not bipartite.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Recall that round() uses banker's rounding (ties go to the even neighbor) and that 2.675 cannot be represented exactly in binary floating point.\n\n```python\nprint(round(2.5))\nprint(round(3.5))\nprint(round(-2.5))\nprint(round(2.675, 2))\n```\n\nOutput only the four numbers, one per line.",
+    "answers": [
+      "2",
+      "4",
+      "-2",
+      "2.67"
+    ]
   },
   {
     "task_id": "code_algorithms_08",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the Tonelli-Shanks algorithm for computing modular square roots modulo an odd prime p. Let p - 1 = Q * 2^S where Q is odd. In the worst case, what is the expected number of iterations of the main loop that reduces the exponent S?\n\nA) O(log log p) iterations on average, but O(S) = O(log p) in the worst case.\nB) Exactly S iterations, each requiring O(log p) modular multiplications.\nC) O(1) expected iterations regardless of S, because a quadratic non-residue is always found quickly.\nD) O(sqrt(p)) iterations because the algorithm must search for the correct root in a subgroup of size 2^S.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "prompt": "Consider the following Python snippet. Recall that // is floor division (rounds toward negative infinity, not toward zero) and that % takes the sign of the divisor, while int() truncates toward zero.\n\n```python\nprint(-7 // 3, -7 % 3, 7 // -3, int(-7 / 3))\n```\n\nOutput only the four numbers in order, space-separated.",
+    "answer": "-3 2 -3 -2"
   },
   {
     "task_id": "code_algorithms_09",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "To compute the transitive closure of a directed graph on n vertices using the Floyd-Warshall-style approach with bitset optimization, what is the time complexity and how is it achieved?\n\nA) O(n^3 / w) where w is the machine word size, achieved by storing each row as a bitset and using word-level bitwise OR operations instead of Boolean loops.\nB) O(n^2 / w) achieved by using the adjacency matrix in compressed sparse row format.\nC) O(n^3 / log n) achieved by Strassen's matrix multiplication on the Boolean semiring.\nD) O(n^3) because bitset operations cannot replace the triple-nested loop structure of Floyd-Warshall.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Recall that a for-else's else runs only if the loop was not terminated by break, and that break exits only the innermost loop.\n\n```python\ntotal = 0\nfor i in range(3):\n    for j in range(3):\n        if i + j == 3:\n            break\n        total += 1\n    else:\n        total += 10\nprint(total)\n```\n\nOutput only the number.",
+    "answer": "16"
   },
   {
     "task_id": "code_algorithms_10",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the Stoer-Wagner global minimum cut algorithm, each phase finds a minimum s-t cut between the last two vertices added to the active set. Which property guarantees that taking the minimum over all phases yields the global minimum cut?\n\nA) The algorithm contracts the two vertices connected by the minimum-weight edge at each step, preserving all cut sizes.\nB) If the global minimum cut separates the last two vertices merged in a phase, then the phase's cut is the global minimum; otherwise, the two merged vertices can be safely contracted without destroying the global minimum cut.\nC) The weight of the cut found in each phase increases monotonically, so the first phase always finds the global minimum.\nD) The algorithm explores all possible partitions of the vertex set, so it is guaranteed to find the global minimum by exhaustive search.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "prompt": "Consider the following Python snippet. Note that the comprehension builds independent row objects, while the bare name row remains an alias of grid[1], so += mutates the grid.\n\n```python\ngrid = [[0] * 3 for _ in range(3)]\nrow = grid[1]\nrow += [9]\nprint(len(grid[1]), len(row), sum(sum(r) for r in grid))\n```\n\nOutput only the three numbers in order, space-separated.",
+    "answer": "4 4 9"
   },
   {
     "task_id": "code_algorithms_11",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the CDQ divide-and-conquer algorithm for counting 3D partial orderings (dominance counting of (x, y, z) triples), after sorting by the first dimension x, the algorithm recursively processes left and right halves. Which data structure is used during the merge step to count points from the right half that are dominated by points from the left half?\n\nA) A segment tree keyed by the y-coordinate, with each node storing a balanced BST over z-coordinates.\nB) A binary indexed tree (Fenwick tree) over the z-coordinate, where points from the left half are added as they are iterated in y-order, and points from the right half query the BIT to count left points with smaller z.\nC) A hash table mapping y-coordinates to the count of points with that y and smaller z.\nD) A skip list sorted by z, allowing range queries of how many left points have z below a threshold.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Recall that heappushpop pushes then pops (returning the pushed item if it is smallest), while heapreplace pops then pushes (never returning the just-pushed item).\n\n```python\nimport heapq\nh = [3, 1, 2]\nheapq.heapify(h)\nx = heapq.heappushpop(h, 0)\ny = heapq.heapreplace(h, 9)\nprint(x + y + sum(h))\n```\n\nOutput only the number.",
+    "answer": "15"
   },
   {
     "task_id": "code_algorithms_12",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the Knuth optimization for DP: dp[i][j] = min_{k in [i, j-1]} (dp[i][k] + dp[k+1][j] + cost(i, j)). Which condition on the cost function guarantees that the optimal splitting point opt[i][j] is monotonic (opt[i][j-1] <= opt[i][j] <= opt[i+1][j])?\n\nA) cost(i, j) satisfies the quadrangle inequality and is monotone in the interval containment order.\nB) cost(i, j) is convex and differentiable.\nC) cost(i, j) depends only on the length j - i, not on the specific endpoints.\nD) cost(i, j) is a metric satisfying the triangle inequality.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the following iterative DFS. The stack is LIFO so neighbors are visited in reverse push order, and marking happens at pop time with already-visited entries skipped.\n\n```python\nadj = {0: [1, 2], 1: [3], 2: [3], 3: []}\nstack = [0]\nvis = set()\norder = []\nwhile stack:\n    u = stack.pop()\n    if u in vis:\n        continue\n    vis.add(u)\n    order.append(u)\n    for w in adj[u]:\n        stack.append(w)\nprint(len(order))\nprint(order[-1])\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "4",
+      "1"
+    ]
   },
   {
     "task_id": "code_algorithms_13",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the Aho-Corasick automaton for multi-pattern matching, what is the purpose of the dictionary suffix link (also called the output link), and how does it differ from the failure link?\n\nA) The dictionary suffix link points from a node to the longest proper suffix that is a terminal node (represents a complete pattern), enabling O(m + z) reporting where z is the total number of matches, while the failure link connects to the longest proper suffix that is a prefix of any pattern.\nB) The dictionary suffix link is the same as the failure link, used for transitions when a character does not match.\nC) The dictionary suffix link points to the parent node in the trie, while the failure link points to the sibling node.\nD) The dictionary suffix link is used during the build phase only, while the failure link is used during the search phase.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider this Lomuto-partition quicksort run on a fixed array. The counter increments once per inner-loop comparison (each j tested against the pivot), across all recursive calls.\n\n```python\na = [3, 1, 4, 1, 5, 9, 2, 6]\nc = 0\ndef qs(lo, hi):\n    global c\n    if lo >= hi:\n        return\n    p = a[hi]\n    i = lo\n    for j in range(lo, hi):\n        c += 1\n        if a[j] < p:\n            a[i], a[j] = a[j], a[i]\n            i += 1\n    a[i], a[hi] = a[hi], a[i]\n    qs(lo, i - 1)\n    qs(i + 1, hi)\nqs(0, len(a) - 1)\nprint(c)\n```\n\nOutput only the number.",
+    "answer": "15"
   },
   {
     "task_id": "code_algorithms_14",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Which of the following correctly distinguishes Monte Carlo algorithms from Las Vegas algorithms for decision problems?\n\nA) Monte Carlo algorithms run in worst-case polynomial time but may err with bounded probability; Las Vegas algorithms always produce the correct answer but have expected polynomial running time with unbounded worst-case.\nB) Monte Carlo algorithms use randomness only for pivot selection, while Las Vegas algorithms use randomness for all internal decisions.\nC) Monte Carlo algorithms are derandomizable via the method of conditional expectations, while Las Vegas algorithms are not.\nD) Las Vegas algorithms are a subclass of Monte Carlo algorithms where the error probability is zero.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider Dijkstra's algorithm with lazy deletion below. The heap may hold stale entries; only pops matching the best-known distance relax neighbors. Trace which path actually settles node 3.\n\n```python\nimport heapq\nadj = {0: [(1, 4), (2, 1)], 1: [(3, 1)], 2: [(1, 2), (3, 5)], 3: []}\nINF = 10 ** 9\ndist = {0: 0, 1: INF, 2: INF, 3: INF}\npq = [(0, 0)]\nwhile pq:\n    d, u = heapq.heappop(pq)\n    if d != dist[u]:\n        continue\n    for w, c in adj[u]:\n        nd = d + c\n        if nd < dist[w]:\n            dist[w] = nd\n            heapq.heappush(pq, (nd, w))\nprint(dist[3])\n```\n\nOutput only the number.",
+    "answer": "4"
   },
   {
     "task_id": "code_algorithms_15",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the simplex method for linear programming, Bland's rule (smallest-index rule) is used for pivot selection. Which of the following statements about Bland's rule is correct?\n\nA) Bland's rule guarantees termination in a polynomial number of pivots, matching the ellipsoid method's complexity.\nB) Bland's rule prevents cycling by selecting the smallest-index entering variable among those with positive reduced cost, and the smallest-index leaving variable among eligible candidates, but the worst-case number of pivots remains exponential.\nC) Bland's rule prevents cycling only for non-degenerate problems; degeneracy still permits cycling.\nD) Bland's rule guarantees that the algorithm terminates in at most m + n pivots, where m is the number of constraints and n is the number of variables.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the memoized 0/1 knapsack below. First compute the optimal value for capacity 5, then count how many distinct (i, c) states the cache actually misses on (each miss is one state evaluation).\n\n```python\nw = [2, 3, 4]\nv = [3, 4, 5]\nC = 5\nfrom functools import lru_cache\n@lru_cache(maxsize=None)\ndef dp(i, c):\n    if i == len(w) or c == 0:\n        return 0\n    if w[i] > c:\n        return dp(i + 1, c)\n    return max(dp(i + 1, c), v[i] + dp(i + 1, c - w[i]))\nprint(dp(0, 5))\nprint(dp.cache_info().misses)\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "7",
+      "11"
+    ]
   },
   {
     "task_id": "code_algorithms_16",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In the context of the suffix array and LCP array, consider the Cartesian tree built from the LCP array. Which of the following correctly relates properties of this Cartesian tree to the structure of the suffix tree?\n\nA) The Cartesian tree of the LCP array is isomorphic to the suffix tree with all suffix nodes removed, where each internal node corresponds to an LCP value representing the longest common prefix of its child suffixes.\nB) The Cartesian tree of the LCP array is equivalent to the suffix automaton's state transition graph.\nC) The Cartesian tree of the LCP array has leaf nodes corresponding to the Burrows-Wheeler transform characters.\nD) The Cartesian tree of the suffix array indices represents the suffix tree's suffix links.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This lower-bound binary search passes all non-empty tests but crashes in production. The input domain includes empty lists.\n\n```python\ndef bsearch(a, x):\n    lo, hi = 0, len(a) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if a[mid] < x:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo if a[lo] == x else -1\n```\n\nWhich option correctly identifies the bug?\n\nA. The midpoint must use lo + (hi - lo) // 2 to avoid integer overflow, otherwise large arrays loop forever.\nB. The loop condition must be lo <= hi; with lo < hi the search misses the element when lo == hi on entry.\nC. hi must start at len(a), not len(a) - 1, otherwise the last element is never examined.\nD. The update lo = mid + 1 can skip the target when a[mid] < x and the target sits at mid.\nE. There is no empty-input guard: with a == [], hi becomes -1, the loop is skipped, and a[lo] raises IndexError.\nF. The final comparison must be a[mid] == x; using a[lo] reads a stale index after the loop.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "E"
   },
   {
     "task_id": "code_algorithms_17",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "Consider Konig's theorem relating maximum bipartite matching to minimum vertex cover. Given a bipartite graph G = (L, R, E) and a maximum matching M, which of the following correctly describes how to construct a minimum vertex cover?\n\nA) Include all vertices that participate in M, regardless of which side they belong to.\nB) From all free vertices in L, run an alternating BFS in the residual graph. The minimum vertex cover is (L \\ Z) union (R intersect Z), where Z is the set of vertices reachable from the free L vertices via alternating paths.\nC) Take all vertices in L that are matched and all vertices in R that are unmatched.\nD) The minimum vertex cover is exactly the set of vertices incident to the edges of a maximum matching.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "This Dijkstra implementation returns wrong shortest paths on weighted graphs with more than a few edges, e.g. dist to some nodes is larger than optimal.\n\n```python\ndef dijkstra(adj, s):\n    import heapq\n    dist = {s: 0}\n    seen = {s}\n    pq = [(0, s)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        for w, c in adj.get(u, []):\n            if w not in seen:\n                seen.add(w)\n                dist[w] = d + c\n                heapq.heappush(pq, (d + c, w))\n    return dist\n```\n\nWhich option correctly identifies the bug?\n\nA. The heap tuples are ordered (distance, node), so ties on distance compare nodes and crash on unorderable labels.\nB. Nodes are frozen in seen on first push, so a shorter path discovered later is ignored and dist[w] keeps the first-found, possibly suboptimal value.\nC. dist[s] must be float('inf') initially, otherwise the source distance of 0 corrupts relaxations.\nD. The adjacency lookup adj.get(u, []) silently invents empty neighborhoods and must be adj[u] to surface missing nodes.\nE. The popped distance d is stale because the code never checks d != dist[u]; adding that check alone fixes the wrong answers.\nF. heapq is a min-heap but Dijkstra needs a max-heap, so every extracted node is the wrong one.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_algorithms_18",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "For the Christofides algorithm for the metric TSP to yield a Hamiltonian cycle whose total length is at most 1.5 times the optimal, which of the following conditions must the distance metric satisfy?\n\nA) The distances must be symmetric and satisfy the triangle inequality d(i, k) <= d(i, j) + d(j, k) for all triples.\nB) The distances must be Euclidean (L2 norm in R^d), because the algorithm relies on geometric properties.\nC) The distances must satisfy the reverse triangle inequality d(i, j) >= |d(i, k) - d(k, j)|.\nD) The distances must be integer-valued and all distinct to guarantee the 1.5 factor.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This maximum-subarray routine passes mixed-sign tests but fails on input [-5, -2, -8], returning 0 instead of the correct answer.\n\n```python\ndef max_sub(a):\n    best = 0\n    cur = 0\n    for x in a:\n        cur = max(0, cur + x)\n        best = max(best, cur)\n    return best\n```\n\nWhich option correctly identifies the bug?\n\nA. The loop must iterate over indices, not values, otherwise cur accumulates positions instead of elements.\nB. Initializing best and cur to 0 forbids the empty-subarray ban: for all-negative input the answer must be the largest element, so best/cur must initialize to a[0] (and the recurrence must not floor at 0).\nC. best = max(best, cur) is in the wrong place; it must run before cur is updated or the first element is skipped.\nD. The recurrence must be cur = max(x, cur - x); addition is the wrong operator for subarray extension.\nE. The function crashes on empty input, and that crash propagates as 0 through the caller.\nF. max() with two arguments returns the smaller one in this Python version, inverting both updates.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_algorithms_19",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "Consider the Miller-Rabin primality test. For the composite number n = 2047 = 23 * 89, what is the result when tested with base a = 2, and why?\n\nA) The test correctly reports composite because 2 is a witness for all odd composites less than 2048.\nB) The test incorrectly reports prime because 2047 is a strong pseudoprime to base 2: in the decomposition 2046 = 1023 * 2^1, we have 2^1023 mod 2047 = 1, so the test fails to detect compositeness.\nC) The test correctly reports prime because 2047 is actually prime, and the factorization is erroneous.\nD) The test incorrectly reports prime because 2047 is a Carmichael number, making any base fail as a witness.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "This KMP prefix-function works on patterns like 'abab' but returns wrong tables for patterns with nested borders such as 'aaabaaa'.\n\n```python\ndef prefix(p):\n    pi = [0] * len(p)\n    for i in range(1, len(p)):\n        j = pi[i - 1]\n        while j > 0 and p[i] != p[j]:\n            j = pi[j]\n        if p[i] == p[j]:\n            j += 1\n        pi[i] = j\n    return pi\n```\n\nWhich option correctly identifies the bug?\n\nA. The table must initialize to pi = [-1] * len(p); starting from zeros shifts every border length by one.\nB. The outer loop must start at 0, not 1; skipping index 0 drops the first border comparison.\nC. The fallback j = pi[j] reads one position too far: since pi stores lengths, the fallback for a length-j prefix is pi[j - 1], and pi[j] follows a wrong (longer) border chain.\nD. The condition p[i] != p[j] must be p[i] != p[i - 1]; the algorithm compares against the wrong end of the pattern.\nE. j += 1 must be j += 2 because both the prefix and the current character extend the border.\nF. pi[i] = j must be pi[i] = j + 1 to convert from 0-based indices to border lengths.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_20",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Lagrange polynomial interpolation with n points (x_i, y_i) where the x_i form an arithmetic progression x_i = x_0 + i*h, which technique allows evaluating the interpolating polynomial at a new point x in O(n) time instead of the standard O(n^2)?\n\nA) Using the barycentric form: L(x) = sum_i y_i * (w_i / (x - x_i)) / sum_i (w_i / (x - x_i)), where the weights w_i = 1 / prod_{j != i} (x_i - x_j) can be precomputed in O(n) using prefix and suffix products since the denominators form a binomial pattern.\nB) Using Neville's algorithm and caching intermediate results from previous evaluations.\nC) Using the Newton divided-difference form with O(n^2) preprocessing that is amortized over many queries.\nD) Using FFT-based evaluation where the polynomial is evaluated at all n-th roots of unity simultaneously.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This interval-merge passes value checks but corrupts its caller's data: after merge([[1, 5], [2, 3]]), the caller's first interval reads [1, 5] mutated, and merge([]) crashes.\n\n```python\ndef merge(iv):\n    iv.sort()\n    out = [iv[0]]\n    for s, e in iv[1:]:\n        if s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out\n```\n\nWhich option correctly identifies the bug?\n\nA. iv.sort() sorts lexicographically, so intervals must be sorted with key=lambda t: t[1] or merging misfires.\nB. The overlap test must be s < out[-1][1]; with <=, merely touching intervals are wrongly merged.\nC. max() picks the wrong endpoint; merged intervals must take the minimum of the two ends.\nD. out = [iv[0]] aliases the caller's sublist and mutates it in place, and iv[0] on empty input raises IndexError; the fix copies the first interval and guards the empty case.\nE. The loop unpacks s, e from iv[1:], which yields indices rather than pairs, so s and e are off by one.\nF. out.append([s, e]) must be out.append((s, e)); mixing lists and tuples breaks the <= comparison.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "D"
   },
   {
     "task_id": "code_algorithms_21",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In the successive shortest augmenting path algorithm for minimum-cost maximum flow, after the initial Bellman-Ford computation to determine potentials pi(v), why does Dijkstra's algorithm correctly compute shortest paths in subsequent iterations?\n\nA) Because all edge costs in the original graph are non-negative, making Bellman-Ford unnecessary for subsequent computations.\nB) Because the reduced cost c_pi(u, v) = c(u, v) + pi(u) - pi(v) is guaranteed to be non-negative for every edge (u, v) that has residual capacity, and the potentials are updated after each augmentation to preserve non-negativity.\nC) Because Dijkstra's algorithm works with negative edges as long as the graph is directed and acyclic.\nD) Because Bellman-Ford is re-run after every augmentation, so Dijkstra is not actually used.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "This Hoare-partition quicksort hangs (infinite recursion) on inputs like [2, 1] and [3, 3, 3, 3].\n\n```python\ndef qs(a, lo, hi):\n    if lo >= hi:\n        return\n    p = a[(lo + hi) // 2]\n    i, j = lo, hi\n    while i <= j:\n        while a[i] < p:\n            i += 1\n        while a[j] > p:\n            j -= 1\n        if i <= j:\n            a[i], a[j] = a[j], a[i]\n            i += 1\n            j -= 1\n    qs(a, lo, i)\n    qs(a, i + 1, hi)\n```\n\nWhich option correctly identifies the bug?\n\nA. The pivot must be a[hi], not the middle element; Hoare's scheme only works with an endpoint pivot.\nB. The inner scans must use <= and >= or equal elements are never skipped and the pointers stall.\nC. After a Hoare partition the correct recursive calls are qs(a, lo, j) and qs(a, i, hi); using Lomuto-style bounds (lo, i) / (i + 1, hi) re-sorts an overlapping range and recurses forever on tiny inputs.\nD. The base case must be lo == hi; with lo >= hi the recursion stops one level too early.\nE. The swap must come before the i <= j test, otherwise crossed pointers swap back correctly placed elements.\nF. Python recursion cannot express quicksort; the function must be rewritten iteratively with an explicit stack.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_22",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Edmonds' Blossom algorithm for maximum matching in general (non-bipartite) graphs, an odd-length alternating cycle called a blossom is found during the search for an augmenting path. What is the correct approach for handling blossoms?\n\nA) Blossoms are discarded because they cannot be part of any augmenting path; the DFS backtracks and tries a different route.\nB) The blossom is contracted (shrunk) into a single supernode, since any augmenting path entering the blossom can be rerouted through it. The search continues on the contracted graph, and the blossom is expanded when reconstructing the final augmenting path.\nC) The blossom indicates that the current matching is already maximum, so the algorithm terminates.\nD) All vertices in the blossom are marked as visited and excluded from future DFS searches.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "This coin-change counter should count combinations (order of coins irrelevant) but returns 3 for coins=[1, 2], amount=3, where the correct combination count is 2 ({1,1,1}, {1,2}).\n\n```python\ndef ways(coins, amt):\n    dp = [0] * (amt + 1)\n    dp[0] = 1\n    for a in range(1, amt + 1):\n        for c in coins:\n            if c <= a:\n                dp[a] += dp[a - c]\n    return dp[amt]\n```\n\nWhich option correctly identifies the bug?\n\nA. dp[0] must be 0; initializing to 1 fabricates an empty-coin solution that inflates every entry.\nB. The loops are nested in the wrong order: iterating amounts outside and coins inside counts permutations (1+2 and 2+1 separately); combinations require coins outside and amounts inside.\nC. The guard must be c < a; with <=, exact-fit coins are double counted.\nD. dp[a] += dp[a - c] must be dp[a] = max(dp[a], dp[a - c] + 1); accumulation is the wrong operator.\nE. The table needs two dimensions; a 1-D dp cannot represent coin-change state.\nF. The return must be dp[amt] - 1 to exclude the trivial all-ones solution.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_algorithms_23",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Tarjan's algorithm for finding bridges in an undirected graph, let disc[u] be the discovery time of vertex u during DFS, and low[u] be the lowest discovery time reachable from u or its descendants via a single back edge. Which condition correctly identifies whether a tree edge (u, v) (where u is the parent of v in the DFS tree) is a bridge?\n\nA) low[v] >= disc[u]\nB) low[v] > disc[u]\nC) low[v] < disc[u]\nD) low[u] > disc[v]\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "This Floyd-Warshall returns distances larger than the true shortest paths on some graphs, though single-source checks on the same graphs are fine.\n\n```python\nfor i in range(n):\n    for j in range(n):\n        for k in range(n):\n            if dist[j][i] + dist[i][k] < dist[j][k]:\n                dist[j][k] = dist[j][i] + dist[i][k]\n```\n\nWhich option correctly identifies the bug?\n\nA. The relaxation must use <= instead of < or equal-length alternative routes are never recorded.\nB. The intermediate vertex k must be the outermost loop; with i outermost, paths route through intermediates before those intermediates are themselves relaxed, so some shortest paths are missed.\nC. The diagonal must be reset to zero inside the loop; stale dist[v][v] poisons every relaxation.\nD. The loops must run over range(n - 1); including index n - 1 reads a nonexistent vertex.\nE. dist[j][i] + dist[i][k] can overflow, so the addition needs a min() guard.\nF. Floyd-Warshall requires an adjacency matrix of 0/1, and weighted inputs are unsupported.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_algorithms_24",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In the Hungarian algorithm for the assignment problem, the potentials l(u) for left vertices and r(v) for right vertices satisfy l(u) + r(v) <= cost(u, v) for all u in L, v in R. When the equality graph (edges where l(u) + r(v) == cost(u, v)) does not contain a perfect matching, how are the potentials updated to include at least one new edge while maintaining feasibility?\n\nA) For all u in the alternating tree's left side S, decrease l(u) by delta; for all v in the alternating tree's right side T, increase r(v) by delta, where delta = min_{u in S, v not in T} (cost(u, v) - l(u) - r(v)).\nB) Increase all l(u) by delta and decrease all r(v) by delta, where delta = min remaining slack.\nC) Multiply all potentials by a factor of 2, then normalize by subtracting the minimum slack.\nD) Set l(u) = min_v cost(u, v) for all u and r(v) = 0 for all v, rebuilding the potentials from scratch.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This longest-substring-with-at-most-k-distinct routine collapses to tiny windows on inputs like ('aaabbb', 2), returning 2 instead of 6.\n\n```python\ndef longest_k_distinct(s, k):\n    from collections import defaultdict\n    cnt = defaultdict(int)\n    lo = 0\n    best = 0\n    for hi, ch in enumerate(s):\n        cnt[ch] += 1\n        while len(cnt) > k:\n            cnt[s[lo]] -= 1\n            lo += 1\n        best = max(best, hi - lo + 1)\n    return best\n```\n\nWhich option correctly identifies the bug?\n\nA. The shrink loop must be if, not while; while over-shrinks past the first valid window.\nB. best must update before shrinking, not after, or the maximal window is never measured.\nC. Zero-count keys are never deleted, so len(cnt) never drops back to k and the window keeps shrinking; the fix deletes the key when its count reaches zero.\nD. lo must start at 1; starting at 0 includes a phantom character before the string.\nE. enumerate yields (index, char) but the code treats ch as an index, scrambling the counts.\nF. defaultdict(int) defaults to 1, not 0, so every new character starts overcounted.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_25",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "Consider the Z-algorithm for computing the Z-array of a string s, where Z[i] is the length of the longest common prefix of s and s[i:]. The algorithm maintains an interval [l, r] representing the rightmost segment matching the prefix. Which of the following correctly states how Z[i] is initialized when i is within the current interval?\n\nA) Z[i] is initialized to min(Z[i - l], r - i + 1), and then extended by character comparisons.\nB) Z[i] is always initialized to 0 and computed from scratch by comparing s[i:] to s[0:].\nC) Z[i] is initialized to r - i, using the known matching prefix length from the current interval.\nD) Z[i] is initialized to Z[i - l] regardless of the current interval boundaries.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A dynamic array grows by a fixed increment: whenever full with capacity m, it allocates m + k slots (k = 64 fixed) and copies all m elements. Starting from empty, n >> k elements are appended. An engineer claims the total cost is O(n) because each append is O(1) except rare resizes. What is the tight total cost of the n appends?\n\nA. Theta(n): resizes are rare enough that the average stays constant.\nB. Theta(n log n): there are n/k resizes each costing up to O(n), and the harmonic series governs the sum.\nC. Theta(n^2): resize i copies Theta(i*k) elements and there are Theta(n/k) resizes, summing to Theta(n^2/k) = Theta(n^2) for fixed k.\nD. Theta(n sqrt(n)): copying overlaps with allocation so only the square root of the work is charged.\nE. Theta(nk): each of the n appends pays k extra, independent of the array size.\nF. O(1): capacity is bounded by k so the array never actually grows.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_26",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Manacher's algorithm for finding palindromic substrings, the algorithm maintains a center C and a right boundary R representing the palindrome that extends farthest to the right seen so far. What invariant do C and R satisfy?\n\nA) R is the rightmost index reached by any palindrome centered at any position <= C, and C is the center of the palindrome that reaches R.\nB) C is always the center of the longest palindrome in the entire string, and R is its right extent.\nC) R is the total length of the string, and C cycles through all positions from 0 to n-1.\nD) C and R represent the center and radius of the most recently discovered palindrome, regardless of whether it extends farthest.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A queue is built from two stacks: enqueue pushes onto stack A; dequeue pops from stack B, refilling B by popping all of A into B only when B is empty. A reviewer claims a single dequeue can cost O(n), hence n operations cost O(n^2). What is the tight amortized bound per queue operation?\n\nA. Theta(n) amortized: the refilling step dominates every operation.\nB. O(1) amortized: each element is pushed and popped at most once per stack (at most 4 stack moves total), so n operations cost O(n).\nC. Theta(log n) amortized: refills halve in frequency like binary counting.\nD. O(n^2) worst-case amortized because an adversary can force a refill on every dequeue.\nE. O(1) worst-case per operation, since refills are spread evenly by the runtime.\nF. Unbounded: with no capacity limit the analysis does not apply.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_algorithms_27",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "For the Hopcroft-Karp algorithm, consider the effect of one complete BFS + DFS phase. Which of the following correctly characterizes the distance from any free left vertex to any free right vertex after one full phase?\n\nA) The distance remains the same if no augmenting path of the current shortest length exists, and the algorithm terminates.\nB) The distance between any free left vertex and any free right vertex strictly increases after each phase, because all augmenting paths of the current shortest length become saturated.\nC) The distance may decrease if a new augmenting path with fewer edges appears after augmentations.\nD) The distance is unchanged, but the matching size increases by at most 2 per phase.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "Solve T(n) = 2T(n/2) + n log n with T(1) = Theta(1). A student applies Master case 2 (f(n) = n log n versus n^{log_2 2} = n) and answers Theta(n log n). What is the correct tight bound and why?\n\nA. Theta(n log n): case 2 applies directly since f(n) is n times a logarithm.\nB. Theta(n^2): the two subproblems each contribute n log n per level over log n levels.\nC. Theta(n log^2 n): f exceeds n^{log_b a} by only a logarithmic (not polynomial) factor, so the basic Master case 2 does not apply; the recursion tree sums n log(n/2^i) over log n levels giving n log^2 n order.\nD. Theta(n): the logarithmic factor is absorbed by the leaves.\nE. Theta(n^{log_2 3}): the nonhomogeneous term changes the branching factor.\nF. The recurrence diverges, so no Theta bound exists.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_28",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Strassen's matrix multiplication algorithm for n x n matrices where n = 2^k, what is the exact recurrence for the number of scalar additions and subtractions A(n) (not counting the multiplication of submatrices)?\n\nA) A(n) = 7 * A(n/2) + 18 * (n/2)^2\nB) A(n) = 7 * A(n/2) + 12 * (n/2)^2\nC) A(n) = 7 * A(n/2) + 24 * (n/2)^2\nD) A(n) = 8 * A(n/2) + 18 * (n/2)^2\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "The naive recursive Fibonacci runs T(n) = T(n-1) + T(n-2) + Theta(1). A blog post calls it O(2^n) and stops. What is the tight bound?\n\nA. Theta(n^2): each level does linear work over n levels.\nB. Theta(n!): the two branches multiply like permutations.\nC. Theta(n Fi(n)) where Fi is the Fibonacci number, which is Theta(n^2).\nD. Theta(phi^n) with phi = (1 + sqrt(5)) / 2: the recursion tree has Fi(n+1) leaves, exponentially tight, so O(2^n) is true but loose by an exponential base (2 vs 1.618).\nE. Theta(n log n): the two halves are nearly balanced.\nF. Theta(2^n / n): the subtraction of overlapping subproblems saves a linear factor.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "D"
   },
   {
     "task_id": "code_algorithms_29",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "For generating a De Bruijn sequence B(k, n) over an alphabet of size k with order n, the FKM (Fredricksen-Kessler-Maiorana) algorithm generates the sequence by concatenating which set of strings in lexicographic order?\n\nA) All k^n possible strings of length n, sorted lexicographically.\nB) All Lyndon words whose length divides n, over the given alphabet, sorted lexicographically.\nC) All primitive necklaces of length n, sorted in reverse lexicographic order.\nD) All aperiodic prefixes of the n-th power of each alphabet symbol.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "An engineer replaces heapq.heapify(data) (linear) with n sequential heappush calls, claiming each push is O(1) on average so the total stays O(n). For worst-case input of n keys, what is the tight bound of the n-push construction?\n\nA. Theta(n): pushes are O(1) average and averages compose linearly.\nB. Theta(n log log n): heap height grows doubly logarithmically during construction.\nC. Theta(n log n) worst case: the i-th push can cost Theta(log i), summing to log(n!) = Theta(n log n); the O(n) heapify bound does not transfer.\nD. Theta(n sqrt(n)): sift-ups traverse only half the height on average.\nE. O(n) worst case with a larger constant, so the replacement is harmless.\nF. Theta(n^2): every push scans the whole heap.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_30",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Pollard's Rho integer factorization algorithm using Floyd's cycle detection, the sequence x_{i+1} = (x_i^2 + c) mod n defines a random walk modulo n. What is the expected number of iterations before a collision modulo a prime factor p is found?\n\nA) O(sqrt(p)) iterations, by the birthday paradox, giving an overall expected O(n^{1/4}) for n = p * q with p approx q.\nB) O(log p) iterations, by the properties of quadratic residues.\nC) O(p^{2/3}) iterations by the Pollard-Strassen bound.\nD) O(sqrt(n)) iterations in the worst case, regardless of the factor size.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A loop builds a string of total length N via s += chunk. Textbook analysis says Theta(N^2) worst case (each append copies the accumulated prefix). A CPython expert objects that s += is amortized O(1) when s has refcount 1, due to overallocation and in-place resize. Which statement is the correct tight characterization?\n\nA. Theta(N) always: string concatenation is O(1) per character in every Python implementation.\nB. Theta(N^2) guaranteed in CPython: the language spec mandates a fresh copy per +=.\nC. Theta(N^2) worst case in the language model (immutable-string semantics), but amortized linear in CPython's implementation when s is uniquely referenced; code relying on the fast path is implementation-dependent and breaks under aliasing (e.g. t = s in scope) or on other runtimes.\nD. Theta(N log N): overallocation gives logarithmic amortized appends.\nE. O(N) worst case because chunks shrink geometrically.\nF. Unanalyzable: string costs depend on GC pauses.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_31",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In the context of the FM-index for exact pattern matching using backward search, what does the LF-mapping (last-to-first mapping) compute?\n\nA) Given a position i in the Burrows-Wheeler transform (last column L), LF(i) returns the position of the same suffix in the first column F of the Burrows-Wheeler matrix, enabling the backward search procedure.\nB) LF(i) maps the i-th character of the original text to its position in the sorted suffix array.\nC) LF(i) computes the number of occurrences of a character c up to position i in the BWT.\nD) LF(i) returns the rank of the suffix starting at position i in the original text.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "The Sieve of Eratosthenes marks multiples of each prime p up to n. A student sums n/p over all p <= n, bounds it by n times pi(n), and claims Theta(n^2 / log n). What is the tight bound and the flaw?\n\nA. Theta(n log n): the harmonic series over all integers governs the marking.\nB. Theta(n log log n): summing n/p over primes gives n times Mertens' sum Theta(log log n); the student wrongly multiplied by the prime count instead of summing reciprocals.\nC. Theta(n sqrt(n)): only primes up to sqrt(n) do marking work.\nD. Theta(n): each composite is marked exactly once.\nE. Omega(n^2): the sieve re-marks multiples redundantly without bound.\nF. Theta(n (log n)^2): even and odd passes each cost n log n.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_algorithms_32",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider using bitset operations (bit parallelism) to compute the longest common subsequence (LCS) of two strings of lengths n and m (n <= m). Using Myers' bit-vector algorithm, what is the time complexity?\n\nA) O(n * m / w) where w is the machine word size, because the DP recurrence can be computed using word-level parallel operations on bit vectors.\nB) O(n + m + |Sigma|) because the bit-vector approach eliminates all DP computations.\nC) O(n * log m) because each position requires binary search on bit vectors.\nD) O(n * m / (w * log |Sigma|)) due to alphabet compression.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Which of the following amortized/aggregate claims are TRUE? Select all that apply.\n\nA. n increments of a binary counter cost Theta(n) total: bit k flips every 2^k increments, so the aggregate is n + n/2 + ... < 2n.\nB. Union-find with path compression but WITHOUT union by rank achieves inverse-Ackermann amortized time per operation.\nC. n appends to a doubling dynamic array cost Theta(n) total: the geometric copy series n + n/2 + ... < 2n.\nD. The two-stack queue above has O(1) amortized enqueue and dequeue.\nE. Splay-tree access is O(log n) worst case per operation.\nF. Growing a hash table by a fixed +100 slots per resize keeps insertions O(1) amortized.\n\nAnswer with the letters of all true statements (e.g. A C D).",
+    "answers": [
+      "A",
+      "C",
+      "D"
+    ]
   },
   {
     "task_id": "code_algorithms_33",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the Gomory-Hu tree construction for an undirected graph G = (V, E) with non-negative edge capacities, which of the following properties does the resulting tree T = (V, F) satisfy?\n\nA) For every pair of vertices (u, v), the minimum s-t cut value in G equals the minimum edge weight on the unique path between u and v in T, and T can be constructed using V - 1 maximum flow computations.\nB) T contains exactly one edge for each minimum cut in G, and the edge weights are the capacities of these cuts.\nC) T is a minimum spanning tree of G with respect to cut capacities as edge weights.\nD) T is a tree where each edge represents a pair of vertices that are not separated by any minimum cut.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "For each recurrence a tight bound is claimed. Which claims are TRUE? Select all that apply.\n\nA. T(n) = 4T(n/2) + n^2 is Theta(n^2 log n).\nB. T(n) = 2T(n/2) + n^2 is Theta(n^2).\nC. T(n) = T(n/2) + 1 is Theta(log n).\nD. T(n) = 2T(n/2) + n log n is Theta(n log n).\nE. T(n) = 3T(n/4) + n is Theta(n).\nF. T(n) = 2T(n - 1) + 1 is Theta(n * 2^n).\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_algorithms_34",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the context of the convex hull trick (CHT) for DP optimization, when lines are added with decreasing slopes and queries are for increasing x-values, what data structure achieves O(1) amortized time per operation?\n\nA) A balanced binary search tree (e.g., std::set), because the line insertions are arbitrary.\nB) A Li Chao segment tree with O(log C) per operation.\nC) A deque that maintains the convex hull: lines are added at one end, and queries pop from the other end.\nD) A priority queue keyed by the intersection points of adjacent lines.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement claims a Python fragment is asymptotically worse than its idiomatic alternative. Which claims are TRUE? Select all that apply.\n\nA. Building an n-list with repeated lst.insert(0, x) is Theta(n^2); deque.appendleft in a loop is Theta(n).\nB. Testing membership in a loop with x in some_list (length m) costs Theta(m) per test; prebuilding a set makes each test expected O(1).\nC. Concatenating with s += t in a loop over total output N is Theta(N^2) worst case in the language model; ''.join is Theta(N).\nD. Dictionary lookup is Theta(n) worst case per op, so replacing a dict with a list scan never changes asymptotics.\nE. heapq.nsmallest(k, data) on n items always costs Theta(n log n), identical to sorting.\nF. Replicating a list via rows = [[0]] * n is Theta(n^2) in time.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C"
+    ]
   },
   {
     "task_id": "code_algorithms_35",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the push-relabel maximum flow algorithm, what is the purpose of the global relabeling heuristic, and how often is it typically applied?\n\nA) It periodically recomputes exact distances to the sink using reverse BFS from the sink and reassigns vertex heights to these exact distances, typically after Omega(E) relabel operations.\nB) It randomly permutes the vertex ordering to break worst-case adversary patterns, applied before each push phase.\nC) It merges all vertices with height greater than V into a single super-sink, applied once at the start.\nD) It computes a new scaling factor for flow augmentation, applied after every V^2 pushes.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement gives a tight bound for a classic procedure. Which claims are TRUE? Select all that apply.\n\nA. for i in 1..n: for j in 1..n//i: pass -- the inner trip counts sum to Theta(n log n).\nB. for i in 1..n: for j in 1..i: pass -- total work is Theta(n^2).\nC. Bottom-up heap construction (heapify) on n keys is Theta(n).\nD. Bottom-up heap construction on n keys is Theta(n log n).\nE. BFS on a graph stored as a V x V adjacency matrix costs O(V + E).\nF. Deterministic quicksort (fixed pivot rule) has a Theta(n^2) worst case over inputs.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "F"
+    ]
   },
   {
     "task_id": "code_algorithms_36",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "Consider the capacity scaling variant of Dinic's maximum flow algorithm. Starting with a threshold Delta = 2^{floor(log U)} (where U is the maximum edge capacity), each scaling phase considers only edges with residual capacity >= Delta. What is the total number of augmentations across all O(log U) scaling phases?\n\nA) O(E) augmentations per phase, giving O(E log U) total.\nB) O(V * E) augmentations per phase, giving O(V * E log U) total.\nC) O(log U) augmentations per phase, giving O(log^2 U) total.\nD) O(E * sqrt(V)) augmentations per phase, matching the standard Dinic bound.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "Using Hoare assignment-axiom reasoning backwards, what is the weakest precondition of the statement x := x + y with respect to the postcondition x > 10? Recall substitution applies to the postcondition with the assigned expression, in the direction from postcondition back to precondition.\n\nA. x > 10 - y, i.e. x + y > 10: substituting x + y for x in the postcondition.\nB. x > 10 + y: the assigned value is added rather than substituted.\nC. x + y > 10 AND y > 0: assignment requires proving the added term positive.\nD. x > 10: assignment never changes the precondition.\nE. y > 10: the precondition constrains only the untouched variable.\nF. x + y >= 10: strictness is always weakened by assignment.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "A"
   },
   {
     "task_id": "code_algorithms_37",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In Boruvka's algorithm for computing the minimum spanning tree, each phase performs one parallel step. Which of the following best describes the reduction in the number of components per phase?\n\nA) Each component selects its cheapest outgoing edge, and all selected edges are added simultaneously. Since each edge connects two components, the number of components at least halves, giving at most O(log V) phases.\nB) Each component selects its cheapest outgoing edge, and only edges that do not create cycles are added, reducing the component count by exactly 1 per phase.\nC) Components are merged in pairs, reducing the count by exactly half each phase.\nD) The number of components reduces by exactly sqrt(V) per phase, requiring O(sqrt(V)) total phases.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Consider L = {a^n b^n : n >= 0} over {a, b}. An engineer claims a 5-state DFA recognizes L because 'only n up to 4 occurs in practice'. Which statement correctly applies Myhill-Nerode to the language itself (all n)?\n\nA. L is regular: the pumping length is 5, so 5 states suffice.\nB. L is regular because its complement is finite.\nC. L is nonregular: the prefixes a^i for distinct i are pairwise distinguishable (a^i vs a^j distinguished by suffix b^i), yielding infinitely many equivalence classes, so no finite DFA exists.\nD. L is nonregular because it is infinite; all infinite languages are nonregular.\nE. L is regular: a DFA can count arbitrarily high with 5 states by reusing them.\nF. Myhill-Nerode does not apply since the alphabet has two symbols.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_algorithms_38",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In Johnson's algorithm for all-pairs shortest paths in a directed graph with arbitrary edge weights (but no negative cycles), a new vertex s is added with zero-weight edges to all original vertices. Bellman-Ford is run from s to compute potentials pi(v). After reweighting each edge (u, v) with reduced cost c'(u, v) = w(u, v) + pi(u) - pi(v), what is the overall time complexity?\n\nA) O(V * E + V^2 log V) = O(V * E + V * (E + V log V)): one Bellman-Ford (O(V*E)) and V Dijkstra calls using Fibonacci heaps.\nB) O(V * E * log V): Bellman-Ford followed by V Dijkstra calls with binary heaps.\nC) O(V^3): Bellman-Ford followed by Floyd-Warshall for the reweighted graph.\nD) O(E + V log V): because the reweighting eliminates all negative edges, making Dijkstra O(1) per query.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Two threads each execute x += 1 once on shared x = 0, where x += 1 compiles to LOAD, ADD, STORE. No locks are used. Which statements are TRUE? Select all that apply.\n\nA. The final value of x can be 1 (a lost update interleaving exists).\nB. The final value of x can be 3.\nC. Wrapping each thread's three bytecodes in a lock guarantees the final value is 2.\nD. In CPython the GIL makes x += 1 atomic, so without locks the result is still always 2.\nE. With three such threads the final value can be 1.\nF. Declaring x volatile (as in some other languages) would by itself make the unsynchronized result always 2.\n\nAnswer with the letters of all true statements (e.g. A C E).",
+    "answers": [
+      "A",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_algorithms_39",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the problem of computing the longest increasing subsequence (LIS) of an array of length n. Using patience sorting, the algorithm maintains a list of piles where each pile's top card is the smallest possible tail value for an increasing subsequence of that length. What is the overall time complexity and how are the piles searched?\n\nA) O(n log n) using binary search on the pile tops to find the leftmost pile whose top is >= the current element.\nB) O(n sqrt(n)) using the Van Emde Boas tree over the value domain.\nC) O(n log log n) using a segment tree over the compressed value domain.\nD) O(n^2) because each element requires scanning all existing piles.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "A direct-mapped cache has 4 lines; block size holds one integer. Addresses map as line = address mod 4. Consider the access sequence 0, 4, 0, 4, 8, 0 with an initially empty cache. Which statements are TRUE? Select all that apply.\n\nA. Access 3 (the second 0) is a hit.\nB. Every access in the sequence is a miss.\nC. Accesses 1 and 2 (0 then 4) are both compulsory misses.\nD. The misses on 4 after 0 are conflict misses: 0 and 4 map to the same line with a working set larger than the cache's associativity at that line.\nE. A fully associative cache with 4 lines and LRU would hit on access 4 (the second 4).\nF. Doubling the block size would turn access 2 into a guaranteed hit for this integer sequence.\n\nAnswer with the letters of all true statements (e.g. B C D E).",
+    "answers": [
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
   },
   {
     "task_id": "code_algorithms_40",
     "category": "Algorithms",
     "type": "mcq",
-    "prompt": "In the Dinic maximum flow algorithm, after the BFS phase builds the level graph, the DFS phase sends blocking flow. What is the worst-case time complexity of one DFS blocking flow computation if implemented with the standard pointer technique (current arc / edge iterator)?\n\nA) O(E) per DFS path, giving O(V * E) worst-case for a full blocking flow.\nB) O(E * V) because each DFS path may backtrack O(V) times.\nC) O(E) total for the entire blocking flow because each edge is processed at most once across all DFS calls due to the current arc pointer.\nD) O(V^2) because each vertex is visited at most once per level.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "Thread T1 executes lock(A); lock(B); ... unlock(B); unlock(A). Thread T2 executes lock(B); lock(A); ... unlock(A); unlock(B). A reviewer proposes four candidate fixes: (1) timeouts on lock attempts, (2) daemon threads, (3) global lock ordering (both acquire A before B), (4) relying on the GIL. Which option is correct?\n\nA. Deadlock is impossible here because Python's GIL serializes lock acquisition.\nB. Timeouts prevent deadlock: with a 10 ms timeout the circular wait can never form.\nC. Only global lock ordering (both threads acquire A before B) eliminates the deadlock by breaking the circular-wait condition; timeouts merely detect it after the fact, and daemon threads plus the GIL are irrelevant to mutual-exclusion deadlock.\nD. Daemon threads prevent the deadlock because the runtime kills one waiter.\nE. No deadlock is possible since each thread holds at most two locks.\nF. Reversing T2 to lock(A) then lock(B) while T1 locks(B) then lock(A) fixes it by symmetry.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "C"
   },
   {
     "task_id": "code_datastructures_01",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a Fibonacci heap, what is the amortized time complexity of the decrease-key operation, and what data structure invariant makes this possible?\n\nA) O(1) amortized, achieved by cutting the node from its parent and adding it to the root list without rebalancing the entire heap, combined with cascading cuts that preserve the heap's potential function bound.\nB) O(log n) amortized, because the decrease-key may trigger a cascading series of cuts that propagate up the tree.\nC) O(1) worst-case, achieved by always marking nodes after one child loss and cutting after a second loss.\nD) O(log n) worst-case, because the heap structure must be restored by sifting up, similar to a binary heap.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following deque operations. Recall that rotate(2) moves the last two elements to the front, preserving their order.\n\n```python\nfrom collections import deque\nd = deque([1, 2, 3])\nd.appendleft(0)\nd.extend([4, 5])\nd.rotate(2)\nprint(d[0] + d[-1] + len(d))\n```\n\nOutput only the number.",
+    "answer": "13"
   },
   {
     "task_id": "code_datastructures_02",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider the van Emde Boas layout for storing a complete binary tree in memory to achieve cache-obliviousness. The tree of height h is recursively split into a top tree of height h/2 and bottom subtrees of height h/2. What is the cache complexity of a root-to-leaf traversal with this layout, assuming a cache with block size B?\n\nA) O(log n) memory transfers.\nB) O(log_B n) memory transfers.\nC) O(log log n) memory transfers.\nD) O(log (n/B)) memory transfers.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "prompt": "Consider the following heap pushes. Recall that heap entries that are tuples compare element-wise, so equal priorities fall back to comparing the second elements.\n\n```python\nimport heapq\nh = []\nheapq.heappush(h, (1, 'b'))\nheapq.heappush(h, (1, 'a'))\nheapq.heappush(h, (0, 'z'))\nprint(heapq.heappop(h)[1] + heapq.heappop(h)[1])\n```\n\nOutput only the resulting string.",
+    "answer": "za"
   },
   {
     "task_id": "code_datastructures_03",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a red-black tree with the standard five properties (every node is red or black; root is black; leaves are black; red nodes have black children; all paths from root to leaves have the same number of black nodes), after a standard BST deletion followed by the deletion fixup procedure, what does the concept of a double-black node represent?\n\nA) A node that is colored both red and black simultaneously, maintaining an extra unit of blackness to compensate for a deleted black node.\nB) A node that has two black children, both of which are leaves.\nC) A node that has been visited twice during the fixup procedure and requires special handling.\nD) A node whose black height is greater than 1, indicating that the tree is unbalanced.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following dict operations. Recall that deleting a key and re-inserting it places it at the end of the insertion order, not at its original position.\n\n```python\nd = {}\nfor i in [3, 1, 2]:\n    d[i] = i * 10\nd.pop(1)\nd[1] = 99\nprint(sum(d.values()))\n```\n\nOutput only the number.",
+    "answer": "149"
   },
   {
     "task_id": "code_datastructures_04",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a persistent segment tree implemented via path copying, given an initial array of size n and a sequence of m point updates (each creating a new version), what is the total number of nodes allocated across all versions?\n\nA) O(n + m log n) nodes, because each update creates O(log n) new nodes along the path from root to leaf, while the remaining nodes are shared with the previous version.\nB) O(n * m) nodes, because each version requires a complete copy of the entire tree.\nC) O(n + m) nodes, because each update creates exactly one new leaf node.\nD) O(m * n) nodes in the worst case when updates are applied to the same leaf position repeatedly.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following set operations. Note that b is an alias of a (not a copy), and that |= and ^= mutate the shared object in place.\n\n```python\na = {1, 2, 3}\nb = a\nb |= {4}\na ^= {2, 4, 5}\nprint(sum(sorted(a)))\n```\n\nOutput only the number.",
+    "answer": "9"
   },
   {
     "task_id": "code_datastructures_05",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider the splay tree, a self-adjusting binary search tree. For a sequence of m operations (find, insert, delete) on a tree that initially contains n elements, what is the total amortized time, assuming all access patterns are arbitrary?\n\nA) O(m log n) total amortized time, where each operation has O(log n) amortized cost due to the potential function based on the sum of logarithms of subtree sizes.\nB) O(m + n log n) total amortized time, because after an initial O(n log n) build time, each operation is O(1) amortized.\nC) O((m + n) log n) total amortized time.\nD) O(m log n) amortized for find and insert, but O(m n) amortized for delete because deletion requires splaying the parent.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following bisect operations on a sorted list. Recall that insort inserts to the right of existing equals by default, while insort_left inserts to the left, and that index() returns the first occurrence.\n\n```python\nimport bisect\na = [1, 3, 5, 7]\nbisect.insort(a, 4)\nbisect.insort_left(a, 5)\nprint(a.index(5) + len(a))\n```\n\nOutput only the number.",
+    "answer": "9"
   },
   {
     "task_id": "code_datastructures_06",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "For a Count-Min Sketch with parameters (epsilon, delta), where the sketch uses d = ceil(ln(1/delta)) pairwise-independent hash functions each mapping into a counter array of width w = ceil(e/epsilon), which of the following correctly characterizes its performance?\n\nA) The estimate for any item's frequency is at most the true frequency plus epsilon * N (where N is the total sum of frequencies) with probability at least 1 - delta.\nB) The estimate is exactly the true frequency with probability 1 - delta.\nC) The estimate is at most the true frequency plus delta * N with probability at least 1 - epsilon.\nD) The estimate has standard deviation proportional to epsilon * N / delta.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "prompt": "Consider the following sort. Recall that Python's sort is stable: elements with equal keys keep their original relative order.\n\n```python\nrows = [(1, 'b'), (0, 'a'), (1, 'a'), (0, 'b')]\nrows.sort(key=lambda r: r[0])\nprint(''.join(r[1] for r in rows))\n```\n\nOutput only the resulting string.",
+    "answer": "abba"
   },
   {
     "task_id": "code_datastructures_07",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a B+ tree where internal nodes contain routing keys and leaf nodes contain actual key-value pairs, which of the following correctly describes the deletion procedure when a leaf node underflows (has fewer than the minimum required keys)?\n\nA) The leaf is immediately merged with its left sibling, regardless of the sibling's occupancy.\nB) The algorithm first attempts to redistribute keys by borrowing from an adjacent sibling; if the sibling would also underflow after redistribution, then the two leaves are merged.\nC) Underflow is not possible in B+ trees because leaves can contain variable numbers of keys.\nD) The underflowing leaf is deleted, and its keys are promoted to the internal node above.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the trie-building loop below. setdefault both inserts a fresh child dict and returns the existing one, so node walks down shared prefixes; '#' counts how many words end at each node.\n\n```python\nd = {}\nfor w in ['ab', 'ac', 'ab']:\n    node = d\n    for ch in w:\n        node = node.setdefault(ch, {})\n    node['#'] = node.get('#', 0) + 1\nprint(d['a']['b']['#'] + len(d['a']))\n```\n\nOutput only the number.",
+    "answer": "4"
   },
   {
     "task_id": "code_datastructures_08",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider a skip list with maximum level L_max = O(log n) where each node appears at level k with probability 1/2^k. Which of the following is the expected number of pointer updates required when inserting a new node?\n\nA) O(1) expected pointer updates, because the expected level of a node is 2.\nB) O(log n) expected pointer updates, because the expected level is O(log n) and each level requires updating one forward pointer.\nC) O(log n / log log n) expected pointer updates, due to the sparse nature of higher levels.\nD) O(n) expected pointer updates in the worst case when the new node becomes the new maximum.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the LRU-cached function below with maxsize 2. Track hits, misses, and which entry each miss evicts (the least recently used).\n\n```python\nfrom functools import lru_cache\ncalls = []\n@lru_cache(maxsize=2)\ndef f(x):\n    calls.append(x)\n    return x * 10\nf(1)\nf(2)\nf(1)\nf(3)\nf(2)\nf(1)\nprint(len(calls))\n```\n\nOutput only the number.",
+    "answer": "5"
   },
   {
     "task_id": "code_datastructures_09",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In an implicit treap (randomized BST keyed by position), what property of the Cartesian tree does the treap maintain to achieve O(log n) expected time per operation?\n\nA) The tree is a Cartesian tree where the array index is the in-order position, and each node has a randomly assigned priority; the tree satisfies the heap property on priorities and the BST property on in-order positions.\nB) The tree stores values as keys in a standard BST and uses random rotations to balance.\nC) The tree maintains both min-heap and max-heap properties simultaneously by using two independent random priorities.\nD) The tree is rebuilt from scratch with probability proportional to the number of operations performed.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the two-stack queue below. The transfer from s_in to s_out happens only when s_out is empty, and between the measured operations new items arrive. Report the dequeued sum and the leftover sizes.\n\n```python\ns_in, s_out = [], []\ndef enq(x):\n    s_in.append(x)\ndef deq():\n    if not s_out:\n        while s_in:\n            s_out.append(s_in.pop())\n    return s_out.pop()\nfor x in [1, 2, 3]:\n    enq(x)\na = deq()\nfor x in [4, 5]:\n    enq(x)\nb = deq()\nc = deq()\nprint(a + b + c)\nprint(len(s_in) + len(s_out))\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "6",
+      "2"
+    ]
   },
   {
     "task_id": "code_datastructures_10",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider the disjoint set union (union-find) data structure with union by rank and full path compression. For a sequence of m operations on n elements, what is the tightest known amortized time per operation?\n\nA) O(alpha(m, n)), where alpha is the inverse Ackermann function, giving essentially constant amortized time for any practical input.\nB) O(log* n), where log* is the iterated logarithm.\nC) O(log n), because path compression can only reduce the rank of each node by a logarithmic factor.\nD) O(alpha(n)), where the inverse Ackermann function depends only on n.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider linear probing in a table of size 8 with h(x) = x mod 8. Insert 8, then 16, then 24, then 1, probing forward (wrapping) past occupied slots. Report the slot where 1 lands and the total number of occupied-slot probes across all four inserts.\n\n```python\nT = [None] * 8\nprobes = 0\nfor x in [8, 16, 24, 1]:\n    i = x % 8\n    while T[i] is not None:\n        probes += 1\n        i = (i + 1) % 8\n    T[i] = x\nprint(T.index(1))\nprint(probes)\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "3",
+      "5"
+    ]
   },
   {
     "task_id": "code_datastructures_11",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "For a sparse table supporting range minimum queries (RMQ) on an array of length n, what is the total preprocessing time and the query time?\n\nA) O(n log n) preprocessing and O(1) query, using O(n log n) memory to store minima for intervals of lengths 2^k.\nB) O(n) preprocessing and O(log n) query, using a segment tree.\nC) O(n log n) preprocessing and O(log n) query, using the standard RMQ-to-LCA reduction.\nD) O(n log n) preprocessing and O(1) query, but only when the array elements are integers bounded by a polynomial in n.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This singly-linked-list reversal loses nodes: reverse([1, 2, 3]) returns [3] instead of [3, 2, 1].\n\n```python\ndef reverse(head):\n    prev = None\n    cur = head\n    while cur:\n        cur.next = prev\n        prev = cur\n        cur = cur.next\n    return prev\n```\n\nWhich option correctly identifies the bug?\n\nA. prev must initialize to head, not None, or the first node is dropped.\nB. The loop condition must be cur.next, not cur, or the last node is skipped.\nC. cur.next is overwritten before the original successor is saved, so cur.next (now prev) is followed instead of the rest of the list; the fix saves nxt = cur.next first.\nD. The return must be cur, not prev; prev lags one node behind.\nE. The assignment prev = cur must come before cur.next = prev or the links point forward.\nF. Reversal requires recursion; the iterative version cannot track two pointers.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_12",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a segment tree with lazy propagation for range updates (add) and range sum queries on an array of size n, what is the time complexity for processing m operations, where each operation is either a range update or a range query?\n\nA) O((n + m) log n), with O(n) for building the tree and O(log n) per operation.\nB) O(m log n) for the operations, plus O(n) for the initial construction.\nC) O(n log n + m) because the lazy propagation reduces the per-operation cost to O(1).\nD) O(m sqrt(n)) because the lazy segment tree uses block decomposition under the hood.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "This BST deletion corrupts the tree when the deleted node has two children: some keys vanish from later searches.\n\n```python\ndef delete(root, key):\n    if root is None:\n        return None\n    if key < root.key:\n        root.left = delete(root.left, key)\n    elif key > root.key:\n        root.right = delete(root.right, key)\n    else:\n        if root.left is None:\n            return root.right\n        if root.right is None:\n            return root.left\n        succ = root.right\n        while succ.left:\n            succ = succ.left\n        root.key, root.val = succ.key, succ.val\n    return root\n```\n\nWhich option correctly identifies the bug?\n\nA. The single-child cases are swapped: returning root.right when left is None discards the wrong subtree.\nB. The base case must raise KeyError instead of returning None, or missing keys corrupt the shape.\nC. After copying the successor's key/value into root, the successor node itself is never removed from the right subtree, leaving a duplicate key behind (and with further deletes, lost subtrees).\nD. The successor must be the maximum of the left subtree, not the minimum of the right; the wrong extremum breaks ordering.\nE. Comparisons must use <= and >= or duplicate keys loop forever.\nF. Deletion must rebalance, so without rotations the tree silently drops nodes.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_13",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "Consider a Bloom filter with m bits and k independent hash functions, storing n elements. What is the optimal value of k (number of hash functions) that minimizes the false positive rate, expressed in terms of m and n?\n\nA) k = (m / n) * ln 2, which minimizes the false positive rate to approximately (1/2)^k = 2^{-(m/n) ln 2}.\nB) k = m / n, giving the lowest false positive rate achievable.\nC) k = floor(log_2 (m/n)), which minimizes the number of hash computations while keeping the false positive rate low.\nD) k = ceil(ln (m/n)), as derived from the information-theoretic lower bound.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This hash map works until the first resize, after which previously inserted keys become unfindable.\n\n```python\nclass HMap:\n    def __init__(self):\n        self.cap = 8\n        self.buckets = [[] for _ in range(8)]\n    def _idx(self, k):\n        return hash(k) % self.cap\n    def put(self, k, v):\n        b = self.buckets[self._idx(k)]\n        for i, (kk, _) in enumerate(b):\n            if kk == k:\n                b[i] = (k, v)\n                return\n        b.append((k, v))\n        if sum(map(len, self.buckets)) > self.cap * 2:\n            self._grow()\n    def _grow(self):\n        self.cap *= 2\n        new = [[] for _ in range(self.cap)]\n        for i, b in enumerate(self.buckets):\n            new[i].extend(b)\n        self.buckets = new\n```\n\nWhich option correctly identifies the bug?\n\nA. The load-factor threshold uses 2 instead of 0.75, so the table overfills before growing.\nB. _grow copies each old bucket to the same index instead of rehashing every key with the new capacity; since the mask changed, keys now live in buckets that get() never probes.\nC. put must grow before appending, not after, or the triggering key lands in the old table.\nD. hash(k) can be negative, so _idx returns negative indices that alias the wrong buckets.\nE. Equality must be is, not ==, or distinct-but-equal keys collide.\nF. The buckets must be dicts, not lists; linear chains cannot survive a resize.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_datastructures_14",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a 2D Fenwick tree (Binary Indexed Tree) supporting point updates and prefix sum queries on an n x n matrix, what is the time complexity per operation?\n\nA) O(log^2 n), because each of the two nested Fenwick tree traversals contributes O(log n).\nB) O(log n), because the two dimensions can be processed in parallel.\nC) O(sqrt(n)), because 2D BIT reduces to sqrt-decomposition.\nD) O(log n * log n) with one traversal for each dimension.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This circular buffer of capacity 3 reports full after 2 pushes and overwrites unread data on the 3rd.\n\n```python\nclass Ring:\n    def __init__(self, cap):\n        self.buf = [None] * cap\n        self.head = 0\n        self.tail = 0\n    def push(self, x):\n        self.buf[self.tail] = x\n        self.tail = (self.tail + 1) % len(self.buf)\n    def pop(self):\n        x = self.buf[self.head]\n        self.head = (self.head + 1) % len(self.buf)\n        return x\n    def full(self):\n        return (self.tail + 1) % len(self.buf) == self.head\n```\n\nWhich option correctly identifies the bug?\n\nA. push and pop advance in the wrong direction; head and tail updates must be swapped.\nB. The design wastes one slot but push writes cap elements: with head == tail meaning empty, full() fires one element early relative to push, so either a size counter (or count-based full/empty) must gate push/pop, or push must refuse when full.\nC. Modulo must use cap - 1, not cap, or indices overshoot the buffer.\nD. pop must clear the slot to None or full() misreads stale data.\nE. head and tail must start at -1; starting at 0 shifts every index.\nF. full() must be tail == head; the +1 offset is spurious.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_datastructures_15",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a pairing heap, the extract-min operation removes the root node and then merges its subtrees. Which of the following correctly describes the two-pass merging scheme that gives the pairing heap its O(log n) amortized extract-min cost?\n\nA) In the first pass, subtrees are paired and merged from left to right; in the second pass, the resulting trees are merged from right to left into a single heap.\nB) The subtrees are merged all at once using a divide-and-conquer approach.\nC) Each subtree is sequentially merged into an accumulator heap in arbitrary order.\nD) The subtrees are sorted by root key and then merged in order of increasing key value.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This min-heap sift-down leaves the heap property violated after some pops: the new root can exceed its children.\n\n```python\ndef sift_down(h, i):\n    n = len(h)\n    while True:\n        l, r = 2 * i + 1, 2 * i + 2\n        smallest = i\n        if l < n and h[l] < h[smallest]:\n            smallest = l\n        if r < n and h[r] < h[i]:\n            smallest = r\n        if smallest == i:\n            return\n        h[i], h[smallest] = h[smallest], h[i]\n        i = smallest\n```\n\nWhich option correctly identifies the bug?\n\nA. Child indices must be 2*i and 2*i + 1; the +1/+2 scheme addresses the wrong nodes.\nB. The loop must be a for loop; while True can skip levels.\nC. The right-child comparison uses h[i] instead of h[smallest]: after the left child wins, the right child is compared against the parent rather than the current smallest, so a smaller right child can be passed over and the swap can place a larger child above a smaller one.\nD. The swap must come before the comparisons, or stale values are compared.\nE. smallest must reset to 0 each iteration to restart from the root.\nF. The function must return h; without it the caller's heap is unchanged.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_16",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In an XOR linked list (memory-efficient doubly linked list), each node stores the XOR of the addresses of its predecessor and successor. Given two consecutive nodes A and B (where A precedes B), how is the address of the node following B computed?\n\nA) Address_of(A) XOR B.both, because B.both = A XOR C, so C = A XOR B.both.\nB) A.both XOR B.both, because the XOR of both pointers cancels out.\nC) B.both XOR B.val, because the value field stores the offset.\nD) Address_of(A) XOR B.val, because the value doubles as the both pointer in next-node calculations.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This trie delete corrupts other words: after inserting 'car' and 'card', deleting 'car' makes 'card' unfindable.\n\n```python\ndef delete_word(node, word):\n    cur = node\n    parents = []\n    for ch in word:\n        if ch not in cur:\n            return False\n        parents.append((cur, ch))\n        cur = cur[ch]\n    cur.pop('#', None)\n    for parent, ch in parents:\n        del parent[ch]\n    return True\n```\n\nWhich option correctly identifies the bug?\n\nA. pop('#', None) must be del cur['#']; pop leaves a tombstone that blocks later searches.\nB. The walk must start at the second character; starting at the root skips the first level.\nC. The final loop unconditionally deletes every node along the path, destroying the shared 'car' prefix nodes that 'card' still needs; only childless, marker-less suffix nodes may be pruned bottom-up.\nD. parents stores tuples instead of nodes, so deletions address the wrong level.\nE. The '#' marker must be removed before the walk, not after, or the end test reads stale state.\nF. for ch in word iterates characters instead of child dicts, so multi-character words can never match.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_17",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "Consider a Disjoint Set Union (DSU) with rollback support, where path compression is intentionally not used. Instead, union by size is used, and a stack records all changes. What is the amortized time per operation (find or union) for a sequence of m operations?\n\nA) O(log n) per find because without path compression, the tree height is bounded by O(log n) due to union by size, and rollbacks are O(1) by popping the stack.\nB) O(alpha(n)) per find because the rollback stack eliminates the need for path compression.\nC) O(1) per operation because union by size guarantees that the tree height never exceeds the iterated logarithm.\nD) O(log log n) per find because the rollback capability allows occasional rebalancing.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "This AVL insertion rebalances with single rotations only. After inserting keys that trigger a left-right case (e.g. 10, 5, 7), the tree stays unbalanced and later searches degrade.\n\n```python\ndef rebalance(node):\n    b = balance(node)\n    if b > 1:\n        node = rotate_right(node)\n    elif b < -1:\n        node = rotate_left(node)\n    return node\n```\n\nWhich option correctly identifies the bug?\n\nA. Rotations must come in pairs for every case; single rotations are never valid in AVL trees.\nB. The balance thresholds must be 2 and -2; with 1 and -1 the code rotates balanced nodes.\nC. A left-right case (left child right-heavy) needs a left rotation on the left child first, then a right rotation on the node (and mirror for right-left); the code applies a single rotation based only on the top balance factor, which mis-handles the inner-heavy cases.\nD. Rebalancing must run top-down; bottom-up updates cause the observed imbalance.\nE. Heights must be floats; integer heights truncate the balance factor.\nF. rotate_right and rotate_left are swapped; each case calls the wrong direction.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_18",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a Cuckoo filter with bucket size b = 4 and 1-byte fingerprints, when inserting a new item, both candidate buckets (computed via hash and fingerprint XOR) are found to be full. What does the insert algorithm do next?\n\nA) The insert fails and returns false, because the filter has reached maximum capacity.\nB) A random fingerprint in one of the two buckets is evicted and relocated to its alternate bucket, continuing this process for a maximum number of kicks before declaring the filter full.\nC) The filter doubles its capacity by rehashing all existing fingerprints into a larger hash table.\nD) The fingerprint size is increased to 2 bytes to accommodate more unique identifiers.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "valid_letters": "A-F",
+    "prompt": "This LRU cache evicts the wrong entry: after get(1), inserting a 3rd key with capacity 2 evicts key 1 (just used) instead of key 2.\n\n```python\nfrom collections import OrderedDict\nclass LRU:\n    def __init__(self, cap):\n        self.cap = cap\n        self.d = OrderedDict()\n    def get(self, k):\n        return self.d.get(k, -1)\n    def put(self, k, v):\n        if k in self.d:\n            del self.d[k]\n        self.d[k] = v\n        if len(self.d) > self.cap:\n            self.d.popitem(last=False)\n```\n\nWhich option correctly identifies the bug?\n\nA. popitem(last=False) evicts the newest entry; it must be last=True.\nB. put must not delete-then-insert for existing keys; the del corrupts the order.\nC. get does not refresh recency: a hit must move the key to the most-recent end (move_to_end), otherwise eviction order reflects insertion, not use, and just-read keys are wrongly evicted.\nD. The capacity check must be >= instead of > or one extra entry always fits.\nE. OrderedDict.get with a default bypasses __missing__ hooks, freezing the order.\nF. Keys must be hashed before storage; unhashed keys compare by identity.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_19",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a radix tree (Patricia trie) with path compression, what is the maximum number of nodes required to store n distinct strings of arbitrary total length L?\n\nA) O(L) nodes in the worst case, because path compression merges single-child nodes into parent labels.\nB) At most 2n - 1 nodes, because each insertion adds at most one new branch node.\nC) O(n * log |Sigma|) nodes, because each string requires a node per character.\nD) O(L / log |Sigma|) nodes, because path compression reduces storage proportional to the alphabet size.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "A pipeline filters n events against a watchlist of m IDs using `if eid in watchlist:` with watchlist a list. A reviewer says membership is O(1) 'because hashing'. What is the tight bound of the n checks, and what is the fix?\n\nA. Theta(n): list membership short-circuits on average.\nB. Theta(n*m) worst case: each `in` on a list scans up to m elements; hashing applies to sets/dicts, not lists. Prebuild a set for expected O(1) per check (Theta(n + m) total).\nC. Theta(n log m): list scans use binary search implicitly.\nD. Theta(m): the loop fuses into a single scan.\nE. O(1): the `in` operator is constant time for all containers.\nF. Theta(n^2) regardless of m because event and watchlist sizes coincide.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_datastructures_20",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a Merkle tree with m leaf data blocks (padded to the nearest power of 2), how many sibling hashes must be provided in a Merkle proof to demonstrate that a specific leaf belongs to the tree?\n\nA) log2(m) sibling hashes, because each level of the tree contributes the hash of the sibling subtree along the path from leaf to root.\nB) log2(m) - 1 sibling hashes, because the root hash is always known to the verifier.\nC) 2 * log2(m) sibling hashes, because both the left and right siblings at each level must be provided.\nD) m / 2 sibling hashes, because all leaves at the same depth must be included.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A task queue is a Python list: workers pop from the front with pop(0) n times total. The author claims Theta(n) total since 'each pop removes one element'. What is the tight total cost and the idiomatic fix?\n\nA. Theta(n): each pop does constant work.\nB. Theta(n log n): pops trigger logarithmic reallocations.\nC. Theta(n^2): pop(0) shifts all remaining elements left, so the k-th pop costs Theta(n - k); collections.deque.popleft is Theta(1) per op.\nD. Theta(n sqrt(n)): shifting is vectorized so only a root factor remains.\nE. O(n) amortized because the list shrinks, compensating the shifts.\nF. Theta(1): popping from the front is symmetric to popping from the back.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_21",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a Min-Max heap (double-ended priority queue), what structural invariant is maintained to allow both extract-min and extract-max in O(log n) time?\n\nA) The root contains both the minimum and maximum elements stored as a pair.\nB) Levels alternate between min-heap and max-heap ordering: the root is a min level, its children are max, grandchildren are min, etc. All nodes on min levels are smaller than their descendants on max levels, and vice versa.\nC) The heap is maintained as two separate binary heaps, one for mins and one for maxes, with pointers between corresponding elements.\nD) The heap uses two priority values per node, where the first value forms a min-heap and the second forms a max-heap on the same tree.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "A service inserts n distinct attacker-chosen strings into one Python dict. The author claims Theta(n) total 'because dict insert is O(1)'. An attacker crafts keys with colliding hashes (hash flooding). What is the correct characterization?\n\nA. Theta(n) guaranteed: dict insertion is O(1) worst case per the language spec.\nB. Theta(n^2) worst case under adversarial keys (degenerate chains/probing), though expected O(1) per insert on non-adversarial data; CPython's SipHash randomization raises the bar but the worst case remains and persistent DoS-safe design still rate-limits or isolates untrusted keys.\nC. Theta(n log n): collisions resolve via balanced trees in all implementations.\nD. O(1) total: the table absorbs all collisions without rehashing.\nE. Theta(n sqrt(n)): probing covers only a root fraction of the table.\nF. Unbounded: one collision corrupts the whole table.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_datastructures_22",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "Consider a Link-Cut Tree (also called a dynamic tree) that supports link, cut, and path queries on a forest. Under the standard implementation with splay trees representing preferred paths, what is the amortized time per operation?\n\nA) O(log n) amortized, because each splay tree operation on a preferred path takes O(log n) amortized, and expose (access) touches O(log n) preferred paths.\nB) O(log^2 n) amortized, because the expose operation switches O(log n) paths, each requiring O(log n) work.\nC) O(sqrt(n)) amortized, because heavy-light decomposition is used internally.\nD) O(log n / log log n) amortized, due to the use of biased trees for path representation.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "From n = 10^6 sensor readings you need the 3 smallest. Candidate P: heapq.nsmallest(3, data). Candidate Q: sorted(data)[:3]. A teammate claims both are Theta(n log n). What is correct?\n\nA. Both Theta(n log n): selection requires a full sort.\nB. P is Theta(n log 3) = Theta(n) via a size-3 heap (each of n items does O(log 3) work); Q is Theta(n log n). For tiny k, P wins by a log factor.\nC. P is Theta(n^2): the heap degrades on sorted input.\nD. Q is Theta(n): Timsort detects the top-3 pattern.\nE. Both Theta(n): order statistics are linear, but only with median-of-medians.\nF. P is Theta(3^n): heap operations exponentiate in k.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_datastructures_23",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Which of the following correctly describes the key difference between the balancing strategies of AVL trees and red-black trees?\n\nA) AVL trees enforce that the heights of the left and right subtrees of every node differ by at most 1. Red-black trees enforce that no path from root to leaf has more than twice the number of black nodes as any other path (by forbidding red-red parent-child relationships).\nB) AVL trees allow height differences up to 2, while red-black trees allow height differences up to 3.\nC) AVL trees use colors (red/black) for balancing, while red-black trees use height values.\nD) AVL trees perform at most one rotation per insertion, while red-black trees may require O(log n) rotations.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement claims a fragment is asymptotically worse than its idiomatic alternative. Which claims are TRUE? Select all that apply.\n\nA. Repeatedly taking readings.pop(0) from a list n times is Theta(n^2); deque.popleft is Theta(1) per op.\nB. Copying a list slice a[l:r] costs Theta(r - l); algorithms that slice in a loop over n pay quadratic total unless rewritten with indices/views.\nC. n membership tests against a list of length m cost Theta(n*m) worst case; a prebuilt set costs expected Theta(n + m).\nD. Appending n items to a list is Theta(n^2) because the list copies on every append.\nE. Accessing a[i] by index is Theta(n) since the runtime must walk from the head.\nF. Building a dict of n keys is always Theta(n^2) because each insert rehashes all prior keys.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C"
+    ]
   },
   {
     "task_id": "code_datastructures_24",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a persistent union-find data structure that supports queries to any previous version, which technique is commonly used to store the evolution of parent pointers and component sizes?\n\nA) Fat-node persistence: each field stores a list of (version, value) pairs, and a find operation consults the appropriate version using version stamps.\nB) Full path copying: the entire parent array is copied on each union operation.\nC) Backtracking stack: all changes are recorded on a stack, and queries for past versions require replaying from scratch.\nD) Copy-on-write B-tree: each version is stored as a separate B-tree of parent pointers.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement makes an amortized claim about an operation sequence. Which claims are TRUE? Select all that apply.\n\nA. n pushes followed by n pops on an initially empty stack cost Theta(n) total: each element is pushed and popped once.\nB. A stack supporting multipop(k) (pop up to k): any sequence of n pushes/pops/multipops costs O(n) total, since each element leaves at most once.\nC. n enqueues/dequeues on an initially empty two-stack queue cost O(n) total.\nD. Incrementing a binary counter n times from zero costs Theta(n log n) because the counter holds log n bits.\nE. Appending n items to a doubling vector costs O(n) total.\nF. A splay tree serves any sequence of n accesses in O(n) total regardless of keys.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_datastructures_25",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider a heavy-light decomposition of an n-node tree for supporting path queries (e.g., maximum edge weight on the path between u and v). Each heavy path is stored as a segment tree. What is the worst-case number of heavy path segments (and thus segment tree queries) needed to answer a single path query?\n\nA) O(log n) segments, because heavy-light decomposition decomposes any tree path into O(log n) contiguous segments in the base array.\nB) O(log^2 n) segments, because each segment tree query itself requires O(log n) time.\nC) O(sqrt(n)) segments in the worst case for balanced trees.\nD) O(n) segments for degenerate trees such as a path.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement gives a tight bound for a data-structure procedure. Which claims are TRUE? Select all that apply.\n\nA. Searching a balanced BST with n keys is Theta(log n) worst case.\nB. Searching a plain (unbalanced) BST is Theta(n) worst case.\nC. Building a heap from n keys with heapify is Theta(n).\nD. Inserting n keys one by one with heappush is Theta(n) worst case.\nE. BFS/DFS on an adjacency-list graph is Theta(V + E).\nF. BFS on an adjacency-matrix graph is O(V + E).\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_datastructures_26",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "In a quadtree used for storing 2D points, which of the following is a fundamental limitation compared to balanced spatial partitioning structures like R-trees?\n\nA) The depth of a quadtree can be arbitrarily large for points that are extremely close together, leading to deep recursion and potentially O(n) depth for clustered data.\nB) Quadtrees cannot support point deletion; they can only support insertion and query.\nC) Quadtrees require the coordinate space to be a power of 2 in each dimension.\nD) Quadtrees only support axis-aligned range queries, not nearest-neighbor queries.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Pages are requested as 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5. Cache holds 3 pages. Simulation shows FIFO faults 9 times while LRU faults 10 times on this string, and with 4 frames FIFO faults 10 times. Which option correctly explains the observation?\n\nA. The simulator is buggy: more frames can never increase faults, and LRU can never fault more than FIFO.\nB. FIFO exhibits Belady's anomaly here (4 frames worse than 3), and LRU vs FIFO have no dominance ordering: LRU's stack property only guarantees monotonicity across cache sizes for LRU itself, not superiority over FIFO on a fixed size.\nC. LRU is always optimal (it matches Belady's MIN), so the LRU count must be wrong.\nD. FIFO with 4 frames faults more because larger caches are slower, adding latency faults.\nE. The anomaly disappears if pages are numbered from 0; 1-based numbering corrupts replacement.\nF. Both policies are equivalent to random replacement on this string, so the counts are noise.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_datastructures_27",
     "category": "Data Structures",
     "type": "mcq",
-    "prompt": "For a Count-Min Sketch with parameters (epsilon, delta) and d = ceil(ln(1/delta)) hash functions, what is the worst-case time to estimate the frequency of a single item?\n\nA) O(d) = O(log(1/delta)) time, because each hash function's counter must be read and the minimum taken.\nB) O(1) time, because the estimate is simply the value of the first hash function's counter.\nC) O(1/epsilon) time, because the width of each counter array must be scanned.\nD) O(d * w) = O(epsilon^{-1} * log(1/delta)) time, because all counter arrays must be fully scanned.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Two threads repeatedly increment adjacent elements of a shared int array (thread 0 touches a[0], thread 1 touches a[1]); no locks are involved and each thread does millions of increments, yet scaling to 2 cores gives no speedup in a compiled language without a GIL. Which option correctly diagnoses this?\n\nA. The GIL serializes the increments, so only one core is ever active.\nB. A data race corrupts the increments, forcing re-execution that eats the speedup.\nC. False sharing: a[0] and a[1] share one 64-byte cache line, so each core's write invalidates the other's line and the line ping-pongs between caches; padding each counter to its own line (or per-thread locals reduced at the end) restores scaling.\nD. The CPU cannot execute increments in parallel by design; arithmetic is single-issue across cores.\nE. The array is too small to benefit; larger arrays automatically fix coherence traffic.\nF. Branch prediction fails on alternating indices, stalling both pipelines.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_datastructures_28",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a Bounded Priority Queue (top-k heap) that maintains the k largest elements using a min-heap, what is the worst-case time complexity for inserting n elements into a heap of capacity k?\n\nA) O(n log k), because each insertion may require a pushpop operation on the min-heap of size k.\nB) O(n + k log k), because only the final sorted output requires heap operations.\nC) O(n log n), because all elements must be sorted to determine the top k.\nD) O(n + k log n), because the heap must be rebuilt after all insertions.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "A concurrent stack supports push and pop. Consider these histories (intervals overlap as written). Which histories are LINEARIZABLE? Select all that apply.\n\nA. push(1) completes; push(2) completes; pop returns 2. (Sequential LIFO.)\nB. push(1) completes; pop returns 1 while no other operation is concurrent. (Sequential match.)\nC. push(1) and push(2) overlap; pop (after both complete) returns 1.\nD. push(1) completes, then pop returns 2 with no push(2) anywhere in the history.\nE. push(1) completes; two sequential pops with no other concurrent operations both return 1.\nF. Empty stack; pop returns EMPTY while no push is concurrent.\n\nAnswer with the letters of all linearizable histories (e.g. A B F).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "F"
+    ]
   },
   {
     "task_id": "code_datastructures_29",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "In a 2D segment tree (segment tree of segment trees) built offline for an n x n grid, where each outer node stores a sorted vector of y-coordinates (no inner segment trees), what is the total memory required?\n\nA) O(n log^2 n), because each point appears in O(log n) outer nodes, and each appearance is stored once.\nB) O(n^2), because the full grid must be stored.\nC) O(n log n), because each of the n points appears in O(log n) outer nodes.\nD) O(n sqrt(n)), using the sqrt-decomposition tradeoff.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Which of the following Hoare triples are VALID (partial correctness)? Select all that apply.\n\nA. {True} x := 5 {x = 5}.\nB. {x = 1} x := x + 1 {x = 2}.\nC. {x = 0} x := x + 1 {x = 0}.\nD. {y = 3} x := y + 1 {x = 4}.\nE. {x = 2} y := x * x {y = 5}.\nF. {x > 0} x := x - 1 {x >= 0}.\n\nAnswer with the letters of all valid triples (e.g. A B D).",
+    "answers": [
+      "A",
+      "B",
+      "D",
+      "F"
+    ]
   },
   {
     "task_id": "code_datastructures_30",
     "category": "Data Structures",
-    "type": "mcq",
-    "prompt": "Consider the wavelet matrix data structure for an array A of length n over an integer alphabet [0, sigma). Which of the following correctly describes the space usage and the time to answer a range counting query (count of elements in A[l..r] with value in [a, b])?\n\nA) O(n log sigma) bits of space, and O(log sigma) time for the range counting query.\nB) O(n) bits of space, and O(log n) time for the range counting query.\nC) O(n log sigma) words of space, and O(log sigma) time for the range counting query.\nD) O(n log n) bits of space, and O(log n) time for the range counting query.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "A 2-way set-associative cache has 4 sets (8 lines total), LRU within a set, one integer per block. Addresses map as set = address mod 4. Consider accesses 0, 4, 8, 0. Which statements are TRUE? Select all that apply.\n\nA. Accesses 0, 4, 8 all map to the same set.\nB. With associativity 2, the fourth access (second 0) is a miss: 8 evicted 0 before the reuse.\nC. Reconfiguring to 8 sets, direct-mapped (set = address mod 8), would make the fourth access a hit.\nD. The first three accesses are all compulsory (first-touch) misses.\nE. The fourth access is a capacity miss: the working set exceeds the 8-line cache.\nF. Replacing LRU with FIFO within the set would make the fourth access a hit.\n\nAnswer with the letters of all true statements (e.g. A B D).",
+    "answers": [
+      "A",
+      "B",
+      "D"
+    ]
   },
   {
     "task_id": "code_complexity_01",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Under the Strong Exponential Time Hypothesis (SETH), consider the Orthogonal Vectors problem in d dimensions over {0, 1}^d. Which of the following is a known implication?\n\nA) OV can be solved in O(n^{2-epsilon} * poly(d)) for any epsilon > 0, refuting SETH.\nB) OV requires n^{2 - o(1)} time when d = omega(log n), assuming SETH.\nC) OV is in P for any d, so it has no relevance to SETH.\nD) OV can be solved in O(n^{1.5}) using fast matrix multiplication, disproving SETH.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The counter below mimics a sieve-like stride pattern: for each i, the inner loop visits i, 2i, ... style strides over a shifted range. Count the total inner iterations for n = 200.\n\n```python\nc = 0\nn = 200\nfor i in range(1, n + 1):\n    for j in range(i, n + 1, i):\n        c += 1\nprint(c)\n```\n\nOutput only the number.",
+    "answer": "1098"
   },
   {
     "task_id": "code_complexity_02",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Under the Exponential Time Hypothesis (ETH), what is the best possible worst-case running time for deciding 3-SAT on n variables?\n\nA) 2^{o(n)} time is impossible; 3-SAT requires 2^{Omega(n)} time.\nB) 2^{O(sqrt(n))} time is achievable using the Sparsification Lemma.\nC) O(1.5^n) time is the best known and matches the ETH lower bound.\nD) ETH only applies to k-SAT with k >= 4, not to 3-SAT.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The loop below doubles n each round and does n units of work per round, starting at n = 1 while n <= 729 with tripling. Sum the work across all rounds.\n\n```python\nx = 0\nn = 1\nwhile n <= 729:\n    for _ in range(n):\n        x += 1\n    n *= 3\nprint(x)\n```\n\nOutput only the number.",
+    "answer": "1093"
   },
   {
     "task_id": "code_complexity_03",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Which parameterized complexity class does the k-Clique problem (decide if a graph contains a clique of size k) belong to?\n\nA) FPT (Fixed-Parameter Tractable), because a simple brute-force search runs in O(n^k) which is polynomial for fixed k.\nB) W[1]-hard, meaning it is believed to not have an algorithm with running time f(k) * n^{O(1)}.\nC) para-NP, because the problem remains NP-hard even for constant k.\nD) XP, because the exponent depends on k.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The instrumented insertion sort below counts every element comparison (each test of the while condition that compares keys). Run it on the fixed 12-element input and report the count.\n\n```python\na = [9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 11, 10]\nc = 0\nfor i in range(1, len(a)):\n    key = a[i]\n    j = i - 1\n    while j >= 0:\n        c += 1\n        if a[j] <= key:\n            break\n        a[j + 1] = a[j]\n        j -= 1\n    a[j + 1] = key\nprint(c)\n```\n\nOutput only the number.",
+    "answer": "36"
   },
   {
     "task_id": "code_complexity_04",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "For the Vertex Cover problem parameterized by solution size k, what is the best known kernel size achievable in polynomial time?\n\nA) 2k (the simple Buss kernel, with high-degree rule and matching).\nB) 2k - c log k using crown decomposition, where c is a constant.\nC) O(k^2) using the Nemhauser-Trotter theorem and LP rounding.\nD) k, because Vertex Cover is self-reducible and has a trivial kernel.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The sieve below counts every composite-marking operation (each write of False) for n = 100. Trace which i values do marking work and how many writes each performs.\n\n```python\nn = 100\nprime = [True] * (n + 1)\nprime[0] = prime[1] = False\nmarks = 0\nimport math\nfor i in range(2, int(math.isqrt(n)) + 1):\n    if prime[i]:\n        for j in range(i * i, n + 1, i):\n            if prime[j]:\n                prime[j] = False\n            marks += 1\nprint(marks)\n```\n\nOutput only the number.",
+    "answer": "104"
   },
   {
     "task_id": "code_complexity_05",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Under the Unique Games Conjecture (UGC), which of the following hardness of approximation results is known to hold?\n\nA) Max-Cut is NP-hard to approximate within a factor of 16/17 + epsilon approx 0.941, which would tight up to the algorithmic bound from the Goemans-Williamson SDP relaxation.\nB) Vertex Cover is NP-hard to approximate within 2 - epsilon for any epsilon > 0.\nC) 3-SAT cannot be approximated within any constant factor.\nD) Graph coloring is NP-hard to approximate within n^{1-epsilon} for any epsilon > 0.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The naive recursive Fibonacci below counts every call (including the initial one) via the global counter. Report the total number of calls for fib(20).\n\n```python\nc = 0\ndef fib(n):\n    global c\n    c += 1\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)\nfib(20)\nprint(c)\n```\n\nOutput only the number.",
+    "answer": "21891"
   },
   {
     "task_id": "code_complexity_06",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Which of the following correctly describes the relationship between the complexity classes P, BPP, and P/poly?\n\nA) P subseteq BPP, and BPP subseteq P/poly by Adleman's theorem (BPP can be derandomized with polynomial-size circuits).\nB) P/poly subseteq BPP, because circuits can be simulated by randomized algorithms.\nC) P = BPP = P/poly, as all three classes are known to be equal under standard derandomization assumptions.\nD) P and BPP are incomparable, but both are strictly contained in P/poly.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The binary-counter simulation below increments 1000 times and counts every bit flip (0->1 and 1->0). Aggregate the flips rather than bounding each increment separately.\n\n```python\nbits = [0] * 12\nflips = 0\nfor _ in range(1000):\n    i = 0\n    while True:\n        bits[i] ^= 1\n        flips += 1\n        if bits[i] == 1:\n            break\n        i += 1\nprint(flips)\n```\n\nOutput only the number.",
+    "answer": "1994"
   },
   {
     "task_id": "code_complexity_07",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Consider computing the edit distance between two strings of length n. Under SETH, what is the best possible time complexity?\n\nA) O(n^2 / log^2 n) is achievable using the Four-Russians technique.\nB) O(n^{2 - epsilon}) for any epsilon > 0 is impossible, assuming SETH.\nC) O(n^2 / log n) is the best possible, matching known lower bounds.\nD) O(n^{1.5}) is achievable using LCS reduction and fast matrix multiplication.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "The Lomuto quicksort below counts comparisons on two fixed inputs: a sorted array and a bit-reversed permutation of the same size. Report both counts (sorted first, permuted second).\n\n```python\ndef count(a):\n    a = list(a)\n    c = 0\n    def qs(lo, hi):\n        nonlocal c\n        if lo >= hi:\n            return\n        p = a[hi]\n        i = lo\n        for j in range(lo, hi):\n            c += 1\n            if a[j] < p:\n                a[i], a[j] = a[j], a[i]\n                i += 1\n        a[i], a[hi] = a[hi], a[i]\n        qs(lo, i - 1)\n        qs(i + 1, hi)\n    qs(0, len(a) - 1)\n    return c\nprint(count([1, 2, 3, 4, 5, 6, 7, 8]))\nprint(count([1, 5, 3, 7, 2, 6, 4, 8]))\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "28",
+      "18"
+    ]
   },
   {
     "task_id": "code_complexity_08",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "The Sparsification Lemma for k-SAT states that any k-CNF formula with n variables can be expressed as the OR of at most 2^{epsilon n} subformulas, each with O(n) clauses. What is the primary consequence of this lemma in fine-grained complexity?\n\nA) It allows proving 2^{Omega(n)} lower bounds for k-SAT from the Exponential Time Hypothesis, because even sparse instances must be hard.\nB) It shows that k-SAT can be solved in 2^{o(n)} time, contradicting ETH.\nC) It reduces the size of SAT instances, proving that SAT is in P.\nD) It implies that all NP-complete problems have subexponential algorithms.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A teammate claims this search is O(log n) 'because it halves the remaining input':\n\n```python\ndef search(a, x):\n    for i in range(len(a)):\n        if a[i] == x:\n            return i\n        if a[i] > x:\n            return -1\n    return -1\n```\n\nWhich option correctly identifies the flaw in the claimed bound?\n\nA. The early exit on a[i] > x makes it O(1), so O(log n) is an overestimate, not the bug.\nB. Halving is irrelevant: the loop scans linearly from the front, touching up to Theta(n) elements (sorted input only enables the early exit, not a halving); logarithmic search requires index jumps to the middle, as in binary search.\nC. The bug is the missing else clause; without it the complexity degrades from O(log n) to O(n).\nD. range(len(a)) is O(log n) by itself, so the total is O(n log n), not O(log n).\nE. Returning -1 inside the loop causes infinite recursion, voiding any bound.\nF. The analysis is correct; linear scan with early exit is logarithmic on sorted data.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_complexity_09",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "In parameterized complexity theory, which of the following correctly characterizes the class W[P]?\n\nA) W[P] contains all parameterized problems that can be decided by a nondeterministic Turing machine in f(k) * n^{O(1)} time with at most f(k) log n nondeterministic bits.\nB) W[P] is the parameterized analog of PSPACE, containing problems solvable with polynomial space.\nC) W[P] is equivalent to FPT unless P = NP.\nD) W[P] is a subclass of W[1], containing only the easiest W-hierarchy problems.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A vector claims O(1) amortized append with this growth policy, but n appends take Theta(n^2):\n\n```python\nclass Vec:\n    def __init__(self):\n        self.cap = 1\n        self.n = 0\n        self.a = [None] * 1\n    def append(self, x):\n        if self.n == self.cap:\n            self.cap += 1\n            new = [None] * self.cap\n            for i in range(self.n):\n                new[i] = self.a[i]\n            self.a = new\n        self.a[self.n] = x\n        self.n += 1\n```\n\nWhich option correctly identifies the bug?\n\nA. The copy loop must use range(self.cap); copying only self.n elements loses data.\nB. Growing by +1 per resize copies Theta(m) elements Theta(n) times for Theta(n^2) total; amortized O(1) requires geometric growth (e.g. doubling), which bounds total copying by a geometric series.\nC. The initial capacity must be 0; starting at 1 wastes the amortized budget.\nD. Amortized analysis never applies to arrays, so the claim is categorically wrong.\nE. The assignment self.a[self.n] = x must come before the resize check.\nF. new = [None] * self.cap must be [0] * self.cap; None entries cost extra.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_complexity_10",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "For the Maximum Clique problem in general graphs with n vertices, which of the following approximation lower bounds is known, assuming P != NP?\n\nA) Maximum Clique cannot be approximated within n^{1 - epsilon} for any epsilon > 0, by the PCP theorem and the hardness of approximation for CLIQUE.\nB) Maximum Clique has a constant-factor approximation algorithm using semidefinite programming.\nC) Maximum Clique can be approximated within O(log n) using the greedy algorithm.\nD) Maximum Clique has a polynomial-time approximation scheme (PTAS) for all graphs.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "A Dijkstra implementation claims O(E log V) but times out like a quadratic algorithm on dense graphs:\n\n```python\ndef dijkstra(adj, s):\n    INF = 10 ** 18\n    dist = {v: INF for v in adj}\n    dist[s] = 0\n    done = set()\n    while len(done) < len(adj):\n        u = min((v for v in adj if v not in done), key=lambda v: dist[v])\n        done.add(u)\n        for w, c in adj[u]:\n            if dist[u] + c < dist[w]:\n                dist[w] = dist[u] + c\n    return dist\n```\n\nWhich option correctly identifies the bug?\n\nA. The min() over all unvisited vertices scans Theta(V) per extraction, giving Theta(V^2 + E) total; the claimed heap bound requires an actual priority queue (heapq) with lazy deletion or decrease-key.\nB. dist initializes to INF, which overflows on addition and corrupts the bound.\nC. done.add(u) must come after the relaxation loop, or neighbors relax with stale distances.\nD. The lambda captures v late, so every extraction returns the same vertex.\nE. Dijkstra cannot handle dense graphs at all; the bound only holds for sparse ones.\nF. The while condition must be fixed iterations of E, not V.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "A"
   },
   {
     "task_id": "code_complexity_11",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "Consider the Diameter problem in undirected unweighted sparse graphs with n vertices and m = O(n) edges. Under SETH, what is the best achievable time complexity for computing the diameter exactly?\n\nA) O(n^2) is achievable using BFS from each vertex, and SETH implies that O(n^{2 - epsilon}) is impossible.\nB) O(n log n) is achievable using a randomized algorithm with high probability.\nC) O(n^{1.5}) is achievable using the Zwick distance product algorithm.\nD) O(n) is achievable because sparse graphs have a linear-time diameter algorithm.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Solve T(n) = 2T(n/2) + n / log n (n >= 2). A student forces Master case 2 and answers Theta(n). What is the tight bound?\n\nA. Theta(n): the division by log n shrinks each level geometrically.\nB. Theta(n log n): the standard Master case 2 with a smaller constant.\nC. Theta(n log log n): level i costs n / (log n - i); summing over log n levels gives n times the harmonic sum H_{log n} = Theta(log log n). The sub-polynomial gap defeats the basic Master theorem.\nD. Theta(n^2 / log n): the two branches multiply the work.\nE. Theta(n / log n): only the root level matters.\nF. Theta(log n): the recurrence telescopes to a logarithm.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_complexity_12",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "Which of the following statements about the fine-grained complexity of the Edit Distance problem is correct?\n\nA) The existence of a truly subquadratic (O(n^{2-epsilon})) algorithm for Edit Distance would refute SETH.\nB) Edit Distance can be solved in O(n^{1.5}) using the Four-Russians technique.\nC) Edit Distance is known to require Omega(n^2) time unconditionally.\nD) Edit Distance has a linear-time algorithm for strings over a binary alphabet.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A Strassen-style routine satisfies T(n) = 7T(n/2) + Theta(n^2). The team debates between Theta(n^2), Theta(n^2 log n) and Theta(n^3). What is the tight bound?\n\nA. Theta(n^2): the quadratic combine step dominates.\nB. Theta(n^2 log n): equal work per level over log n levels.\nC. Theta(n^3): seven subproblems triple the exponent.\nD. Theta(n^{log_2 7}) = Theta(n^{2.81...}): the leaf count n^{log_b a} polynomially dominates f(n) = n^2, so Master case 1 applies.\nE. Theta(7^n): the branching factor exponentiates directly.\nF. Theta(n!): the recursion explores all permutations of subproblems.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "D"
   },
   {
     "task_id": "code_complexity_13",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "For the Set Cover problem with universe size n and m sets, what is the best possible polynomial-time approximation ratio assuming P != NP?\n\nA) (1 - epsilon) ln n is hard to improve upon, while the greedy algorithm achieves ln n + O(1), making it essentially optimal.\nB) A constant-factor approximation of 2 is achievable via linear programming rounding.\nC) The problem admits a PTAS because it is a covering problem.\nD) O(log log n) approximation is achievable using the multiplicative weights method.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Solve T(n) = T(n/2) + T(n/4) + Theta(n). A student guesses Theta(n log n) 'because there are two recursive calls'. What is the tight bound?\n\nA. Theta(n log n): two calls always add a log factor.\nB. Theta(n^2): the fractions compound quadratically.\nC. Theta(n): the subproblem sizes shrink geometrically (1/2 + 1/4 < 1), so the recursion tree sums to at most a constant multiple of n; the homogeneous part is n^p with p < 1, dominated by the linear driving term.\nD. Theta(n^{1.5}): the unequal split averages to a root factor.\nE. Theta(log n): only the deeper branch matters.\nF. Theta(2^n): overlapping subproblems explode.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "C"
   },
   {
     "task_id": "code_complexity_14",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "The Planted Clique conjecture states that no polynomial-time algorithm can distinguish a random graph G(n, 1/2) from one with a planted clique of size k, unless k is at least what threshold?\n\nA) k = omega(sqrt(n)), because spectral methods can find cliques of size O(sqrt(n)) efficiently.\nB) k = Omega(log n), because the maximum clique in G(n, 1/2) has size (2 + o(1)) log_2 n with high probability.\nC) k = Omega(n^{2/3}), because the adjacency matrix eigenvalues reveal smaller cliques.\nD) k = Omega(n / log n), because combinatorial algorithms can find larger cliques.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "A memoized recursion has depth n; each stack frame holds a full O(n)-element array copy of its input slice (a[lo:hi] materialized per call), plus O(n) total memo-table entries of O(1) each. Time is Theta(n^2). What is the tight worst-case SPACE bound?\n\nA. Theta(n): depth n times O(1) per frame.\nB. Theta(n^2): depth n times O(n) per frame simultaneously resident along the deepest path; the memo table adds only O(n).\nC. Theta(n^3): time and space coincide for memoized recursions.\nD. O(1): slicing shares memory with the parent.\nE. Theta(n log n): the slices halve each level.\nF. Theta(2^n): memo entries duplicate the frames.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_complexity_15",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "What is the best known polynomial-time approximation ratio for the Steiner Tree problem in general graphs?\n\nA) 1.39 (ln 4 + epsilon), achieved by the Byrka et al. LP-based iterative rounding algorithm.\nB) 2, achieved by the minimum spanning tree heuristic.\nC) 1.5, achieved by a primal-dual algorithm.\nD) O(log n), because Steiner Tree is not approximable within a constant factor.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement gives a tight bound. Which claims are TRUE? Select all that apply.\n\nA. T(n) = 9T(n/3) + n^2 is Theta(n^2 log n).\nB. T(n) = 8T(n/2) + n^3 is Theta(n^3 log n).\nC. T(n) = T(n - 1) + Theta(n) is Theta(n^2).\nD. T(n) = 2T(n - 1) + Theta(1) is Theta(2^n).\nE. Merge sort's recurrence T(n) = 2T(n/2) + Theta(n) is Theta(n log n).\nF. T(n) = T(sqrt(n)) + 1 is Theta(n).\n\nAnswer with the letters of all true statements (e.g. A C E).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
   },
   {
     "task_id": "code_complexity_16",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "Consider the Sum-of-Squares (SOS) hierarchy for solving constraint satisfaction problems. Which of the following correctly describes its relationship to the Unique Games Conjecture (UGC) for Max-Cut?\n\nA) Degree-2 SOS achieves the Goemans-Williamson 0.878 approximation. UGC predicts that no polynomial-time algorithm can exceed some constant threshold, but higher-degree SOS might potentially improve upon it.\nB) The SOS hierarchy always converges to the exact optimum in degree O(n), but each degree increase multiplies the running time by n^2.\nC) UGC implies that even the degree-n SOS hierarchy cannot improve upon the 0.878 bound for Max-Cut.\nD) The SOS hierarchy is equivalent to the Sherali-Adams hierarchy and both are captured by UGC.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement makes an amortized claim via aggregate or banker/token reasoning. Which claims are TRUE? Select all that apply.\n\nA. n pushes and n pops on an empty stack cost O(n) total: charge each element's pop to its own push.\nB. A binary counter incremented n times from zero costs O(n) total: bit k flips n/2^k times, summing below 2n.\nC. A dynamic table that doubles on overflow serves n inserts in O(n) total: the copy series is geometric.\nD. A dynamic table that grows by +10 per resize serves n inserts in O(n) total.\nE. n operations on the two-stack queue cost O(n) total.\nF. Clearing a k-element accumulator with a reset operation, interleaved with n increments, costs O(n + total cleared): each element pays for its own removal.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E",
+      "F"
+    ]
   },
   {
     "task_id": "code_complexity_17",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "What is the time complexity of the Arora-Kale PTAS for Max-Cut in dense graphs (with at least c * n^2 edges)?\n\nA) O(n^2) time for any fixed approximation parameter epsilon > 0, using sampling and cut-norm approximation.\nB) O(n^{O(1/epsilon)}) time, which is polynomial for each fixed epsilon but with an exponent depending on epsilon.\nC) O(n^3) time regardless of epsilon, using semidefinite programming.\nD) O(n) time for dense graphs, because density allows constant-time sampling.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement claims a Python performance fact. Which claims are TRUE? Select all that apply.\n\nA. lst.pop(0) is Theta(n) worst case per call; deque.popleft is Theta(1).\nB. x in lst is Theta(n) worst case per test; x in a prebuilt set is expected O(1).\nC. sorted(data)[:k] costs Theta(n log n); heapq.nsmallest(k, data) costs O(n log k), better for small k.\nD. Generator expressions evaluate lazily: sum(x * x for x in range(n)) uses O(1) auxiliary space versus O(n) for the list comprehension.\nE. any() and all() short-circuit: any(p(x) for x in data) may call p far fewer than n times.\nF. Timsort sorts an already-sorted list in Theta(n^2) time because run detection only helps reverse-sorted input.\n\nAnswer with the letters of all true statements (e.g. A B D).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
   },
   {
     "task_id": "code_complexity_18",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "In parameterized complexity, consider the k-Path problem: does the graph contain a simple path of length k? Which of the following is TRUE?\n\nA) k-Path is W[1]-hard, but has an FPT algorithm with running time O(2^{O(k)} * n^{O(1)}) using the color-coding technique of Alon, Yuster, and Zwick.\nB) k-Path is in FPT with running time O(k! * n), which is impractical for large k.\nC) k-Path is para-NP-hard, meaning it remains NP-hard even for constant k.\nD) k-Path is not in FPT unless FPT = W[P].\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Each statement is about hardness and reductions. Which claims are TRUE? Select all that apply.\n\nA. To prove a problem X NP-hard, reduce a known NP-hard problem TO X (show it is at least as hard); reducing X to a known hard problem proves nothing about X's hardness.\nB. 0/1 knapsack admits a pseudo-polynomial O(nW) DP, so it is not strongly NP-hard (hardness needs W exponential in input size).\nC. If any NP-complete problem had a polynomial algorithm, then P = NP.\nD. 2-SAT is solvable in linear time via implication graphs and SCCs, so 2-SAT is in P.\nE. A fully polynomial-time approximation scheme (FPTAS) exists for 0/1 knapsack.\nF. Integer linear programming is NP-hard in general, while linear programming over reals is polynomial.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F"
+    ]
   },
   {
     "task_id": "code_complexity_19",
     "category": "Complexity",
     "type": "mcq",
-    "prompt": "Under the Exponential Time Hypothesis (ETH), what is the strongest known lower bound for the k-Clique problem parameterized by clique size k?\n\nA) There is no algorithm for k-Clique with running time f(k) * n^{o(k)} for any computable function f, because a o(k) exponent in n would violate ETH via the standard reduction from 3-SAT to k-Clique.\nB) k-Clique can be solved in O(n^{omega * k / 3}) where omega is the matrix multiplication exponent, matching the lower bound.\nC) k-Clique has an n^{O(log n)} algorithm, showing that ETH lower bounds do not apply.\nD) ETH implies only that k-Clique requires n^{omega(1)} time, with no dependence on k.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "Pages are requested as 0, 1, 2, 0, 3, 0, 4, 2 with 3 frames. Simulating by hand, FIFO and LRU diverge on this string. Which option correctly reports (FIFO faults, LRU faults) with the right reason?\n\nA. (7, 6): LRU exploits the reuse of page 0 (hits where FIFO already evicted it), saving one fault; both are above OPT's 5 faults.\nB. (6, 7): FIFO wins because it preserves the earliest pages, which are reused most.\nC. (8, 8): every access faults since the working set of 5 pages exceeds 3 frames under any policy.\nD. (5, 5): both policies match Belady's OPT on strings without repeats.\nE. (6, 6): FIFO and LRU always fault identically on strings shorter than 10 references.\nF. (7, 5): LRU matches OPT here because recency equals next-use order on this string.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "A"
   },
   {
     "task_id": "code_complexity_20",
     "category": "Complexity",
-    "type": "mcq",
-    "prompt": "For the Hamiltonian Path problem in directed graphs with n vertices, what is the best known exact algorithm's worst-case running time?\n\nA) O(2^n * poly(n)), using the Bellman-Held-Karp dynamic programming over subsets.\nB) O(1.5^n), using the divide-and-conquer approach of Bjorklund.\nC) O(1.657^n), using the inclusion-exclusion principle.\nD) O(2^{n/2}), using meet-in-the-middle on the path decomposition.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Two threads share x = y = 0. Thread 1 executes x = 1 then r1 = y (each step atomic). Thread 2 executes y = 1 then r2 = x. Which statements about the possible (r1, r2) outcomes are TRUE? Select all that apply.\n\nA. (0, 0) is possible under sequential consistency.\nB. (0, 1) is possible under sequential consistency.\nC. (1, 0) is possible under sequential consistency.\nD. (1, 1) is possible under sequential consistency.\nE. (0, 0) is possible under TSO (store buffers let each load bypass its thread's buffered store).\nF. (2, 2) is possible under sequential consistency.\n\nAnswer with the letters of all true statements (e.g. B C D).",
+    "answers": [
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
   },
   {
     "task_id": "code_theory_01",
     "category": "Theory",
-    "type": "mcq",
-    "prompt": "Which complexity class contains all languages decidable by a family of polynomial-size Boolean circuits (where different input lengths may have different circuits, with no uniformity requirement)?\n\nA) P\nB) NP\nC) P/poly\nD) BPP\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Simulate the DFA below, which is meant to accept binary strings ending in '01'. States: A (start), B (last char was 0), C (accept: suffix 01). Transition: on 0, A->B, B->B, C->B; on 1, A->A, B->C, C->A. Run each string in the list from A and count how many end in C.\n\n```python\ntrans = {'A': {'0': 'B', '1': 'A'}, 'B': {'0': 'B', '1': 'C'}, 'C': {'0': 'B', '1': 'A'}}\ntests = ['01', '101', '001', '110', '0101', '00', '11', '010']\nacc = 0\nfor s in tests:\n    st = 'A'\n    for ch in s:\n        st = trans[st][ch]\n    if st == 'C':\n        acc += 1\nprint(acc)\n```\n\nOutput only the number.",
+    "answer": "4"
   },
   {
     "task_id": "code_theory_02",
     "category": "Theory",
-    "type": "mcq",
-    "prompt": "In descriptive complexity theory, the Immerman-Vardi theorem states that P (polynomial time) corresponds exactly to which logical formalism on ordered structures?\n\nA) FO (first-order logic).\nB) FO(LFP) — first-order logic with least fixed point.\nC) SO (second-order logic).\nD) FO(TC) — first-order logic with transitive closure.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "B"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "The NFA below has epsilon moves. Compute the epsilon-closure of the start state, then simulate the subset construction on input 'ab' step by step (move, then close). Report the number of NFA states in the final subset.\n\n```python\neps = {0: {1}, 1: set(), 2: set(), 3: set()}\ntrans = {0: {}, 1: {'a': {1, 2}}, 2: {'b': {3}}, 3: {}}\ndef close(ss):\n    stack = list(ss)\n    out = set(ss)\n    while stack:\n        u = stack.pop()\n        for v in eps.get(u, set()):\n            if v not in out:\n                out.add(v)\n                stack.append(v)\n    return out\ndef move(ss, ch):\n    out = set()\n    for u in ss:\n        out |= trans.get(u, {}).get(ch, set())\n    return out\ncur = close({0})\nfor ch in 'ab':\n    cur = close(move(cur, ch))\nprint(len(cur))\n```\n\nOutput only the number.",
+    "answer": "1"
   },
   {
     "task_id": "code_theory_03",
     "category": "Theory",
     "type": "mcq",
-    "prompt": "Consider the circuit complexity class AC^0 (constant-depth, unbounded fan-in circuits of polynomial size). Which of the following Boolean functions is known to NOT be in AC^0, thereby establishing that AC^0 is strictly contained in P?\n\nA) The AND of n bits.\nB) The OR of n bits.\nC) The PARITY function (XOR of n bits).\nD) The MAJORITY function.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "A student 'proves' L = {a^n b^n : n >= 0} is regular via the pumping lemma as follows: 'Let p be the pumping length. Choose s = a^p b^p. Split s = xyz with |xy| <= p and |y| > 0. Pump y with i = 0 (pump down). The result stays in L because removing characters preserves the a-then-b shape.' Which option pinpoints the flaw?\n\nA. The choice s = a^p b^p is illegal; the pumping lemma requires s to be all a's.\nB. Pumping down (i = 0) is never allowed; only i >= 2 may be used.\nC. The argument ignores WHERE y falls: y lies entirely within the leading a-block (|xy| <= p forces this), so pumping down yields a^{p-|y|} b^p with unequal counts, which is NOT in L -- the 'shape' claim is false.\nD. The pumping length p must equal the number of states, which is unknown, so no s can be chosen.\nE. The proof is correct; L is regular and the flaw is imaginary.\nF. Regularity proofs must use the Myhill-Nerode theorem; pumping-lemma arguments are inadmissible.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "C"
   },
   {
     "task_id": "code_theory_04",
     "category": "Theory",
     "type": "mcq",
-    "prompt": "In the context of interactive proof systems, Shamir's theorem states that the class of languages with interactive proofs (IP) is exactly equal to which classical complexity class?\n\nA) NP, because all interactive proofs can be simulated by a nondeterministic verifier.\nB) PSPACE, because the verifier's computation can be simulated in polynomial space, and any PSPACE language has an interactive proof.\nC) PH (the polynomial hierarchy), because interactive proofs capture alternation.\nD) EXP, because the prover is computationally unbounded.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "A proof claims 'all horses have the same color' by induction: base case n = 1 trivial; step: 'given n + 1 horses, remove one horse to get n same-colored horses by IH, then swap which horse is removed; both subsets have n horses of the same color and overlap, so all n + 1 match.' Which option pinpoints the flaw?\n\nA. The base case is wrong: a single horse has no color.\nB. The inductive step fails at n + 1 = 2: the two n = 1 subsets ({h1}, {h2}) do not overlap, so no color transfers between them; the overlap argument needs n >= 2 (i.e. the step from 2 to 3 onward still breaks at its own base).\nC. Induction cannot prove universal statements about finite sets.\nD. The proof swaps horses, which changes their colors, invalidating the IH.\nE. Strong induction was required but only weak induction was used.\nF. There is no flaw; the theorem is true and horses are monochromatic.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
     "task_id": "code_theory_05",
     "category": "Theory",
     "type": "mcq",
-    "prompt": "Consider the Goldreich-Levin theorem. If f is a one-way function, what does the theorem guarantee about the function g(x, r) = (f(x), r) where |x| = |r|?\n\nA) The inner product (x dot r) mod 2 is a hard-core predicate for g, meaning it is computationally indistinguishable from random given g(x, r).\nB) g is also a one-way function.\nC) The XOR of bits of x is a hard-core predicate for f.\nD) f must be a permutation for the theorem to apply.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Consider L = {w in {a, b}* : w contains 'aa' as a substring}. An engineer proposes DFAs with 2, 3, and 4 states. How many states does the MINIMAL DFA for L have, and why?\n\nA. 2: accept vs non-accept suffices since only membership matters.\nB. 3: no-pending-a / one-pending-a / seen-aa(trap-accept); the three prefixes '', 'a', 'aa' are pairwise distinguishable (by suffixes 'aa', 'a', ''), and 2 states cannot separate 'no trailing a' from 'one trailing a'.\nC. 4: the automaton must remember the last two characters exactly (aa, ab, ba, bb).\nD. 1: L is finite so a single state loops.\nE. 5: Myhill-Nerode adds one class per alphabet symbol plus start and accept.\nF. Infinitely many: substring conditions are never regular.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_theory_06",
     "category": "Theory",
     "type": "mcq",
-    "prompt": "The Razborov-Smolensky theorem is a fundamental result in circuit complexity. Which of the following correctly describes what it proves?\n\nA) The MOD_3 function cannot be computed by AC^0[2] circuits (constant-depth circuits with AND, OR, and MOD_2 gates) of polynomial size.\nB) The PARITY function cannot be computed by NC^1 circuits.\nC) The MAJORITY function cannot be computed by AC^0 circuits.\nD) The CLIQUE function requires exponential-size monotone circuits.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "Consider {True} i := 0; s := 0; while (i < n) { s := s + i; i := i + 1 } {s = n(n-1)/2} with n >= 0. Which loop invariant proves partial correctness (initialization + preservation + exit entailment)?\n\nA. s = i(i-1)/2 AND 0 <= i <= n.\nB. s = n(n-1)/2: the invariant is just the postcondition.\nC. s >= 0: nonnegativity is all the exit needs.\nD. i <= n: the bound alone determines the sum.\nE. s = i(i+1)/2 AND 0 <= i <= n: the triangular numbers with the inclusive form.\nF. s + i = n: the sum and counter trade off to total n.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "A"
   },
   {
     "task_id": "code_theory_07",
     "category": "Theory",
     "type": "mcq",
-    "prompt": "The PCP (Probabilistically Checkable Proof) theorem states that NP = PCP(log n, 1). Which of the following is a direct consequence of this theorem?\n\nA) Every NP problem has a proof that can be verified by a randomized algorithm that reads only O(log n) bits of the proof and uses O(log n) random bits, with constant error probability.\nB) All NP problems can be solved in deterministic polynomial time using random oracles.\nC) MAX-3SAT has a polynomial-time algorithm because proofs are now checkable.\nD) NP is contained in BPP, collapsing the polynomial hierarchy.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F",
+    "prompt": "Thread 1: x = 1; r1 = y. Thread 2: y = 1; r2 = x (all initially 0, plain accesses). On x86 (TSO with store buffers), testing shows r1 == r2 == 0 occurs, though it never occurs under sequential consistency. Which option correctly explains this?\n\nA. The compiler reorders r1 = y before x = 1 in all executions; TSO hardware alone never shows (0, 0).\nB. Each core's store sits in its store buffer while its own load executes: both loads read memory before either store drains, yielding (0, 0). Fences (or seq-cst atomics) between each store and its following load forbid it; the outcome is a TSO-allowed weak behavior, not a simulator bug.\nC. (0, 0) proves the hardware violates causality and must be RMA'd.\nD. x86 is sequentially consistent, so the observation must be a measurement error.\nE. The GIL lets both loads run before the stores; without the GIL the outcome vanishes.\nF. Cache coherence (MESI) is broken whenever (0, 0) appears.\n\nAnswer with the single letter A, B, C, D, E, or F.",
+    "answer": "B"
   },
   {
     "task_id": "code_theory_08",
     "category": "Theory",
-    "type": "mcq",
-    "prompt": "Which of the following correctly describes the relationship between Boolean formulas and Boolean circuits?\n\nA) Every Boolean formula of size s is already a Boolean circuit of size O(s), because formulas are circuits where the underlying graph is a tree (fan-out 1). However, there exist functions computable by polynomial-size circuits that require exponential-size formulas.\nB) Boolean formulas and Boolean circuits are equivalent in power and size; every circuit can be converted to a formula with at most a polynomial increase in size.\nC) Boolean formulas are more expressive than circuits because they allow nested quantification.\nD) Circuits are a special case of formulas where each gate has fan-out at most 2.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Which statements about decidability are TRUE? Select all that apply.\n\nA. The halting problem (does M halt on w?) is undecidable: no total Turing machine decides it.\nB. By Rice's theorem, every nontrivial semantic property of Turing-machine languages (e.g. 'L(M) is empty', 'L(M) is regular') is undecidable.\nC. Emptiness of context-free grammars ('is L(G) empty?') is decidable.\nD. Universality of context-free grammars ('is L(G) = Sigma*?') is decidable.\nE. Equivalence of two DFAs ('is L(A) = L(B)?') is decidable via the product construction.\nF. The Post correspondence problem is decidable for alphabets of size 2.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_theory_09",
     "category": "Theory",
-    "type": "mcq",
-    "prompt": "Consider the Baker-Gill-Solovay result about relativization. Which of the following statements about relativized complexity classes is unconditionally true?\n\nA) There exist oracles A and B such that P^A = NP^A and P^B != NP^B, showing that proof techniques that relativize cannot resolve P vs NP.\nB) For all oracles A, P^A = NP^A, because P = NP in the unrelativized world.\nC) For all oracles A, P^A != NP^A, because the halting problem is always outside P.\nD) There exists an oracle A such that P^A = PSPACE^A, collapsing the polynomial hierarchy.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Which of the following Hoare triples are VALID (partial correctness)? Select all that apply.\n\nA. {x + 1 > 0} x := x + 1 {x > 0}.\nB. {True} x := y {x = y}.\nC. {y = 2} x := y + y {x = 4}.\nD. {x = 5} x := x + 1 {x = 5}.\nE. {x > 0} x := -x {x < 0}.\nF. {x = 3} x := x * 0 {x = 3}.\n\nAnswer with the letters of all valid triples (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   },
   {
     "task_id": "code_theory_10",
     "category": "Theory",
-    "type": "mcq",
-    "prompt": "Yao's XOR Lemma states that if a Boolean function f is mildly hard to compute on average (error < 1/2 - delta) by circuits of size s, then the XOR of k independent copies (f(x_1) XOR f(x_2) XOR ... XOR f(x_k)) is extremely hard to compute on average by circuits of size s * poly(epsilon). Which of the following is a primary application of this lemma?\n\nA) Amplifying mild average-case hardness to very strong average-case hardness, which is crucial for constructing pseudorandom generators and hard-core predicates.\nB) Showing that every function in P has polynomial-size circuits.\nC) Proving that BPP is contained in P/poly.\nD) Demonstrating that NP-complete problems are hard on average.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Two minimal-DFA questions. (1) L1 = {w in {a}* : |w| mod 3 = 0} (unary multiples of 3). (2) L2 = {w in {a, b}* : w ends with 'a'}. Using Myhill-Nerode distinguishability, give the number of states in the minimal DFA for L1, then for L2. Output only the two numbers, one per line.",
+    "answers": [
+      "3",
+      "2"
+    ]
   }
 ]

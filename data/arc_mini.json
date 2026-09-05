@@ -1,0 +1,62 @@
+[
+  {
+    "task_id": "arc/0",
+    "question": "An astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?",
+    "options": [
+      "Planetary density will decrease.",
+      "Planetary years will become longer.",
+      "Planetary days will become shorter.",
+      "Planetary gravity will become stronger."
+    ],
+    "answer": "C",
+    "category": "ARC-Challenge"
+  },
+  {
+    "task_id": "arc/1",
+    "question": "A group of engineers wanted to know how different building designs would respond during an earthquake. They made several models of buildings and tested each for its ability to withstand earthquake conditions. Which will most likely result from testing different building designs?",
+    "options": [
+      "buildings will be built faster",
+      "buildings will be made safer",
+      "building designs will look nicer",
+      "building materials will be cheaper"
+    ],
+    "answer": "B",
+    "category": "ARC-Challenge"
+  },
+  {
+    "task_id": "arc/2",
+    "question": "The end result in the process of photosynthesis is the production of sugar and oxygen. Which step signals the beginning of photosynthesis?",
+    "options": [
+      "Chemical energy is absorbed through the roots.",
+      "Light energy is converted to chemical energy.",
+      "Chlorophyll in the leaf captures light energy.",
+      "Sunlight is converted into chlorophyll."
+    ],
+    "answer": "C",
+    "category": "ARC-Challenge"
+  },
+  {
+    "task_id": "arc/3",
+    "question": "A physicist wants to determine the speed a car must reach to jump over a ramp. The physicist conducts three trials. In trials two and three, the speed of the car is increased by 20 miles per hour. What is the physicist investigating when he changes the speed?",
+    "options": [
+      "the control",
+      "the hypothesis statement",
+      "the dependent (responding) variable",
+      "the independent (manipulated) variable"
+    ],
+    "answer": "D",
+    "category": "ARC-Challenge"
+  },
+  {
+    "task_id": "arc/4",
+    "question": "An astronaut drops a 1.0 kg object and a 5.0 kg object on the Moon. Both objects fall a total distance of 2.0 m vertically. Which of the following best describes the objects after they have fallen a distance of 1.0 m?",
+    "options": [
+      "They have each lost kinetic energy.",
+      "They have each gained the same amount of potential energy.",
+      "They have each lost the same amount of potential energy.",
+      "They have each gained one-half of their maximum kinetic energy."
+    ],
+    "answer": "D",
+    "category": "ARC-Challenge"
+  }
+]

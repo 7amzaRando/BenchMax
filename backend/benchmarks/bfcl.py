@@ -235,8 +235,9 @@ class BFCLBenchmark(BaseBenchmark):
         logger.debug(f"RAW_GENERATION_DEBUG: {generation!r}")
 
         raw_response = generation["raw_response"]
+        answer_content = generation.get("answer_content", "") or ""
 
-        extracted = raw_response.strip()
+        extracted = (answer_content or raw_response).strip()
         cleaned = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', extracted)
         cleaned = cleaned.strip()
 
@@ -282,19 +283,14 @@ class BFCLBenchmark(BaseBenchmark):
                     "error_message": f"Checker error: {e}",
                 }
 
-        return {
-            "prompt": system_prompt + "\n\n" + question,
-            "raw_response": raw_response,
-            "extracted_code": json.dumps(actual_calls),
-            "correct": correct,
-            "error_message": score_data.get("error_message"),
-            "elapsed_time": generation.get("elapsed_time", 0.0),
-            "tps": generation.get("tps", 0.0),
-            "ttft": generation.get("ttft", 0.0),
-            "thinking_tokens": generation.get("thinking_tokens", 0),
-            "response_tokens": generation.get("response_tokens", 0),
-            "scoring_details": score_data,
-        }
+        return self._result(
+            system_prompt + "\n\n" + question,
+            generation,
+            extracted_code=json.dumps(actual_calls),
+            correct=correct,
+            error_message=score_data.get("error_message"),
+            scoring_details=score_data,
+        )
 
     async def _evaluate_multi_turn(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         question_turns = sample.get("question", [])
@@ -345,8 +341,9 @@ class BFCLBenchmark(BaseBenchmark):
 
             raw_response = generation["raw_response"]
             raw_responses.append(raw_response)
+            answer_content = generation.get("answer_content", "") or ""
 
-            extracted = raw_response.strip()
+            extracted = (answer_content or raw_response).strip()
             cleaned = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', extracted)
             cleaned = cleaned.strip()
             turn_calls = _extract_bfcl_json(cleaned)
@@ -373,24 +370,27 @@ class BFCLBenchmark(BaseBenchmark):
         )
         correct = result_check["valid"]
 
-        return {
-            "prompt": json.dumps({"turns": question_turns, "system": system_prompt}),
+        synth_gen = {
             "raw_response": json.dumps(raw_responses),
-            "extracted_code": json.dumps(all_turns_output),
-            "correct": correct,
-            "error_message": result_check.get("error_message") if not correct else None,
             "elapsed_time": total_elapsed,
             "tps": total_tps / max(len(question_turns), 1),
             "ttft": total_ttft / max(len(question_turns), 1),
             "thinking_tokens": total_thinking,
             "response_tokens": total_response_tokens,
-            "scoring_details": {
+        }
+        return self._result(
+            json.dumps({"turns": question_turns, "system": system_prompt}),
+            synth_gen,
+            extracted_code=json.dumps(all_turns_output),
+            correct=correct,
+            error_message=result_check.get("error_message") if not correct else None,
+            scoring_details={
                 "multi_turn": True,
                 "checker_result": result_check,
                 "per_turn_output": all_turns_output,
                 "categories": [category],
             },
-        }
+        )
 
     def _build_function_prompt(self, functions: List[Dict]) -> str:
         """Convert function schemas to a structured prompt"""

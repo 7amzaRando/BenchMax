@@ -3,35 +3,40 @@
     "task_id": "reason_math_01",
     "category": "Math",
     "type": "exact",
-    "prompt": "Find the number of integers between 1 and 10^6 inclusive that are NOT divisible by 2, 3, 5, or 7. Use inclusion-exclusion with four sets. Output only the number.",
-    "answer": "228571"
+    "answer": "100",
+    "prompt": "Find the smallest positive integer x such that x leaves remainder 4 when divided by 6, remainder 10 when divided by 15, and remainder 2 when divided by 7. Note the moduli are not coprime, so check compatibility before combining. Output only the single integer.",
+    "match": "numeric"
   },
   {
-    "task_id": "reason_math_02",
+    "task_id": "reason_math_16",
     "category": "Math",
     "type": "exact",
-    "prompt": "A random permutation of the set {1, 2, 3, 4, 5, 6, 7} is chosen uniformly. What is the probability that no element is in its original position (a derangement)? Express as a simplified fraction. Output only the fraction.",
-    "answer": "103/280"
+    "answer": "2464",
+    "prompt": "A random permutation of 8 distinct items is chosen. How many such permutations fix EXACTLY 3 of the 8 items (each of the other 5 moves)? Output only the single integer.",
+    "match": "numeric"
   },
   {
-    "task_id": "reason_math_03",
+    "task_id": "reason_math_31",
     "category": "Math",
     "type": "exact",
-    "prompt": "Let p = 7919 which is prime. Compute 2^p modulo p using Fermat's Little Theorem. Output only the number.",
-    "answer": "2"
+    "answer": "8/11",
+    "prompt": "Bag A holds 4 red and 2 blue balls; Bag B holds 3 red and 5 blue balls. Move one random ball from A to B, then draw one ball from B. Given that the drawn ball is red, what is the probability the transferred ball was red? Output the answer as a reduced fraction 'a/b'.",
+    "match": "numeric"
   },
   {
-    "task_id": "reason_math_04",
-    "category": "Math",
+    "task_id": "reason_logic_01",
+    "category": "Logic Puzzles",
     "type": "exact",
-    "prompt": "Find the smallest positive integer n satisfying the system: n \u2261 2 (mod 3), n \u2261 3 (mod 5), n \u2261 2 (mod 7). Output only the number.",
-    "answer": "23"
+    "prompt": "Five islanders - Vera, Wren, Xio, Yara, and Zane - are each either a knight (always tells the truth) or a knave (always lies). They say: Vera: 'Exactly two of us are knights.' Wren: 'Vera is a knave.' Xio: 'Wren and Yara are the same type.' Yara: 'Xio is a knight if and only if Zane is a knave.' Zane: 'Xio is a knave.' How many knights are among the five? Output only the number.",
+    "answer": "3",
+    "match": "numeric"
   },
   {
-    "task_id": "reason_math_05",
-    "category": "Math",
+    "task_id": "reason_data_01",
+    "category": "Data Analysis",
     "type": "exact",
-    "prompt": "Compute Euler's totient function \u03c6(2024) where 2024 = 2^3 \u00d7 11 \u00d7 23. Output only the number.",
-    "answer": "880"
+    "prompt": "Eight stores report daily sales with weights (store size): sales 12 (w5), 25 (w8), 31 (w6), 44 (w10), 58 (w7), 67 (w9), 73 (w4), 89 (w11). Compute the weighted 75th percentile: sort by sales, accumulate weights, take the first sales value whose cumulative weight reaches at least 75 percent of total weight. Output only the number.",
+    "answer": "67",
+    "match": "numeric"
   }
 ]

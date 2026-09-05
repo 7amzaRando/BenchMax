@@ -6,8 +6,6 @@ package (which pulls in anthropic, openai, google-generativeai, etc.).
 import re
 from typing import Dict, Any, List, Optional
 
-Language = type("Language", (), {"PYTHON": "python", "JAVA": "java", "JAVASCRIPT": "javascript"})()
-
 PYTHON_TYPE_MAPPING = {
     "string": str, "integer": int, "float": float, "boolean": bool,
     "array": list, "tuple": list, "dict": dict, "any": str,

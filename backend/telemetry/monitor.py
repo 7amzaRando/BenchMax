@@ -1,11 +1,26 @@
 import logging
 import time
+import math
 import psutil
 import subprocess
 import shutil
 import platform
 
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_float(val, default=0.0):
+    """Ensure float is JSON-compliant (not nan, not inf)."""
+    try:
+        if val is None:
+            return default
+        f = float(val)
+        if math.isnan(f) or math.isinf(f):
+            return default
+        return f
+    except (ValueError, TypeError):
+        return default
+
 
 # winreg is Windows-only standard library for registry access
 try:
@@ -24,7 +39,7 @@ except ImportError:
 
 # Telemetry cache to avoid expensive GPU counter queries every call
 _telemetry_cache: dict = {}
-_telemetry_cache_ttl = 3.5  # seconds (slightly longer than frontend 3s poll interval)
+_telemetry_cache_ttl = 5.0  # seconds — covers 1-2 frontend poll intervals (3s each)
 import threading
 _telemetry_cache_lock = threading.Lock()
 
@@ -271,6 +286,11 @@ def _gather_system_metrics_fresh() -> dict:
                         100.0
                     )
 
+    # Sanitize all float values to be JSON-compliant (no nan/inf)
+    for k, v in metrics.items():
+        if isinstance(v, float):
+            metrics[k] = _sanitize_float(v)
+
     return metrics
 
 
@@ -286,16 +306,17 @@ def get_system_metrics() -> dict:
         cached = _telemetry_cache.get("last_result")
         cached_at = _telemetry_cache.get("cached_at", 0)
         if cached and (now - cached_at) < _telemetry_cache_ttl:
-            # Update cheap CPU/RAM values even from cache, but skip expensive GPU
+            # Return a copy to avoid mutating the cached object across callers
+            out = dict(cached)
             try:
-                cached["cpu_percent"] = psutil.cpu_percent(interval=None)
+                out["cpu_percent"] = _sanitize_float(psutil.cpu_percent(interval=None))
                 vm = psutil.virtual_memory()
-                cached["ram_total_gb"] = round(vm.total / (1024 ** 3), 2)
-                cached["ram_used_gb"] = round(vm.used / (1024 ** 3), 2)
-                cached["ram_percent"] = vm.percent
+                out["ram_total_gb"] = _sanitize_float(round(vm.total / (1024 ** 3), 2))
+                out["ram_used_gb"] = _sanitize_float(round(vm.used / (1024 ** 3), 2))
+                out["ram_percent"] = _sanitize_float(vm.percent)
             except Exception:
                 logger.debug("Failed to gather fresh CPU/RAM metrics", exc_info=True)
-            return cached
+            return out
 
         fresh = _gather_system_metrics_fresh()
         _telemetry_cache = {"last_result": fresh, "cached_at": now}

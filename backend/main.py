@@ -1,20 +1,20 @@
 import logging, os, sys
+import secrets as _secrets
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from backend.database import init_db
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[logging.StreamHandler()]
-)
+from backend.logging_setup import configure_logging
+configure_logging()
 logger = logging.getLogger(__name__)
+
+from backend.database import init_db, get_db
+from backend.api import SafeJSONResponse
 
 ENABLE_DIAG = False
 ROOT = Path(__file__).parent.parent
+_admin_token = _secrets.token_hex(16)
 
 # In PyInstaller .exe builds, assets live next to the exe or in sys._MEIPASS
 _meipass = getattr(sys, '_MEIPASS', None)
@@ -32,23 +32,23 @@ else:
 app = FastAPI(
     title="BenchMax Core Engine",
     description="Backend coordinator for local LLM performance and correctness evaluations",
-    version="alpha 1.0.1"
+    version="2.0",
+    default_response_class=SafeJSONResponse,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_credentials=True,
+    allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
+    allow_credentials=False,
 )
 
 try:
     logger.info("Initializing BenchMax SQLite database...")
     init_db()
-    from backend.database import SessionLocal, Run
-    db = SessionLocal()
-    try:
+    from backend.database import Run
+    with get_db() as db:
         stale = db.query(Run).filter(Run.status == "RUNNING").all()
         for r in stale:
             logger.warning(f"Marking stale running run #{r.id} ({r.benchmark_name}) as FAILED (server restart)")
@@ -56,9 +56,7 @@ try:
         db.commit()
         if stale:
             logger.info(f"Marked {len(stale)} stale run(s) as FAILED")
-    finally:
-        db.close()
-    logger.info("Database initialized successfully.")
+    logger.info("Database initialized successfully. Admin shutdown token set (shown in startup output only).")
 except Exception as e:
     logger.error(f"Critical error initializing database: {e}")
     raise
@@ -68,12 +66,29 @@ def health_check():
     return {"status": "healthy", "app": "BenchMax", "database": "connected"}
 
 import threading
-@app.get("/api/shutdown")
-def shutdown():
+@app.post("/api/shutdown")
+def shutdown(token: str = ""):
+    """Shut down the server. Token optional for localhost; wrong token is rejected."""
+    if token and token != _admin_token:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
     def _die():
-        import sys, time
-        time.sleep(0.5)
-        sys.exit(0)
+        import os, sys, time
+        time.sleep(0.6)
+        # Only kill the reloader parent when --reload is active; otherwise
+        # ppid is the cmd.exe running run.bat and killing it triggers the
+        # "Terminate batch job (Y/N)?" prompt.
+        if os.environ.get("BENCHMAX_RELOAD") == "1":
+            try:
+                import signal, subprocess
+                ppid = os.getppid()
+                if sys.platform == "win32":
+                    subprocess.run(["taskkill", "/PID", str(ppid), "/T", "/F"], capture_output=True, timeout=2)
+                else:
+                    os.kill(ppid, signal.SIGTERM)
+            except Exception:
+                pass
+        os._exit(0)
     threading.Thread(target=_die, daemon=True).start()
     return {"status": "shutting_down"}
 
@@ -106,9 +121,10 @@ if FRONTEND_DIST.exists():
 
     @app.get("/assets/{file_path:path}", include_in_schema=False)
     async def serve_assets(file_path: str):
-        asset = FRONTEND_DIST / "assets" / file_path
-        if asset.exists() and asset.is_file():
-            return FileResponse(str(asset))
+        candidate = (FRONTEND_DIST / "assets" / file_path).resolve()
+        dist_root = FRONTEND_DIST.resolve()
+        if candidate.is_relative_to(dist_root) and candidate.exists() and candidate.is_file():
+            return FileResponse(str(candidate))
         return {"error": "Asset not found"}
 
     # SPA fallback: only for non-API paths
@@ -117,9 +133,12 @@ if FRONTEND_DIST.exists():
         if full_path.startswith("api/") or full_path.startswith("static/"):
             from fastapi.responses import JSONResponse
             return JSONResponse({"error": "Not found"}, status_code=404)
-        file_path = FRONTEND_DIST / full_path
-        if file_path.exists() and file_path.is_file():
-            return FileResponse(str(file_path))
+        # Resolve + containment check: prevents ..\ traversal from escaping
+        # the frontend dist dir into records/benchmax.db, .hf_token, etc.
+        candidate = (FRONTEND_DIST / full_path).resolve()
+        dist_root = FRONTEND_DIST.resolve()
+        if candidate.is_relative_to(dist_root) and candidate.exists() and candidate.is_file():
+            return FileResponse(str(candidate))
         index_path = FRONTEND_DIST / "index.html"
         if index_path.exists():
             return FileResponse(str(index_path))

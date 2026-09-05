@@ -1,13 +1,86 @@
 import logging
 import re
+import textwrap
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 from backend.lm_studio.client import LMStudioClient
 from backend.sandbox.safe_executor import check_correctness_humaneval
 
 logger = logging.getLogger(__name__)
+
+def extract_python_code(raw_text: str, entry_point: str) -> str:
+    """Extract Python code from model output. Multi-stage: fence → contiguous lines → raw fallback."""
+    if not raw_text or not raw_text.strip():
+        return ""
+
+    # Stage 1: ```python fences
+    matches = re.findall(r"\s*```python\s*(.*?)\s*```", raw_text, re.DOTALL | re.IGNORECASE)
+    if matches:
+        code = textwrap.dedent(matches[0]).strip()
+        if code:
+            return code
+
+    # Stage 2: generic fences
+    matches = re.findall(r"\s*```\w*\s*(.*?)\s*```", raw_text, re.DOTALL)
+    if matches:
+        code = textwrap.dedent(matches[0]).strip()
+        if code:
+            return code
+
+    # Stage 3: contiguous code lines
+    lines = raw_text.split('\n')
+    code_lines = []
+
+    def _looks_like_code(stripped):
+        if any(stripped.startswith(kw) for kw in ['def ', 'class ', 'for ', 'if ', 'while ',
+                                                    'return ', 'import ', 'from ', 'assert ',
+                                                    'print(', 'raise ', 'yield ', 'del ',
+                                                    '[', ']', '{', '}', ':', 'self.', 'try',
+                                                    'except ', 'finally ', 'with ', 'elif ']):
+            return True
+        if re.search(r'^[A-Za-z_]\w*\s*[+\-*/%&|^]?=', stripped):
+            return True
+        if re.search(r'^[A-Za-z_][\w.]*\(', stripped):
+            return True
+        return False
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if _looks_like_code(stripped):
+            code_lines.append(line)
+        else:
+            if code_lines and len(code_lines) > 1:
+                return textwrap.dedent('\n'.join(code_lines)).strip()
+
+    return textwrap.dedent(raw_text).strip()
+
+
+def _validate_and_prepare_code(extracted_code: str, entry_point: str, prompt: str) -> tuple[str, bool]:
+    """Validate extracted code and prepare runnable version."""
+    if not extracted_code or not extracted_code.strip():
+        return "", False
+
+    has_definition = bool(re.search(rf'def\s+{re.escape(entry_point)}\s*\(', extracted_code))
+
+    if has_definition:
+        return extracted_code.strip(), True
+
+    sig_line = None
+    for ln in prompt.splitlines():
+        if re.match(rf'def\s+{re.escape(entry_point)}\s*\(', ln):
+            sig_line = ln
+            break
+    if sig_line:
+        dedented = textwrap.dedent(extracted_code)
+        runnable_code = f"{sig_line}\n{textwrap.indent(dedented, '    ')}".rstrip()
+        return runnable_code.strip(), True
+
+    return "", False
+
 
 class HumanEvalBenchmark(BaseBenchmark):
 
@@ -15,162 +88,44 @@ class HumanEvalBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        filename = "humaneval_mini.json" if self.quick_test else "humaneval_full.json"
-        self.dataset_path = resolve_data_file(__file__, filename)
-        if not self.dataset_path:
-            logger.warning("Full HumanEval dataset not found, falling back to mini dataset")
-            fallback = "humaneval_mini.json"
-            self.dataset_path = resolve_data_file(__file__, fallback)
-        if not self.dataset_path:
-            raise FileNotFoundError(f"HumanEval dataset not found. Run 'scripts/fetch_humaneval.py' to download it.")
-        return self._load_json_cached(self.dataset_path)
-
-    def _extract_python_code(self, raw_text: str, entry_point: str) -> str:
-        """
-        Parses output to extract the executable Python code block.
-        Multi-stage extraction with validation and fallback strategies.
-        """
-        if not raw_text or not raw_text.strip():
-            logger.warning(f"Empty response for {entry_point}")
-            return ""
-
-        # Stage 1: Extract from ```python ... ``` blocks (most reliable)
-        # Handles both ```python and indented (e.g., inside <think>) ```python blocks
-        matches = re.findall(r"\s*```python\s*(.*?)\s*```", raw_text, re.DOTALL | re.IGNORECASE)
-        if matches:
-            code = matches[0].strip()
-            if code:
-                logger.debug(f"Extracted from python block for {entry_point}")
-                return code
-
-        # Stage 2: Extract from generic ``` ... ``` blocks (any language, indented ok)
-        matches = re.findall(r"\s*```\w*\s*(.*?)\s*```", raw_text, re.DOTALL)
-        if matches:
-            code = matches[0].strip()
-            if code:
-                logger.debug(f"Extracted from generic block for {entry_point}")
-                return code
-
-        # Stage 3: Extract last contiguous non-prose block (handles conversational models)
-        lines = raw_text.split('\n')
-        code_lines = []
-        in_code_block = False
-        
-        for line in lines:
-            stripped = line.strip()
-            if not stripped or stripped.startswith('#'):
-                continue
-            
-            # Check if this looks like Python code (not prose)
-            if any(stripped.startswith(kw) for kw in ['def ', 'class ', 'for ', 'if ', 'while ',
-                                                        'return ', 'import ', 'from ', 'assert ',
-                                                        'print(', 'raise ', 'yield ', 'del ',
-                                                        '[', ']', '{', '}', ':', 'self.']):
-                code_lines.append(line)
-            else:
-                # If we have collected code, return it
-                if code_lines and len(code_lines) > 1:
-                    logger.debug(f"Extracted from prose fallback for {entry_point}")
-                    return '\n'.join(code_lines).strip()
-        
-        # Stage 4: Return raw text as last resort (with warning)
-        logger.warning(f"No code block found, returning raw response for {entry_point}")
-        return raw_text.strip()
-
-    def _validate_and_prepare_code(self, extracted_code: str, entry_point: str, prompt: str) -> tuple[str, bool]:
-        """
-        Validates extracted code and prepares runnable version.
-        Returns (runnable_code, is_valid).
-        """
-        if not extracted_code or not extracted_code.strip():
-            logger.error(f"Empty extracted code for {entry_point}")
-            return "", False
-
-        # Check if entry point definition exists in extracted code
-        has_definition = bool(re.search(rf'def\s+{re.escape(entry_point)}\s*\(', extracted_code))
-        
-        if has_definition:
-            runnable_code = extracted_code.strip()
-            logger.debug(f"Code contains {entry_point} definition")
-        else:
-            # Model provided only function body - concatenate with prompt signature
-            # Extract the function signature from prompt (last def line)
-            sig_match = re.search(rf'def\s+{re.escape(entry_point)}\s*\([^)]*\)\s*:', prompt)
-            if sig_match:
-                runnable_code = f"{sig_match.group(0)}\n    {extracted_code.strip()}"
-                logger.debug(f"Reconstructed function from body-only response")
-            else:
-                # Fallback: use full prompt + extracted code
-                runnable_code = f"{prompt}\n{extracted_code}"
-                logger.warning(f"Could not find signature, using full prompt concatenation")
-
-        return runnable_code.strip(), True
+        path = self._resolve_dataset("humaneval_full.json", fetch_hint="Run 'scripts/fetch_humaneval.py' to download it.")
+        return self._load_json_cached(path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        """
-        Runs completions against the local LLM and executes code via safe_executor.
-        """
         prompt = sample.get("prompt", "")
-        entry_point = sample["entry_point"]
-        test_suite = sample["test"]
-        task_id = sample["task_id"]
+        entry_point = sample.get("entry_point", "")
+        test_suite = sample.get("test", "")
+        task_id = sample.get("task_id", "")
 
-        # Run inference using LM Studio client
-        generation = await self.client.generate_completion(
-            prompt=prompt,
-            system_prompt=params.get("system_prompt"),
-            temperature=params.get("temperature", 0.0),
-            max_completion_tokens=params.get("max_completion_tokens"),
-            stop_tokens=params.get("stop_tokens", ["\nif __name__"]),
-            model_name=model_name,
-        )
-
-        logger.debug(f"RAW_GENERATION_DEBUG: {generation!r}")
+        generation = await self._generate(prompt, params, model_name, stop_tokens=["\nif __name__"])
 
         raw_response = generation["raw_response"]
         answer_content = generation["answer_content"]
         thinking_content = generation.get("thinking_content", "")
 
-        # Extract code from all sources, pick the best one (containing the function def)
         candidates = [
-            ("answer", self._extract_python_code(answer_content, entry_point)),
-            ("raw", self._extract_python_code(raw_response, entry_point)),
+            ("answer", extract_python_code(answer_content, entry_point)),
+            ("raw", extract_python_code(raw_response, entry_point)),
         ]
         if thinking_content:
-            candidates.append(("think", self._extract_python_code(thinking_content, entry_point)))
+            candidates.append(("think", extract_python_code(thinking_content, entry_point)))
 
         extracted_code = ""
         for src, code in candidates:
             if code and re.search(rf'def\s+{re.escape(entry_point)}\s*\(', code):
                 extracted_code = code
-                logger.debug(f"Using code from {src} for {entry_point}")
                 break
         if not extracted_code:
             for src, code in candidates:
                 if code:
                     extracted_code = code
-                    logger.debug(f"Using fallback code from {src} for {entry_point}")
                     break
 
-        # Validate and prepare runnable code
-        runnable_code, is_valid = self._validate_and_prepare_code(extracted_code, entry_point, prompt)
-        
-        if not is_valid:
-            logger.error(f"Failed to prepare runnable code for {task_id}")
-            return {
-                "prompt": prompt,
-                "raw_response": raw_response,
-                "extracted_code": extracted_code,
-                "correct": False,
-                "error_message": f"Code preparation failed: empty or invalid response",
-                "elapsed_time": generation["elapsed_time"],
-                "tps": generation["tps"],
-                "ttft": generation["ttft"],
-                "thinking_tokens": generation["thinking_tokens"],
-                "response_tokens": generation["response_tokens"]
-            }
+        runnable_code, is_valid = _validate_and_prepare_code(extracted_code, entry_point, prompt)
 
-        logger.info(f"Running local code execution for {task_id} in model {model_name}")
+        if not is_valid:
+            return self._result(prompt, generation, extracted_code=extracted_code,
+                                error_message="Code preparation failed: empty or invalid response")
 
         try:
             code_size = len(runnable_code)
@@ -183,43 +138,25 @@ class HumanEvalBenchmark(BaseBenchmark):
                 timeout=timeout,
             )
             correct = result["passed"]
-            error_msg = "" if result["passed"] else result["result"]
+            error_msg = None if result["passed"] else result["result"]
         except Exception as e:
-            logger.error(f"Code execution error for {task_id}: {e}")
-            return {
-                "prompt": prompt,
-                "raw_response": raw_response,
-                "extracted_code": extracted_code,
-                "correct": False,
-                "error_message": f"Execution error: {str(e)}",
-                "elapsed_time": generation["elapsed_time"],
-                "tps": generation["tps"],
-                "ttft": generation["ttft"],
-                "thinking_tokens": generation["thinking_tokens"],
-                "response_tokens": generation["response_tokens"]
-            }
+            return self._result(prompt, generation, extracted_code=extracted_code,
+                                error_message=f"Execution error: {str(e)}")
 
-        return {
-            "prompt": prompt,
-            "raw_response": raw_response,
-            "extracted_code": extracted_code,
-            "correct": correct,
-            "error_message": error_msg,
-            "elapsed_time": generation["elapsed_time"],
-            "tps": generation["tps"],
-            "ttft": generation["ttft"],
-            "thinking_tokens": generation["thinking_tokens"],
-            "response_tokens": generation["response_tokens"]
-        }
+        return self._result(prompt, generation, extracted_code=extracted_code,
+                            correct=correct, error_message=error_msg)
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
         import difflib
+        from html import escape
         prompt = sample.get("prompt", "")
         entry_point = sample.get("entry_point", "")
         canonical = (prompt + "\n" + sample.get("canonical_solution", "")).splitlines()
         generated = (result_data.get("extracted_code") or "").splitlines()
         if entry_point not in (result_data.get("extracted_code") or ""):
             generated = (prompt + "\n" + (result_data.get("extracted_code") or "")).splitlines()
+        canonical = [escape(line) for line in canonical]
+        generated = [escape(line) for line in generated]
         diff_html = difflib.HtmlDiff(wrapcolumn=90).make_table(
             canonical, generated,
             fromdesc="✅ Ground-Truth Solution",
@@ -239,4 +176,3 @@ span.diff_sub{{background:#7f1d1d;color:#fecaca;border-radius:2px;padding:0 2px}
 <div style="overflow-x:auto;border-radius:8px;border:1px solid #334155;background:#1e293b;padding:8px">
 {diff_html}
 </div>"""
-

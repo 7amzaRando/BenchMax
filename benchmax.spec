@@ -1,8 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 
-block_cipher = None
-
 root_dir = os.path.abspath(".")
 
 def _data(src, dst):
@@ -31,17 +29,29 @@ datas = [
     _data("data/reason_mini.json", "data"),
     _data("data/aider_polyglot_mini.json", "data"),
     _data("data/tectonic_mini.json", "data"),
-    _data("data/mcp_bench/mcp_bench_mini.json", "data/mcp_bench"),
     _data("data/bfcl/bfcl_mini.json", "data/bfcl"),
-    _data("data/safety/safety_mini.json", "data/safety"),
+    _data("data/safety/uncensor_mini.json", "data/safety"),
     _data("data/writing_speed_test_mini.json", "data"),
     _data("data/coding_speed_test_mini.json", "data"),
     _data("data/truthfulqa_mini.json", "data"),
+    _data("data/hellaswag_mini.json", "data"),
+    _data("data/winogrande_mini.json", "data"),
+    _data("data/arc_mini.json", "data"),
+    _data("data/commonsenseqa_mini.json", "data"),
+    _data("data/long_context_memory_mini.json", "data"),
+    _data("data/niahs_mini.json", "data"),
+    _data("data/niahs_corpus.json", "data"),
+    _data("data/gaia_mini.json", "data"),
+    _data("data/taubench_airline_mini.json", "data"),
+    _data("data/toolcall_mini.json", "data"),
+    # Tau3-Airline runtime files (shared by full + mini runs — not fetched on demand in the .exe)
+    _data("data/taubench_airline_db.json", "data"),
+    _data("data/taubench_airline_policy.md", "data"),
+    _data("data/taubench_airline_user_guidelines.md", "data"),
     # Full datasets — NOT bundled (fetched on first use via dataset installer).
     # Only mini datasets are bundled above.
-    # Frontend dist (SPA static files)
-    _data("frontend/dist/index.html", "frontend/dist"),
-    _data("frontend/dist/assets", "frontend/dist/assets"),
+    # Frontend dist (SPA static files) — bundle entire dist folder
+    _data("frontend/dist", "frontend/dist"),
 ]
 
 # Filter out None entries (missing files)
@@ -106,8 +116,7 @@ a = Analysis(
         'backend.benchmarks.aime',
         'backend.benchmarks.bigcodebench',
         'backend.benchmarks.bfcl',
-        'backend.benchmarks.mcp_bench',
-        'backend.benchmarks.safety',
+        'backend.benchmarks.uncensor',
         'backend.benchmarks.longbench_v2',
         'backend.benchmarks.aider_polyglot',
         'backend.benchmarks.mmmu_pro',
@@ -120,9 +129,39 @@ a = Analysis(
         'backend.benchmarks.tectonic',
         'backend.benchmarks.speed_test',
         'backend.benchmarks.truthfulqa',
+        'backend.benchmarks.hellaswag',
+        'backend.benchmarks.winogrande',
+        'backend.benchmarks.arc',
+        'backend.benchmarks.commonsenseqa',
+        'backend.benchmarks.long_context_memory',
+        'backend.benchmarks.niahs',
+        'backend.benchmarks.gaia',
+        'backend.benchmarks.taubench_airline',
+        'backend.benchmarks.toolcall',
+        'backend.benchmarks.multi_turn_base',
+        'backend.sandbox.safe_executor',
+        'backend.sandbox.docker_executor',
+        'backend.sandbox.appcontainer',
+        'backend.sandbox.job_sandbox',
+        'backend.sandbox.mitigation',
+        'backend.sandbox.bfcl_checker',
+        'backend.benchmarks.scoring',
+        'backend.benchmarks.mcq',
+        'backend.benchmarks.scorer_base',
+        'backend.benchmarks.ifeval_official',
+        'backend.benchmarks.ifeval_official.instructions',
+        'backend.benchmarks.ifeval_official.instructions_registry',
+        'backend.benchmarks.ifeval_official.instructions_util',
+        'backend.logging_setup',
         'backend.lm_studio.client',
-
         'backend.telemetry.monitor',
+        # Export / serialization deps (auto-detected but ensure bundled)
+        'orjson',
+        'openpyxl',
+        'openpyxl.cell',
+        'openpyxl.workbook',
+        'openpyxl.styles',
+        'openpyxl.utils',
     ],
     hookspath=[],
     hooksconfig={},
@@ -141,15 +180,11 @@ a = Analysis(
         'PIL.ImageQt',
         'gradio',
         'gradio_client',
-        'groovy',
-        'safehttpx',
-        'test',
-        'unittest',
     ],
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz,

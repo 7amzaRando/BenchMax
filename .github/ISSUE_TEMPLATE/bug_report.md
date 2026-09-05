@@ -21,12 +21,12 @@ Steps to reproduce the behavior:
 What you expected to happen instead.
 
 **Screenshots / Logs**
-If applicable, add screenshots or server logs (from `app.log`).
+If applicable, add screenshots or server logs (uvicorn console, `records/*.log`, or `records/benchmax.db`).
 
 **Environment:**
 - OS: [e.g. Windows 11]
 - Python version: [e.g. 3.11.15]
-- BenchMax version: [e.g. alpha 0.3.0]
+- BenchMax version: [e.g. 1.0.2]
 - LM Studio version: [e.g. 0.3.12]
 
 **Additional context**

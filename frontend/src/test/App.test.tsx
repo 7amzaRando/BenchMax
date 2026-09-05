@@ -6,6 +6,7 @@ vi.mock('@/lib/api', () => {
   const fn = <T,>(v: T) => () => Promise.resolve(v)
   return {
     connectLMStudio: fn({ status: '🟢 Connected', models: [], choices: [], selected: null, metadata: {} }),
+    health: fn({ status: 'ok' }),
     getHfToken: fn({ token: '' }),
     setHfToken: fn({ status: 'ok' }),
     poll: fn({
@@ -23,27 +24,24 @@ vi.mock('@/lib/api', () => {
 })
 
 describe('App', () => {
-  beforeEach(() => {
-    localStorage.clear()
-  })
+  beforeEach(() => { localStorage.clear() })
 
   it('renders the header', () => {
     render(<App />)
     expect(screen.getByText('BenchMax')).toBeInTheDocument()
   })
 
-  it('renders all tab triggers', () => {
+  it('renders all nav items', () => {
     render(<App />)
-    const tabs = screen.getAllByRole('tab')
-    expect(tabs.map(t => t.textContent)).toEqual(
-      expect.arrayContaining(['Connection', 'Run Benchmark', 'Hardware', 'History & Results', 'Leaderboard'])
-    )
-    expect(tabs).toHaveLength(5)
+    expect(screen.getAllByText('Connection').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Run').length).toBeGreaterThan(0)
+    expect(screen.getByText('Hardware')).toBeInTheDocument()
+    expect(screen.getByText('History')).toBeInTheDocument()
+    expect(screen.getByText('Leaderboard')).toBeInTheDocument()
   })
 
   it('renders dark mode toggle', () => {
     render(<App />)
-    const toggle = screen.getByLabelText('Toggle dark mode')
-    expect(toggle).toBeInTheDocument()
+    expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument()
   })
 })

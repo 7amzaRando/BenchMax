@@ -1,0 +1,52 @@
+[
+  {
+    "task_id": "gaia/2a649bb1-795f-4a01-b3be-9a01868dae73",
+    "question": "What are the EC numbers of the two most commonly used chemicals for the virus testing method in the paper about SPFMV and SPCSV in the Pearl Of Africa from 2016? Return the semicolon-separated numbers in the order of the alphabetized chemicals.",
+    "answer": "3.1.3.1; 1.11.1.7",
+    "level": "level2",
+    "year": "2023",
+    "file_name": "",
+    "file_path": "",
+    "category": "level_level2"
+  },
+  {
+    "task_id": "gaia/114d5fd0-e2ae-4b6d-a65a-870da2d19c08",
+    "question": "In the endnote found in the second-to-last paragraph of page 11 of the book with the doi 10.2307/j.ctv9b2xdv, what date in November was the Wikipedia article accessed? Just give the day of the month.",
+    "answer": "4",
+    "level": "level2",
+    "year": "2023",
+    "file_name": "",
+    "file_path": "",
+    "category": "level_level2"
+  },
+  {
+    "task_id": "gaia/d8152ad6-e4d5-4c12-8bb7-8d57dc10c6de",
+    "question": "I have the Standard plan in the image below, and I just uploaded 60 equally sized files and got a message that I'm 100GB over the limit. I have 980 more files of the same size to upload. What is the average additional cost per file in dollar that goes over my current plan limit rounded to the nearest cent if I have to upgrade to the minimum possible plan to store them all? Answer with the following format: x.xx",
+    "answer": "0.03",
+    "level": "level2",
+    "year": "2023",
+    "file_name": "d8152ad6-e4d5-4c12-8bb7-8d57dc10c6de.png",
+    "file_path": "2023/validation/d8152ad6-e4d5-4c12-8bb7-8d57dc10c6de.png",
+    "category": "level_level2"
+  },
+  {
+    "task_id": "gaia/3f57289b-8c60-48be-bd80-01f8099ca449",
+    "question": "How many at bats did the Yankee with the most walks in the 1977 regular season have that same season?",
+    "answer": "519",
+    "level": "level1",
+    "year": "2023",
+    "file_name": "",
+    "file_path": "",
+    "category": "level_level1"
+  },
+  {
+    "task_id": "gaia/56db2318-640f-477a-a82f-bc93ad13e882",
+    "question": "The following numbers function similarly to ISBN 13 numbers, however, their validation methods are slightly different. Rather than using alternate weights of 1 and 3, the checksum digit is calculated with an alternate weight of 1 and some other positive integer less than 10. Otherwise, the checksum digit is calculated as expected. Unfortunately, there is an error in the data. Two adjacent columns have been transposed. These errored columns do not involve the final column or one of the first three columns. Using this information, please provide all potential solutions with the unknown weight and the smaller index of the two errored columns (assume we start our indexing at 0 and ignore hyphens). Give your answer in the form x, y where x is the weight and y is the smaller index of the two transposed columns.\n\n978-354181391-9\n978-946669746-1\n978-398036139-6\n978-447656680-4\n978-279586664-7\n978-595073693-3\n978-976647652-6\n978-591178125-5\n978-728465924-5\n978-414825155-9",
+    "answer": "7, 9",
+    "level": "level3",
+    "year": "2023",
+    "file_name": "",
+    "file_path": "",
+    "category": "level_level3"
+  }
+]

@@ -1,37 +1,50 @@
 [
   {
-    "task_id": "code_algorithms_01",
+    "task_id": "code_algorithms_03",
     "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the push-relabel maximum flow algorithm with the highest-label selection rule, consider the effect of the gap heuristic. Which of the following correctly explains why the gap heuristic improves performance?\n\nA) It eliminates the need for BFS to rebuild the level graph by detecting when a height value has no vertices assigned to it, causing all vertices above that height to be marked as unreachable from the sink.\nB) It reduces the number of saturating pushes by preferentially selecting edges with higher residual capacity.\nC) It replaces the global relabeling step with localized height updates that propagate along reverse edges.\nD) It prevents the algorithm from pushing flow out of vertices whose height exceeds the maximum possible shortest-path distance from source to sink.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "type": "exact",
+    "match": "numeric",
+    "prompt": "Consider the following Python snippet. Trace the generator protocol: what the first next() yields, what send() injects as the value of the yield expression, and what is yielded next.\n\n```python\ndef gen():\n    x = yield 10\n    yield x + 1\ng = gen()\na = next(g)\nb = g.send(41)\nprint(a + b)\n```\n\nOutput only the number.",
+    "answer": "52"
   },
   {
-    "task_id": "code_algorithms_02",
+    "task_id": "code_algorithms_15",
     "category": "Algorithms",
+    "type": "exact_multi",
+    "match": "numeric",
+    "prompt": "Consider the memoized 0/1 knapsack below. First compute the optimal value for capacity 5, then count how many distinct (i, c) states the cache actually misses on (each miss is one state evaluation).\n\n```python\nw = [2, 3, 4]\nv = [3, 4, 5]\nC = 5\nfrom functools import lru_cache\n@lru_cache(maxsize=None)\ndef dp(i, c):\n    if i == len(w) or c == 0:\n        return 0\n    if w[i] > c:\n        return dp(i + 1, c)\n    return max(dp(i + 1, c), v[i] + dp(i + 1, c - w[i]))\nprint(dp(0, 5))\nprint(dp.cache_info().misses)\n```\n\nOutput only the two numbers, one per line.",
+    "answers": [
+      "7",
+      "11"
+    ]
+  },
+  {
+    "task_id": "code_datastructures_13",
+    "category": "Data Structures",
     "type": "mcq",
-    "prompt": "Consider the Hopcroft-Karp algorithm for maximum bipartite matching. Which condition guarantees that the BFS phase of the algorithm has found a maximal set of vertex-disjoint shortest augmenting paths?\n\nA) The BFS proceeds until all vertices at distance d from the source are exhausted, where d is the distance to the farthest reachable unmatched vertex.\nB) The BFS builds a layered graph from all free left vertices, and each DFS augmentation saturates one edge at the current shortest distance, after which that edge is removed from the layered graph.\nC) The algorithm terminates when the number of augmenting paths found in a single DFS phase is less than the size of the matching.\nD) The BFS phase constructs the layered graph from all free left vertices and terminates when all free right vertices are at the same minimum distance.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "This hash map works until the first resize, after which previously inserted keys become unfindable.\n\n```python\nclass HMap:\n    def __init__(self):\n        self.cap = 8\n        self.buckets = [[] for _ in range(8)]\n    def _idx(self, k):\n        return hash(k) % self.cap\n    def put(self, k, v):\n        b = self.buckets[self._idx(k)]\n        for i, (kk, _) in enumerate(b):\n            if kk == k:\n                b[i] = (k, v)\n                return\n        b.append((k, v))\n        if sum(map(len, self.buckets)) > self.cap * 2:\n            self._grow()\n    def _grow(self):\n        self.cap *= 2\n        new = [[] for _ in range(self.cap)]\n        for i, b in enumerate(self.buckets):\n            new[i].extend(b)\n        self.buckets = new\n```\n\nWhich option correctly identifies the bug?\n\nA. The load-factor threshold uses 2 instead of 0.75, so the table overfills before growing.\nB. _grow copies each old bucket to the same index instead of rehashing every key with the new capacity; since the mask changed, keys now live in buckets that get() never probes.\nC. put must grow before appending, not after, or the triggering key lands in the old table.\nD. hash(k) can be negative, so _idx returns negative indices that alias the wrong buckets.\nE. Equality must be is, not ==, or distinct-but-equal keys collide.\nF. The buckets must be dicts, not lists; linear chains cannot survive a resize.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "B"
   },
   {
-    "task_id": "code_algorithms_03",
-    "category": "Algorithms",
+    "task_id": "code_complexity_11",
+    "category": "Complexity",
     "type": "mcq",
-    "prompt": "In the context of Delaunay triangulation of a set of points in the plane in general position (no three collinear, no four cocircular), which of the following statements is true about the relationship between the Delaunay triangulation and the Euclidean minimum spanning tree (EMST)?\n\nA) The EMST is always a superset of the Delaunay triangulation, containing all Delaunay edges plus additional edges necessary for connectivity.\nB) The Delaunay triangulation is always a subgraph of the EMST, and all EMST edges are Delaunay edges.\nC) The EMST is a subgraph of the Delaunay triangulation, meaning every edge of the EMST appears in the Delaunay triangulation.\nD) There is no guaranteed containment relationship; the EMST and Delaunay triangulation are independent structures.\n\nAnswer with a single letter A, B, C, or D.",
+    "valid_letters": "A-F",
+    "prompt": "Solve T(n) = 2T(n/2) + n / log n (n >= 2). A student forces Master case 2 and answers Theta(n). What is the tight bound?\n\nA. Theta(n): the division by log n shrinks each level geometrically.\nB. Theta(n log n): the standard Master case 2 with a smaller constant.\nC. Theta(n log log n): level i costs n / (log n - i); summing over log n levels gives n times the harmonic sum H_{log n} = Theta(log log n). The sub-polynomial gap defeats the basic Master theorem.\nD. Theta(n^2 / log n): the two branches multiply the work.\nE. Theta(n / log n): only the root level matters.\nF. Theta(log n): the recurrence telescopes to a logarithm.\n\nAnswer with the single letter A, B, C, D, E, or F.",
     "answer": "C"
   },
   {
-    "task_id": "code_algorithms_04",
-    "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "In the A* search algorithm for graph traversal, suppose the heuristic h(n) is admissible but NOT consistent (monotonic). Which of the following best describes the consequences for optimality and the required modifications?\n\nA) A* with an admissible but inconsistent heuristic is guaranteed to find the optimal path without any modifications, because admissibility alone suffices for optimality.\nB) A* may fail to find the optimal path with an inconsistent heuristic and must be modified to use a bidirectional search instead.\nC) A* with an admissible but inconsistent heuristic remains optimal only if the algorithm re-opens closed nodes when a better g-value is discovered, which may increase the running time.\nD) An inconsistent heuristic cannot be admissible, so this situation cannot arise.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "C"
-  },
-  {
-    "task_id": "code_algorithms_05",
-    "category": "Algorithms",
-    "type": "mcq",
-    "prompt": "Consider the Li Chao segment tree for dynamic convex hull trick queries. In which scenario does the Li Chao tree maintain its O(log C) per-operation guarantee (where C is the coordinate range) while a deque-based CHT implementation fails?\n\nA) When slopes are inserted in arbitrary order and query x-coordinates are also arbitrary.\nB) When slopes are inserted in monotonic order but queries are in arbitrary order.\nC) When both slopes and queries are monotonic in the same direction.\nD) When slopes are inserted in arbitrary order but queries are monotonic.\n\nAnswer with a single letter A, B, C, or D.",
-    "answer": "A"
+    "task_id": "code_theory_08",
+    "category": "Theory",
+    "type": "mcq_multi",
+    "valid_letters": "A-F",
+    "prompt": "Which statements about decidability are TRUE? Select all that apply.\n\nA. The halting problem (does M halt on w?) is undecidable: no total Turing machine decides it.\nB. By Rice's theorem, every nontrivial semantic property of Turing-machine languages (e.g. 'L(M) is empty', 'L(M) is regular') is undecidable.\nC. Emptiness of context-free grammars ('is L(G) empty?') is decidable.\nD. Universality of context-free grammars ('is L(G) = Sigma*?') is decidable.\nE. Equivalence of two DFAs ('is L(A) = L(B)?') is decidable via the product construction.\nF. The Post correspondence problem is decidable for alphabets of size 2.\n\nAnswer with the letters of all true statements (e.g. A B C).",
+    "answers": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ]
   }
 ]

@@ -1,7 +1,7 @@
 import time
 import json
 import asyncio
-import traceback
+import re
 import orjson as _orjson
 import logging
 from difflib import SequenceMatcher
@@ -13,7 +13,16 @@ logger = logging.getLogger(__name__)
 class LMStudioClient:
     async def aclose(self):
         """Close the underlying HTTP client session."""
-        await self._client.aclose()
+        if self._client is not None:
+            try:
+                await self._client.aclose()
+            except RuntimeError:
+                # Event loop already closed — httpx client was created on a
+                # different loop (e.g. _run_async creates fresh loops per call).
+                # The connection pool is abandoned; no cleanup needed.
+                pass
+            self._client = None
+
     def __init__(self, base_url: str = "http://127.0.0.1:1234", api_key: Optional[str] = None):
         base_url = base_url.rstrip("/")
         self.base_url = base_url
@@ -21,39 +30,53 @@ class LMStudioClient:
         self._headers = {"Content-Type": "application/json"}
         if api_key:
             self._headers["Authorization"] = f"Bearer {api_key}"
-        self._client = httpx.AsyncClient(timeout=None, headers=self._headers)
-        logger.debug(f"[DEBUG] LMStudioClient.__init__: received={base_url} -> stored as '{self.base_url}'")
+        self._client: Optional[httpx.AsyncClient] = None
 
         # Repetition detection state
         self._rep_buffer = ""        # Sliding buffer of accumulated output (last 1000 chars)
         self._rep_max_len = 1000     # Max chars to retain for loop analysis
         self._rep_check_len = 200    # Length of tail gram to check for repeats (200 chars ≈ 50 tokens)
-        self._rep_min_buf = 200      # Minimum total buffer length before we start checking
+        self._rep_min_buf = 400      # Minimum total buffer length before we start checking
         self._rep_sim_threshold = 0.95 # SequenceMatcher ratio for adjacent blocks
         self._repetition_detected = False
+        self._rep_disabled = False   # Set by operations.py when user disables detection
+        self._rep_consecutive_count = 0  # Consecutive checks that flagged (cooldown)
+        self._rep_required_count = 3     # Need this many consecutive flags to confirm loop
+        self._rep_chunk_count = 0        # Rate-limit: only check every N chunks
+        self._rep_check_interval = 50    # Check repetition every 50 chunks
 
         # Model management state: instance_id captured from last load_model() call
         self._loaded_instance_id: Optional[str] = None
 
+        logger.debug(f"[DEBUG] LMStudioClient.__init__: received={base_url} -> stored as '{self.base_url}'")
+
+    def _get_client(self) -> httpx.AsyncClient:
+        """Lazily create httpx.AsyncClient bound to the current event loop."""
+        if self._client is None:
+            self._client = httpx.AsyncClient(timeout=None, headers=self._headers)
+        return self._client
+
     def _check_repetition(self) -> bool:
         """
         Detects model looping by checking for repeated long substrings in the output.
-        Uses three complementary strategies:
+        Uses three complementary strategies with a consecutive-repeat cooldown:
 
         Strategy A (tail-in-body): Check if the last N chars appear as a substring
-        anywhere earlier in the buffer. A 200-char verbatim repeat is almost always
-        a loop, even in code.
+        anywhere earlier in the buffer.
 
         Strategy B (adjacent similarity): Compare the last N chars against the N chars
         immediately before them using SequenceMatcher on EQUAL-length strings.
-        Catches evolving loops (e.g. "Answer: 42, Answer: 43, Answer: 44...").
 
         Strategy C (short fragment count): Check if a shorter substring of the tail
-        appears many times in the body. Handles alignment issues where the tail
-        boundary splits a repeated phrase.
+        appears many times in the body.
+
+        A single detection event is NOT enough to flag a loop — the detection counter
+        must reach _rep_required_count (3) consecutive triggers to confirm, eliminating
+        transient false positives from code boilerplate or reasoning verification.
         """
         buf = self._rep_buffer
         if len(buf) < self._rep_min_buf:
+            self._rep_consecutive_count = 0
             return False
 
         tail = buf[-self._rep_check_len:]
@@ -63,31 +86,40 @@ class LMStudioClient:
         # to contain a newline to avoid flagging single-line boilerplate.
         is_multiline = buf.count('\n') > 5
 
+        triggered = False
+
         # Strategy A: 200-char exact substring appears in body
         if tail in body and (not is_multiline or '\n' in tail):
-            return True
+            triggered = True
 
         # Strategy B: Adjacent block similarity (equal-length comparison)
-        if len(buf) >= self._rep_check_len * 2:
+        if not triggered and len(buf) >= self._rep_check_len * 2:
             preceding = buf[-self._rep_check_len * 2:-self._rep_check_len]
             if len(preceding) == len(tail):
                 ratio = SequenceMatcher(None, tail, preceding, autojunk=False).ratio()
                 if ratio >= self._rep_sim_threshold and (not is_multiline or '\n' in tail):
-                    return True
+                    triggered = True
 
-        # Strategy C: 80-char fragment appearing 5+ times (handles alignment issues)
-        half = tail[-(self._rep_check_len // 2):]
-        if len(half) >= 80 and body.count(half) >= 5:
-            return True
+        # Strategy C: 150-char fragment appearing 3+ times (handles alignment issues)
+        if not triggered:
+            half = tail[-(self._rep_check_len // 2):]
+            if len(half) >= 150 and body.count(half) >= 3:
+                triggered = True
 
-        return False
+        # Cooldown: require consecutive triggers to confirm a real loop
+        if triggered:
+            self._rep_consecutive_count += 1
+        else:
+            self._rep_consecutive_count = 0
+
+        return self._rep_consecutive_count >= self._rep_required_count
 
     async def get_loaded_models(self) -> List[Dict[str, Any]]:
         """Queries the /models endpoint to retrieve loaded models."""
         url = f"{self.base_url}/models"
         try:
             logger.info(f"Querying LM Studio at {url}")
-            response = await self._client.get(url, timeout=10)
+            response = await self._get_client().get(url, timeout=10)
         except Exception as e:
             logger.error(f"Cannot reach provider at {url}: {e}")
             raise  # Connection refused/timeout → provider unreachable
@@ -115,9 +147,10 @@ class LMStudioClient:
 
     async def get_models_metadata(self) -> Dict[str, Dict[str, Any]]:
         """Queries /api/v0/models for rich metadata (max_context_length, state, etc.). Returns dict keyed by model ID."""
-        url = f"{self.base_url.rsplit('/v1', 1)[0]}/api/v0/models"
+        base = self.base_url.rsplit('/v1', 1)[0] if '/v1' in self.base_url else self.base_url
+        url = f"{base}/api/v0/models"
         try:
-            resp = await self._client.get(url)
+            resp = await self._get_client().get(url)
             if resp.status_code == 200:
                 data = resp.json()
                 entries = data.get("data", [])
@@ -159,13 +192,16 @@ class LMStudioClient:
         # 2. Fallback to parsing <think> tags from full text
         if "<think>" in full_text:
             try:
-                parts = full_text.split("</think>", 1)
-                think_part = parts[0].split("<think>", 1)[1]
-                thinking = think_part.strip()
-                if len(parts) > 1:
-                    answer = parts[1].strip()
+                parts = re.split(r"\r?\n\s*response\s*\r?\n", full_text, maxsplit=1)
+                think_part = parts[0]
+                answer = parts[1].strip() if len(parts) > 1 else ""
+                t = re.split(r"\r?\n\s*thinking\s*\r?\n", think_part, maxsplit=1)
+                if len(t) > 1:
+                    thinking = t[1].strip()
+                elif " thinking" in think_part:
+                    thinking = think_part.split(" thinking", 1)[1].strip()
                 else:
-                    answer = ""
+                    thinking = ""
             except Exception:
                 # If splitting fails, return full text as answer
                 logger.debug("Failed to split reasoning/answer on think tags", exc_info=True)
@@ -184,7 +220,7 @@ class LMStudioClient:
         url = await self._native_api_url("/api/v1/models/load")
         payload = {"model": model_id}
         try:
-            resp = await self._client.post(url, json=payload, timeout=httpx.Timeout(300.0))
+            resp = await self._get_client().post(url, json=payload, timeout=httpx.Timeout(300.0))
             body = resp.json() if resp.text else {}
             result = {"status_code": resp.status_code, "body": body}
             if isinstance(body, dict):
@@ -210,7 +246,7 @@ class LMStudioClient:
         """Queries /api/v1/models and tries every field of every entry to find instance_id."""
         url = await self._native_api_url("/api/v1/models")
         try:
-            resp = await self._client.get(url, timeout=10)
+            resp = await self._get_client().get(url, timeout=10)
             if resp.status_code != 200:
                 logger.warning(f"/api/v1/models returned {resp.status_code}")
                 return None
@@ -264,7 +300,7 @@ class LMStudioClient:
 
         logger.info(f"Unloading model '{model_id}' using {source}: payload={payload}")
         try:
-            resp = await self._client.post(url, json=payload, timeout=httpx.Timeout(60.0))
+            resp = await self._get_client().post(url, json=payload, timeout=httpx.Timeout(60.0))
             body = resp.json() if resp.text else {}
             logger.info(f"Unload response ({resp.status_code}): {json.dumps(body)[:300]}")
             if resp.status_code != 200 and model_id and isinstance(body, dict):
@@ -272,7 +308,7 @@ class LMStudioClient:
                 if "instance_id" in err_msg and source == "from_models_query":
                     payload2 = {"instance_id": model_id}
                     logger.info(f"Retrying unload with model_id as instance_id: {payload2}")
-                    resp2 = await self._client.post(url, json=payload2, timeout=httpx.Timeout(60.0))
+                    resp2 = await self._get_client().post(url, json=payload2, timeout=httpx.Timeout(60.0))
                     body2 = resp2.json() if resp2.text else {}
                     return {"status_code": resp2.status_code, "body": body2}
             return {"status_code": resp.status_code, "body": body}
@@ -282,9 +318,10 @@ class LMStudioClient:
 
     async def get_model_state(self, model_id: str) -> Optional[str]:
         """Returns the state of a model ('loaded' or 'not-loaded') or None if not found."""
-        native_url = f"{self.base_url.rsplit('/v1', 1)[0]}/api/v1/models"
+        base = self.base_url.rsplit('/v1', 1)[0] if '/v1' in self.base_url else self.base_url
+        native_url = f"{base}/api/v1/models"
         try:
-            resp = await self._client.get(native_url, timeout=10)
+            resp = await self._get_client().get(native_url, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
                 entries = data.get("data", data.get("models", []))
@@ -316,7 +353,7 @@ class LMStudioClient:
             payload["max_tokens"] = max_tokens
 
         try:
-            response = await self._client.post(url, json=payload, timeout=httpx.Timeout(5.0))
+            response = await self._get_client().post(url, json=payload, timeout=httpx.Timeout(5.0))
             return {"status_code": response.status_code}
         except Exception as e:
             logger.warning(f"stop_generation failed: {e}")
@@ -333,10 +370,35 @@ class LMStudioClient:
         model_name: Optional[str] = None,
         images: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
-        """
-        Sends a completions request to LM Studio.
+        """Send a completions request to LM Studio.
+
         Uses stream=True to measure accurate TTFT and TPS.
         If images is provided (list of base64 PNG strings), sends as multimodal message.
+
+        Args:
+            prompt: The user prompt text.
+            system_prompt: Optional system message prepended to the conversation.
+            temperature: Sampling temperature (0.0 = deterministic).
+            max_tokens: Maximum tokens to generate (alias for max_completion_tokens).
+            max_completion_tokens: Maximum tokens to generate.
+            stop_tokens: Optional list of strings that halt generation when encountered.
+            model_name: Model ID to use. If None, uses the currently loaded model.
+            images: Optional list of base64-encoded PNG image strings (for vision models).
+
+        Returns:
+            dict with keys:
+                - raw_response (dict): The full API response JSON.
+                - thinking_content (str): Reasoning/thinking content (if model outputs it).
+                - answer_content (str): The final answer text.
+                - tps (float): Tokens per second during generation.
+                - ttft (float): Time to first token in seconds.
+                - elapsed_time (float): Total generation time in seconds.
+                - prompt_tokens (int): Number of input tokens (estimated or from API).
+                - completion_tokens (int): Number of output tokens (estimated or from API).
+                - total_tokens (int): Total token count.
+                - thinking_tokens (int): Tokens in thinking_content (estimated).
+                - response_tokens (int): Tokens in answer_content (estimated).
+                - stop_reason (str): Why generation stopped ("stop", "length", "repetition", etc.).
         """
         # Accept both max_tokens and max_completion_tokens as aliases
         if max_completion_tokens is not None:
@@ -350,7 +412,7 @@ class LMStudioClient:
         
         # LM Studio expects /v1/chat/completions for OpenAI-compatible API (base_url already includes /v1)
         url = f"{self.base_url}/chat/completions"
-        logger.info(f"Sending to {url} with model '{model_name}'")
+        logger.debug("Sending to %s model=%s", url, model_name)
 
         messages = []
         if system_prompt:
@@ -384,8 +446,10 @@ class LMStudioClient:
         # Reset repetition detection for this generation call
         self._rep_buffer = ""
         self._repetition_detected = False
+        self._rep_consecutive_count = 0
+        self._rep_chunk_count = 0
 
-        full_text = ""
+        full_text_parts: list[str] = []
         ttft = 0.0
         start_time = time.time()
         first_chunk_received = False
@@ -395,14 +459,13 @@ class LMStudioClient:
         # We will parse usage info if sent at the end of the stream, or estimate it
         prompt_tokens_est = int(len(prompt) / 4)
         completion_tokens_est = 0
-        thinking_content = ""
+        thinking_parts: list[str] = []
         answer_content = ""
         
         try:
-            logger.info("Starting async HTTP client...")
-            logger.info(f"Streaming to {url} with payload keys: {list(payload.keys())}")
-            async with self._client.stream("POST", url, json=payload, timeout=httpx.Timeout(120.0, connect=30.0)) as response:
-                logger.info(f"Response status code: {response.status_code}, headers: {dict(response.headers)}")
+            logger.debug("Starting streaming request to %s", url)
+            async with self._get_client().stream("POST", url, json=payload, timeout=httpx.Timeout(None, connect=30.0, read=600.0, write=60.0, pool=30.0)) as response:
+                logger.debug("Response status: %d", response.status_code)
 
                 if response.status_code != 200:
                     error_body = await response.aread()
@@ -410,11 +473,6 @@ class LMStudioClient:
                     raise RuntimeError(f"LM Studio returned status {response.status_code}: {error_body.decode('utf-8', errors='ignore')}")
 
                 async for line in response.aiter_lines():
-                    if time.time() - last_token_time > 60.0:
-                        logger.warning(f"Stream timed out — no tokens received for 60s")
-                        stream_timed_out = True
-                        break
-
                     if not line.strip():
                         continue
                     
@@ -438,19 +496,27 @@ class LMStudioClient:
                                 
                                 rc = delta.get("reasoning_content")
                                 if rc is not None:
-                                    thinking_content += rc
-                                    self._rep_buffer += rc
-                                    if len(self._rep_buffer) > self._rep_max_len:
-                                        self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+                                    thinking_parts.append(rc)
+                                    if not self._rep_disabled:
+                                        self._rep_buffer += rc
+                                        if len(self._rep_buffer) > self._rep_max_len:
+                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
                                     last_token_time = time.time()
+                                    self._rep_chunk_count += 1
+                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
+                                        logger.warning("Repetition detected in reasoning — model may be looping.")
+                                        self._repetition_detected = True
+                                        break
                                 content = delta.get("content")
                                 if content is not None:
                                     last_token_time = time.time()
-                                    full_text += content
-                                    self._rep_buffer += content
-                                    if len(self._rep_buffer) > self._rep_max_len:
-                                        self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    if self._check_repetition():
+                                    full_text_parts.append(content)
+                                    if not self._rep_disabled:
+                                        self._rep_buffer += content
+                                        if len(self._rep_buffer) > self._rep_max_len:
+                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+                                    self._rep_chunk_count += 1
+                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         logger.warning("Repetition detected — model may be looping.")
                                         self._repetition_detected = True
                                         break
@@ -463,12 +529,14 @@ class LMStudioClient:
                             logger.debug(f"Chunk parsing warning: {parse_err}")
 
         except Exception as e:
-            logger.error(f"Inference calling error: {e}")
-            traceback.print_exc()
-            raise e
+            logger.error(f"Inference calling error: {e}", exc_info=True)
+            raise
 
         end_time = time.time()
         total_time = end_time - start_time
+
+        full_text = "".join(full_text_parts)
+        thinking_content = "".join(thinking_parts)
 
         # If not streamed via reasoning_content, parse full_text for <think> tags
         if not thinking_content:
@@ -477,6 +545,201 @@ class LMStudioClient:
             answer_content = full_text
 
         # Estimate tokens if API didn't return usage dict
+        if completion_tokens_est == 0:
+            thinking_tokens = int(len(thinking_content) / 4)
+            answer_tokens = int(len(answer_content) / 4)
+            completion_tokens_est = thinking_tokens + answer_tokens
+        elif thinking_content:
+            thinking_ratio = len(thinking_content) / (len(thinking_content) + len(answer_content) + 1)
+            thinking_tokens = max(1, int(completion_tokens_est * thinking_ratio))
+            answer_tokens = max(1, completion_tokens_est - thinking_tokens)
+        else:
+            thinking_tokens = 0
+            answer_tokens = completion_tokens_est
+
+        generation_time = total_time - ttft
+        if generation_time > 0.01 and completion_tokens_est > 0:
+            tps = completion_tokens_est / generation_time
+        else:
+            tps = 0.0
+
+        logger.debug(
+            "Generation complete: model=%s tps=%.1f ttft=%.3f tokens=%d elapsed=%.2fs",
+            model_name, tps, ttft if first_chunk_received else total_time,
+            completion_tokens_est, total_time,
+        )
+
+        return {
+            "model_name": model_name,
+            "raw_response": full_text if not thinking_content else f"<think>\n{thinking_content}\n</think>\n{answer_content}",
+            "thinking_content": thinking_content,
+            "answer_content": answer_content,
+            "elapsed_time": total_time,
+            "ttft": ttft if first_chunk_received else total_time,
+            "tps": tps,
+            "prompt_tokens": prompt_tokens_est,
+            "response_tokens": completion_tokens_est,
+            "thinking_tokens": thinking_tokens,
+            "answer_tokens": answer_tokens,
+        }
+
+    async def generate_chat_completion(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.0,
+        max_tokens: Optional[int] = None,
+        max_completion_tokens: Optional[int] = None,
+        stop_tokens: Optional[List[str]] = None,
+        model_name: Optional[str] = None,
+        images: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Send a chat completion request with a pre-built messages array.
+
+        Unlike generate_completion(), this accepts a full conversation history
+        (list of {"role": ..., "content": ...} dicts) directly, enabling
+        true multi-turn conversations via the OpenAI messages API.
+
+        Args:
+            messages: Full message history. Each dict has "role" ("system", "user", "assistant") and "content".
+            temperature: Sampling temperature (0.0 = deterministic).
+            max_tokens: Maximum tokens to generate (alias for max_completion_tokens).
+            max_completion_tokens: Maximum tokens to generate.
+            stop_tokens: Optional list of strings that halt generation when encountered.
+            model_name: Model ID to use. If None, uses the currently loaded model.
+            images: Optional list of base64-encoded PNG image strings (appended as user image content).
+
+        Returns:
+            Same dict as generate_completion().
+        """
+        if max_completion_tokens is not None:
+            max_tokens = max_completion_tokens
+
+        if not model_name:
+            model_name = await self.get_active_model_name()
+            if not model_name:
+                raise ValueError("No model is loaded in LM Studio, or server is unreachable.")
+
+        url = f"{self.base_url}/chat/completions"
+        logger.debug("Sending chat completion to %s model=%s messages=%d", url, model_name, len(messages))
+
+        # Build final messages list, handling images if provided
+        final_messages = []
+        for msg in messages:
+            final_messages.append(msg)
+
+        # Append images to the last user message if provided
+        if images and final_messages:
+            last_msg = final_messages[-1]
+            if last_msg.get("role") == "user":
+                content_parts = [{"type": "text", "text": last_msg.get("content", "")}]
+                for b64 in images:
+                    content_parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{b64}"}
+                    })
+                final_messages[-1] = {"role": "user", "content": content_parts}
+
+        # Estimate prompt tokens from all message content
+        prompt_text = " ".join(
+            m.get("content", "") if isinstance(m.get("content"), str) else ""
+            for m in final_messages
+        )
+        prompt_tokens_est = int(len(prompt_text) / 4)
+
+        payload = {
+            "model": model_name,
+            "messages": final_messages,
+            "stream": True,
+        }
+        if temperature is not None:
+            payload["temperature"] = temperature
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
+        if stop_tokens:
+            payload["stop"] = stop_tokens
+
+        # Reset repetition detection
+        self._rep_buffer = ""
+        self._repetition_detected = False
+        self._rep_consecutive_count = 0
+        self._rep_chunk_count = 0
+
+        full_text_parts: list[str] = []
+        ttft = 0.0
+        start_time = time.time()
+        first_chunk_received = False
+        last_token_time = time.time()
+        thinking_parts: list[str] = []
+        completion_tokens_est = 0
+
+        try:
+            async with self._get_client().stream("POST", url, json=payload, timeout=httpx.Timeout(None, connect=30.0, read=600.0, write=60.0, pool=30.0)) as response:
+                if response.status_code != 200:
+                    error_body = await response.aread()
+                    raise RuntimeError(f"LM Studio returned status {response.status_code}: {error_body.decode('utf-8', errors='ignore')}")
+
+                async for line in response.aiter_lines():
+                    if not line.strip():
+                        continue
+                    if line.startswith("data: "):
+                        data_str = line[6:]
+                        if data_str.strip() == "[DONE]":
+                            break
+                        try:
+                            chunk_json = _orjson.loads(data_str)
+                            choices = chunk_json.get("choices", [])
+                            if choices:
+                                delta = choices[0].get("delta", {})
+                                if not first_chunk_received:
+                                    has_content = delta.get("content") is not None and delta["content"] != ""
+                                    has_reasoning = delta.get("reasoning_content") is not None and delta["reasoning_content"] != ""
+                                    if has_content or has_reasoning:
+                                        ttft = time.time() - start_time
+                                        first_chunk_received = True
+                                rc = delta.get("reasoning_content")
+                                if rc is not None:
+                                    thinking_parts.append(rc)
+                                    if not self._rep_disabled:
+                                        self._rep_buffer += rc
+                                        if len(self._rep_buffer) > self._rep_max_len:
+                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+                                    last_token_time = time.time()
+                                    self._rep_chunk_count += 1
+                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
+                                        self._repetition_detected = True
+                                        break
+                                content = delta.get("content")
+                                if content is not None:
+                                    last_token_time = time.time()
+                                    full_text_parts.append(content)
+                                    if not self._rep_disabled:
+                                        self._rep_buffer += content
+                                        if len(self._rep_buffer) > self._rep_max_len:
+                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+                                    self._rep_chunk_count += 1
+                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
+                                        self._repetition_detected = True
+                                        break
+                            if "usage" in chunk_json:
+                                usage = chunk_json["usage"]
+                                prompt_tokens_est = usage.get("prompt_tokens", prompt_tokens_est)
+                                completion_tokens_est = usage.get("completion_tokens", completion_tokens_est)
+                        except Exception as parse_err:
+                            logger.debug(f"Chunk parsing warning: {parse_err}")
+        except Exception as e:
+            logger.error(f"Inference calling error: {e}", exc_info=True)
+            raise
+
+        end_time = time.time()
+        total_time = end_time - start_time
+        full_text = "".join(full_text_parts)
+        thinking_content = "".join(thinking_parts)
+
+        if not thinking_content:
+            thinking_content, answer_content = self._parse_reasoning_and_answer(full_text)
+        else:
+            answer_content = full_text
+
         if completion_tokens_est == 0:
             thinking_tokens = int(len(thinking_content) / 4)
             answer_tokens = int(len(answer_content) / 4)
@@ -507,5 +770,5 @@ class LMStudioClient:
             "response_tokens": completion_tokens_est,
             "thinking_tokens": thinking_tokens,
             "answer_tokens": answer_tokens,
-            "stream_timed_out": stream_timed_out
         }
+

@@ -1,37 +1,57 @@
 [
   {
-    "task_id": "personal_code_1",
+    "task_id": "personal_code_01",
     "category": "Code",
-    "type": "mcq",
-    "prompt": "You are designing a concurrent LRU cache with O(1) amortized operations under high contention. Which synchronization strategy minimizes cache-line bouncing while preserving correctness?\nA) A single coarse-grained mutex protecting the entire hash map and doubly linked list\nB) A reader-writer lock allowing concurrent reads and exclusive writes\nC) Striped locking: partition the hash map into N independent shards, each with its own mutex and linked list, plus a global clock-based approximate LRU\nD) Lock-free hash map with a concurrent skip list for ordering, using CAS operations and hazard pointers\nE) A single mutex for writes plus RCU (Read-Copy-Update) for reads",
-    "answer": "C"
+    "type": "exact",
+    "prompt": "What is printed? Output only the printed line.\nprint(sum(f(10) for f in [lambda x: x + i for i in range(4)]))",
+    "answer": "52",
+    "match": "numeric"
   },
   {
-    "task_id": "personal_code_2",
-    "category": "Code",
+    "task_id": "personal_knowledge_01",
+    "category": "Knowledge",
     "type": "mcq",
-    "prompt": "Consider the problem of finding the minimum cut in an undirected graph with n vertices and m edges. Which statement about the Stoer-Wagner algorithm is correct?\nA) It runs in O(nm + n^2 log n) using a Fibonacci heap and always finds the global minimum cut with probability 1\nB) It repeatedly finds the s-t minimum cut using max-flow and contracts the two sides, running in O(n * MF(n,m)) where MF is the max-flow complexity\nC) It uses a deterministic global minimum cut algorithm based on successive vertex contractions, choosing the most-tightly-connected vertex at each step via a priority queue, achieving O(nm + n^2 log n) deterministic runtime\nD) It requires the graph to be directed and uses a randomized contraction algorithm with O(n^2 log^3 n) expected time",
-    "answer": "C"
+    "prompt": "Water boils on the summit of Mount Everest (8,849 m, pressure ~33 kPa). Which is closest to the boiling point there, and why?\nA. 100 C, boiling point is fixed by molecular structure\nB. 50 C, oxygen lack halves it\nC. 71 C, lower pressure lowers the boiling point\nD. 100 C, pressure only affects freezing\nE. 120 C, thin air superheats steam\nF. 0 C, water freezes before boiling at altitude\nReply with only the letter (A-F).",
+    "answer": "C",
+    "valid_letters": "A-F"
   },
   {
-    "task_id": "personal_code_3",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "For the problem of maintaining the median of a sliding window of size k over a stream, which data structure achieves O(log k) per operation in the worst case?\nA) A min-heap and a max-heap with lazy deletion, rebalancing when sizes differ by more than 1\nB) A balanced BST (e.g., AVL tree) storing all k elements with order-statistic queries\nC) A Fenwick tree over the compressed value range with point updates and prefix sum queries to find the median\nD) A segment tree with order statistics, updating by removing the outgoing element and inserting the incoming element\nE) Both A and B are correct approaches with O(log k) per operation",
-    "answer": "E"
+    "task_id": "personal_instruction_01",
+    "category": "Instruction Following",
+    "type": "constraint",
+    "prompt": "Describe a mountain sunrise in EXACTLY 20 words. Do not use the words 'very', 'really', or 'just'. Your final word (ignoring trailing period) must be 'horizon', ending the response with 'horizon.'.",
+    "constraints": [
+      {
+        "rule": "word_count",
+        "eq": 20
+      },
+      {
+        "rule": "forbidden",
+        "words": [
+          "very",
+          "really",
+          "just"
+        ]
+      },
+      {
+        "rule": "ends_with",
+        "text": "horizon."
+      }
+    ]
   },
   {
-    "task_id": "personal_code_4",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "In the analysis of the Boruvka algorithm for minimum spanning tree, each iteration reduces the number of components by at least half. What is the tight worst-case time complexity when implemented with adjacency lists and union-find, for a graph with n vertices and m edges?\nA) O(m log n) — each of O(log n) iterations scans all edges\nB) O(m log n + n^2) — scanning edges plus component identification overhead\nC) O(m alpha(n) log n) — each iteration uses union-find for component checks\nD) O(m log n) if using a Fibonacci heap for finding the cheapest edge per component, else O(m log n) with binary heaps\nE) O(m log n) average case, O(nm) worst case when many components survive each iteration",
-    "answer": "A"
+    "task_id": "personal_math_01",
+    "category": "Math",
+    "type": "exact",
+    "prompt": "Find the smallest positive integer x with x = 2 mod 6, x = 2 mod 10, and x = 1 mod 7. Output only the integer.",
+    "answer": "92",
+    "match": "numeric"
   },
   {
-    "task_id": "personal_code_5",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "When implementing the Bellman-Ford algorithm on a graph with n vertices and m edges, which modification correctly detects negative cycles reachable from the source while maintaining O(nm) worst-case complexity?\nA) Run n-1 relaxation passes over all edges, then run one more pass; any edge that relaxes in the nth pass indicates a reachable negative cycle\nB) Run n passes, then check if any distance is still decreasing after n+1 passes\nC) Initialize all distances to 0 instead of infinity, run n passes, then check for negative cycles by seeing if any distance continues to decrease\nD) Use a queue (SPFA variant) and count how many times each vertex is dequeued; if any vertex is dequeued n times, a negative cycle exists\nE) Both A and D are correct, but A has the simpler proof of correctness",
-    "answer": "E"
+    "task_id": "personal_logic_01",
+    "category": "Logic",
+    "type": "exact",
+    "prompt": "A 3-digit code uses distinct digits from 1-6. Clues (exact): '123' has exactly 1 digit correct and in the correct place. '456' has 0 digits correct (none appear). '352' has exactly 2 digits correct but 0 in the correct place. Brute-force the unique code. Output only the 3 digits with no spaces (e.g. 123).",
+    "answer": "213"
   }
 ]

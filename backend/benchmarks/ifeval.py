@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import Dict, Any, List
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 from backend.benchmarks.ifeval_official import instructions_registry
 
 import nltk
@@ -19,14 +19,8 @@ class IFEvalBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        filename = "ifeval_mini.json" if self.quick_test else "ifeval_full.json"
-        self.dataset_path = resolve_data_file(__file__, filename)
-        if not self.dataset_path:
-            raise FileNotFoundError(
-                "IFEval dataset not found. "
-                "Run 'scripts/fetch_ifeval.py' to download it."
-            )
-        data = self._load_json_cached(self.dataset_path)
+        path = self._resolve_dataset("ifeval_full.json", fetch_hint="Run 'scripts/fetch_ifeval.py' to download it.")
+        data = self._load_json_cached(path)
         for item in data:
             if "task_id" not in item:
                 item["task_id"] = item.get("key", str(item.get("_id", "unknown")))
@@ -37,14 +31,7 @@ class IFEvalBenchmark(BaseBenchmark):
         instruction_ids = sample.get("instruction_id_list", [])
         kwargs_list = sample.get("kwargs", [])
 
-        gen = await self.client.generate_completion(
-            prompt=prompt,
-            system_prompt=params.get("system_prompt"),
-            temperature=params.get("temperature", 0.0),
-            max_completion_tokens=params.get("max_completion_tokens"),
-            stop_tokens=params.get("stop_tokens"),
-            model_name=model_name,
-        )
+        gen = await self._generate(prompt, params, model_name)
 
         response = (gen.get("answer_content") or gen.get("raw_response", "")).strip()
 
@@ -73,20 +60,14 @@ class IFEvalBenchmark(BaseBenchmark):
 
         failed = [instr_id for instr_id, ok in zip(instruction_ids, is_following) if not ok]
 
-        return {
-            "prompt": prompt,
-            "raw_response": gen.get("raw_response", ""),
-            "extracted_code": response,
-            "correct": len(failed) == 0,
-            "error_message": "; ".join(failed) if failed else None,
-            "elapsed_time": gen["elapsed_time"],
-            "tps": gen["tps"],
-            "ttft": gen["ttft"],
-            "thinking_tokens": gen["thinking_tokens"],
-            "response_tokens": gen["response_tokens"],
-            "scoring_details": {
+        return self._result(
+            prompt, gen,
+            extracted_code=response,
+            correct=len(failed) == 0,
+            error_message="; ".join(failed) if failed else None,
+            scoring_details={
                 "follow_instruction_list": is_following,
                 "instruction_id_list": instruction_ids,
                 "strict_correct": len(failed) == 0,
             },
-        }
+        )

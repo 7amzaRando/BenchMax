@@ -1,7 +1,7 @@
 import re
 import logging
 from typing import Dict, Any, List
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 
 logger = logging.getLogger(__name__)
 
@@ -51,27 +51,14 @@ class AIMEBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        filename = "aime_mini.json" if self.quick_test else "aime_full.json"
-        self.dataset_path = resolve_data_file(__file__, filename)
-        if not self.dataset_path:
-            self.dataset_path = resolve_data_file(__file__, "aime_mini.json")
-            logger.warning("Full AIME dataset not found, falling back to mini dataset")
-        if not self.dataset_path:
-            raise FileNotFoundError("AIME dataset not found (tried full and mini)")
-        return self._load_json_cached(self.dataset_path)
+        path = self._resolve_dataset("aime_full.json")
+        return self._load_json_cached(path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
         prompt = f"{sample.get('problem', '')}\n\n"
         prompt += "Think step by step, then provide your final answer as 'Answer: N' where N is the integer between 0 and 999."
 
-        gen = await self.client.generate_completion(
-            prompt=prompt,
-            system_prompt=params.get("system_prompt"),
-            temperature=params.get("temperature", 0.0),
-            max_completion_tokens=params.get("max_completion_tokens"),
-            stop_tokens=params.get("stop_tokens"),
-            model_name=model_name,
-        )
+        gen = await self._generate(prompt, params, model_name)
 
         answer_content = (gen.get("answer_content") or gen.get("raw_response", "")).strip()
         extracted = extract_aime_answer(answer_content)
@@ -85,15 +72,9 @@ class AIMEBenchmark(BaseBenchmark):
             else:
                 error_msg = f"Expected {expected}, extracted {extracted}"
 
-        return {
-            "prompt": prompt,
-            "raw_response": gen["raw_response"],
-            "extracted_code": answer_content,
-            "correct": correct,
-            "error_message": error_msg,
-            "elapsed_time": gen["elapsed_time"],
-            "tps": gen["tps"],
-            "ttft": gen["ttft"],
-            "thinking_tokens": gen["thinking_tokens"],
-            "response_tokens": gen["response_tokens"]
-        }
+        return self._result(
+            prompt, gen,
+            extracted_code=answer_content,
+            correct=correct,
+            error_message=error_msg,
+        )

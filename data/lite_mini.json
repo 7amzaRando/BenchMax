@@ -1,37 +1,75 @@
 [
   {
-    "task_id": "lite_code_01",
+    "answer": "D",
     "category": "Code",
+    "prompt": "What does this Python snippet print?\n\nprint(round(2.5), round(3.5), round(4.5), round(5.5))\n\nA. 3 4 5 6\nB. 2 3 4 5\nC. 2.0 4.0 4.0 6.0\nD. 2 4 4 6\nE. 3 3 5 5\nF. 3 4 4 6\n\nAnswer with only the letter of the correct option.",
+    "task_id": "lite_code_06",
     "type": "mcq",
-    "prompt": "You need to answer range minimum queries on a static array of 10^7 elements with no updates between queries. Which approach achieves the optimal combination of preprocessing time, query time, and memory usage?\n\nA. Sparse table: O(n log n) preprocessing, O(1) query, O(n log n) memory\nB. Segment tree: O(n) preprocessing, O(log n) query, O(4n) memory\nC. Fenwick tree: O(n) preprocessing, O(log n) query, O(n) memory\nD. Cartesian tree with +-1 RMQ and LCA: O(n) preprocessing, O(1) query, O(4n) memory\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F"
   },
   {
-    "task_id": "lite_code_02",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "For finding a maximum matching in a bipartite graph with |V| vertices and |E| edges, which algorithm has the best worst-case time complexity?\n\nA. Hopcroft-Karp: O(|E| sqrt(|V|))\nB. Dinic on unit-capacity flow network: O(|E| sqrt(|V|))\nC. Hungarian algorithm: O(|V|^3)\nD. Ford-Fulkerson with DFS: O(|E| * max_flow)\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "A"
+    "answers": [
+      "27",
+      "112"
+    ],
+    "category": "Math",
+    "match": "numeric",
+    "prompt": "Let r and s be the two roots of x^2 - 7x + 11 = 0. Compute r^2 + s^2, then r^3 + s^3 (Hint: use the sum and product of the roots, without solving for r and s individually). Give both answers as integers.",
+    "task_id": "lite_math_08",
+    "type": "exact_multi"
   },
   {
-    "task_id": "lite_code_03",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "You are given a directed graph with both positive and negative edge weights but no negative cycles. Which single-source shortest-path algorithm should you use?\n\nA. Dijkstra with Fibonacci heap: O(|E| + |V| log |V|)\nB. Bellman-Ford: O(|V| * |E|)\nC. Floyd-Warshall: O(|V|^3)\nD. Dial algorithm (bounded Dijkstra): O(|E| + |V| * max_weight)\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "B"
+    "answers": [
+      "A",
+      "B",
+      "E"
+    ],
+    "category": "Knowledge",
+    "prompt": "Which of the following historical claims are TRUE? Select ALL that apply.\n\nA. Cleopatra lived closer in time to the Apollo Moon landing than to the construction of the Great Pyramid\nB. The University of Oxford was already teaching students before the Aztec capital of Tenochtitlan was founded\nC. Woolly mammoths had already been extinct for 10,000 years before the pyramids were built\nD. Sharks evolved after Saturn's rings formed\nE. The first fax-machine patent was granted before the American Civil War began\nF. Vincent van Gogh died before the Eiffel Tower opened to the public\n\nSelect ALL that apply. Answer with only the letters, e.g. A, C.",
+    "task_id": "lite_knowledge_07",
+    "type": "mcq_multi",
+    "valid_letters": "A-F"
   },
   {
-    "task_id": "lite_code_04",
-    "category": "Code",
+    "answer": "D",
+    "category": "Logic",
+    "prompt": "Five inhabitants A, B, C, D and E are each a knight (truth-teller) or a knave (liar):\n\nA says: 'Exactly three of us are knights.'\nB says: 'A is lying.'\nC says: 'D and E are the same type.'\nD says: 'B is a knave, or C is a knave (or both).'\nE says: 'A and D are different types.'\n\nHow many of the five are knights?\n\nA. 5\nB. 4\nC. 3\nD. 2\nE. 1\nF. 0\n\nAnswer with only the letter of the correct option.",
+    "task_id": "lite_logic_03",
     "type": "mcq",
-    "prompt": "Given a suffix array of a string of length n, which algorithm computes the longest common prefix (LCP) array in O(n) time?\n\nA. Kasai algorithm\nB. Manber-Myers LCP computation\nC. Ukkonen online suffix tree construction\nD. Z-algorithm on the reversed suffix array\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "A"
+    "valid_letters": "A-F"
   },
   {
-    "task_id": "lite_code_05",
-    "category": "Code",
-    "type": "mcq",
-    "prompt": "You need to maintain a dynamic set of intervals and answer stabbing queries: given a point x, find all intervals that contain x. Which data structure achieves O(log n + k) query time (k = number of reported intervals) and O(n log n) build time?\n\nA. Interval tree (augmented BST storing max endpoint in each subtree)\nB. Segment tree with interval lists stored per node\nC. Binary indexed tree over coordinate-compressed endpoints\nD. Sparse table of interval endpoints\n\nAnswer with the single letter A, B, C, or D.",
-    "answer": "A"
+    "answer": "Silent domes shelter giant optics while polished mirrors gather faint starlight beyond dusty nebulae light",
+    "category": "Instruction Following",
+    "constraints": [
+      {
+        "eq": 15,
+        "rule": "word_count"
+      },
+      {
+        "eq": 0,
+        "rule": "comma_count"
+      },
+      {
+        "n": 1,
+        "rule": "nth_word",
+        "word": "Silent"
+      },
+      {
+        "n": 8,
+        "rule": "nth_word",
+        "word": "mirrors"
+      },
+      {
+        "rule": "ends_with",
+        "text": "light"
+      },
+      {
+        "rule": "no_consecutive_initial"
+      }
+    ],
+    "prompt": "Write one sentence about telescopes that is EXACTLY 15 words long and contains no commas. It MUST start with the word 'Silent', its 8th word MUST be 'mirrors', and it MUST end with the word 'light'. No two consecutive words may start with the same letter.",
+    "task_id": "lite_ins_follow_02",
+    "type": "constraint"
   }
 ]

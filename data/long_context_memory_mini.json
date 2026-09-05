@@ -1,0 +1,37 @@
+[
+  {
+    "task_id": "long_context_memory/0/0",
+    "context": "",
+    "question": "When did Caroline go to the LGBTQ support group?",
+    "answer": "7 May 2023",
+    "category": "temporal"
+  },
+  {
+    "task_id": "long_context_memory/0/1",
+    "context": "",
+    "question": "When did Melanie paint a sunrise?",
+    "answer": "2022",
+    "category": "temporal"
+  },
+  {
+    "task_id": "long_context_memory/0/2",
+    "context": "",
+    "question": "What fields would Caroline be likely to pursue in her educaton?",
+    "answer": "Psychology, counseling certification",
+    "category": "open_domain"
+  },
+  {
+    "task_id": "long_context_memory/0/3",
+    "context": "",
+    "question": "What did Caroline research?",
+    "answer": "Adoption agencies",
+    "category": "multi_hop"
+  },
+  {
+    "task_id": "long_context_memory/0/4",
+    "context": "",
+    "question": "What is Caroline's identity?",
+    "answer": "Transgender woman",
+    "category": "multi_hop"
+  }
+]

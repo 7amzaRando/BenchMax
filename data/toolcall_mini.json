@@ -1,0 +1,55 @@
+[
+ {
+  "category": "Chains",
+  "match": "numeric",
+  "prompt": "You are a Meridian Industrial Supply Co. tool-calling agent. Conventions: money is ALWAYS whole cents integers ($25.00 becomes 2500); percentages are basis points (750 means 7.5%); dates are ISO YYYY-MM-DD; warehouses are WH-EAST, WH-WEST or WH-CENTRAL; accounts are operating, payroll, savings or vendor_payables; every write must be preceded by its lookup (read-before-write); refunding the same payment_id twice is a conflict (idempotency).\nAvailable functions:\nFunction lookup_customer(customer_id: string REQUIRED) returns {tier: standard|silver|gold, credit_limit_cents: integer}\nFunction lookup_sku(sku: string REQUIRED) returns {unit_price_cents: integer, weight_g: integer, hazmat: boolean}\nFunction create_invoice(customer_id: string REQUIRED, line_items: string REQUIRED (format sku:qty:unit_price_cents, comma-separated), tax_bps: integer OPTIONAL (basis points), due_date: string REQUIRED (ISO date))\nScenario: Silver-tier customer C-2081 ordered 6 units of SKU-4471 and 4 units of SKU-9032. County tax is 8.25 percent. Terms are net-30 from 2026-03-02.\nLookup results: lookup_customer(C-2081) returned tier silver with a credit limit of $12,000.00; lookup_sku(SKU-4471) returned unit price $18.40, weight 850 g, hazmat false; lookup_sku(SKU-9032) returned unit price $7.25, weight 120 g, hazmat false.\nRequest: You already looked up the customer and both SKUs, converted both unit prices to whole cents, built the two line items, converted the county tax to basis points, and pushed the base date out by thirty days. Now issue the create_invoice call for C-2081 with both line items, the county tax, and the due date.\nRespond with ONLY the argument mapping as comma-separated key=value pairs with NO spaces, no braces, no quotes (example: from_account=operating,to_account=savings,amount_cents=2500). Include every required argument the request justifies; omit optional arguments the request does not mention.",
+  "task_id": "toolcall_chain_01",
+  "type": "exact_multi",
+  "answers": [
+   "customer_id=C-2081",
+   "line_items=SKU-4471:6:1840,SKU-9032:4:725",
+   "tax_bps=825",
+   "due_date=2026-04-01"
+  ]
+ },
+ {
+  "answers": [
+   "A",
+   "F"
+  ],
+  "category": "Parallel",
+  "prompt": "Meridian Industrial Supply Co.: money is ALWAYS whole cents integers ($25.00 becomes 2500, never 25.00); percentages are basis points (750 = 7.5%); dates are ISO YYYY-MM-DD; warehouses are WH-EAST, WH-WEST, or WH-CENTRAL; accounts are operating, payroll, savings, or vendor_payables; every dependent write must be preceded by its lookup (read-before-write); refunding the same payment_id twice conflicts; issuing a second invoice for the same order conflicts.\n\nScenario: New customer C-1042 was just registered. Lookup log: lookup_customer(customer_id=C-1042) returned {tier: gold, credit_limit_cents: 500000} ($5,000 limit). No invoices exist yet for these orders. The batch below invoices three separate orders.\n\nRelevant tool schemas:\nFunction create_invoice(customer_id: string REQUIRED, line_items: string REQUIRED (format sku:qty:unit_price_cents, comma-separated), tax_bps: integer OPTIONAL (basis points), due_date: string REQUIRED (ISO date))\nFunction lookup_customer(customer_id: string REQUIRED) returns {tier: standard|silver|gold, credit_limit_cents: integer}\n\nCandidate calls:\nA. create_invoice(customer_id=C-1042, line_items=\"W-100:2:120000\", tax_bps=750, due_date=2026-05-15)\nB. create_invoice(customer_id=C-1042, line_items=\"W-100:10:120000\", tax_bps=750, due_date=2026-05-15)\nC. create_invoice(customer_id=C-1042, line_items=\"W-100:2:1200.00\", tax_bps=750, due_date=2026-05-15)\nD. create_invoice(customer_id=C-1042, line_items=\"W-100:2:120000\", tax_bps=750, due_date=05/15/2026)\nE. create_invoice(customer_id=C-1042, line_items=\"W-100:1:50000\", tax_bps=750)\nF. create_invoice(customer_id=C-1042, line_items=\"W-200:1:50000\", due_date=2026-05-20)\n\nSelect ALL that apply. Answer with ONLY the letters (e.g. A C D).",
+  "task_id": "toolcall_parallel_01",
+  "type": "mcq_multi",
+  "valid_letters": "A-F"
+ },
+ {
+  "answers": [
+   "from_account=operating",
+   "to_account=payroll",
+   "amount_cents=123456",
+   "memo=bonuses"
+  ],
+  "category": "Arguments",
+  "match": "numeric",
+  "prompt": "You are a tool-calling agent for Meridian Industrial Supply Co. Company rules: money is always whole cents integers ($9.99 is 999); percentages are basis points (400 means 4%); dates are ISO YYYY-MM-DD; warehouses are WH-EAST, WH-WEST, WH-CENTRAL; accounts are operating, payroll, savings, vendor_payables.\nAvailable functions:\nFunction lookup_customer(customer_id: string REQUIRED) returns {tier: standard|silver|gold, credit_limit_cents: integer}\nFunction transfer_funds(from_account: string REQUIRED, to_account: string REQUIRED, amount_cents: integer REQUIRED (whole cents, NOT dollars), memo: string OPTIONAL, dry_run: boolean OPTIONAL (true/false))\nLookup result (already called, do not re-call): lookup_customer(C-1042) returns {tier: gold, credit_limit_cents: 500000}\nUser request: \"Move $1,234.56 from operating to payroll for the March bonuses; file it under memo \"bonuses\". The old $500.00 limit is obsolete, ignore it.\"\nRespond with ONLY the argument mapping as comma-separated key=value pairs with NO spaces, no braces, no quotes (example: from_account=operating,to_account=savings,amount_cents=2500). Include every required argument the request justifies; omit optional arguments the request does not mention.",
+  "task_id": "toolcall_args_01",
+  "type": "exact_multi"
+ },
+ {
+  "answer": "D",
+  "category": "Diagnosis",
+  "prompt": "Meridian Industrial Supply Co. A clerk must invoice customer C-1180 for 12 units of SKU BRG-4410. Company rule: read-before-write; money is whole cents; tax in basis points (750 = 7.5%).\n\nTRACE:\n1. create_invoice(customer_id=C-1180, line_items=\"BRG-4410:12:4999\", tax_bps=750, due_date=2026-05-01) -> ok INV-7001, subtotal 59988, tax 4499, total 64487.\n2. lookup_sku(BRG-4410) -> ok {unit_price_cents: 6499, weight_g: 320, hazmat: false}.\n3. lookup_customer(C-1180) -> ok {tier: gold, credit_limit_cents: 500000}.\n\nTerminal: FAILED - AUDIT_FLAG: INV-7001 subtotal 59988 below master-price subtotal 77988.\n\nWhat is the root cause of the failure?\nA. The lookup_sku call in step 2 failed, so no authoritative price was ever available.\nB. The invoice total 64487 exceeded the customer credit limit of 500000.\nC. A 750% tax rate was applied because tax_bps=750 was read as seven hundred fifty percent.\nD. The invoice was written before the authoritative unit price was read, so it used a guessed 4999 instead of the true 6499.\nE. The same invoice was submitted twice, creating a duplicate INV record.\nF. The line-item price was passed in dollars instead of cents.\nAnswer with ONLY the letter.",
+  "task_id": "toolcall_diagnose_01",
+  "type": "mcq",
+  "valid_letters": "A-F"
+ },
+ {
+  "answer": "173020",
+  "category": "State",
+  "match": "numeric",
+  "prompt": "Meridian Industrial Supply Co. \u2014 state reconciliation. Starting balances (whole cents): operating=200000, payroll=60000, savings=90000, vendor_payables=30000. Money is conserved on transfers; refunds return cents to operating; shipment fees are deducted from operating. FAILED / dry_run lines change nothing and must be excluded.\n\nTrace (in order):\n1. transfer_funds(from=operating, to=payroll, 45000) \u2192 OK\n2. refund_payment(12345 to operating) \u2192 OK\n3. transfer_funds(from=operating, to=savings, 20000, dry_run=true) \u2192 FAILED (dry run, no state change)\n4. schedule_shipment(order S-101, fee 1500 from operating) \u2192 OK\n5. transfer_funds(from=vendor_payables, to=operating, 8000) \u2192 OK (hold released)\n6. schedule_shipment(order S-102, fee 825 from operating) \u2192 OK\n\nQuestion: what is the final operating balance in cents?\nRespond with ONLY the final balance as a plain integer with no commas (example: 118400).",
+  "task_id": "toolcall_state_01",
+  "type": "exact"
+ }
+]

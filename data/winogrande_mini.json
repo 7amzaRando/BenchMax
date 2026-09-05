@@ -1,0 +1,47 @@
+[
+  {
+    "task_id": "winogrande/0",
+    "question": "Sarah was a much better surgeon than Maria so _ always got the easier cases.",
+    "options": [
+      "Sarah",
+      "Maria"
+    ],
+    "answer": "B"
+  },
+  {
+    "task_id": "winogrande/1",
+    "question": "Sarah was a much better surgeon than Maria so _ always got the harder cases.",
+    "options": [
+      "Sarah",
+      "Maria"
+    ],
+    "answer": "A"
+  },
+  {
+    "task_id": "winogrande/2",
+    "question": "They were worried the wine would ruin the bed and the blanket, but the _ was't ruined.",
+    "options": [
+      "blanket",
+      "bed"
+    ],
+    "answer": "B"
+  },
+  {
+    "task_id": "winogrande/3",
+    "question": "Terry tried to bake the eggplant in the toaster oven but the _ was too big.",
+    "options": [
+      "eggplant",
+      "toaster"
+    ],
+    "answer": "A"
+  },
+  {
+    "task_id": "winogrande/4",
+    "question": "At night, Jeffrey always stays up later than Hunter to watch TV because _ wakes up late.",
+    "options": [
+      "Jeffrey",
+      "Hunter"
+    ],
+    "answer": "A"
+  }
+]

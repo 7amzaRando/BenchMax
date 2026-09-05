@@ -12,12 +12,23 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+export interface ModelMetadata {
+  context_length?: number | string;
+  max_context_length?: number | string;
+  context_window?: number | string;
+  [key: string]: any;
+}
+
 export interface ConnectResult {
   status: string;
   models: { id: string; Model: string }[];
   choices: string[];
   selected: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, ModelMetadata>;
+}
+
+export function health() {
+  return fetchJson<{ status: string }>('/health');
 }
 
 export function connectLMStudio(apiUrl: string, apiKey: string = '') {
@@ -31,6 +42,9 @@ export interface DatasetEntry {
   Benchmark: string;
   Installed: string;
   Samples: string;
+  Category?: string;
+  Docker?: string;
+  Short?: string;
   'Full Dataset'?: string;
   Status?: string;
 }
@@ -86,6 +100,8 @@ export function startRun(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
+  disable_repetition_detection?: boolean;
+  context_length?: number;
 }) {
   return fetchJson<RunResponse>('/run/start', {
     method: 'POST',
@@ -102,6 +118,8 @@ export function startBatch(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
+  disable_repetition_detection?: boolean;
+  context_length?: number;
 }) {
   return fetchJson<BatchResponse>('/batch/start', {
     method: 'POST',
@@ -114,13 +132,15 @@ export function pauseRun(runId: number) {
 }
 
 export function resumeRun(runId: number, params: {
-  api_url: string;
+  api_url?: string;
   api_key?: string;
   temperature?: number;
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
-}) {
+  disable_repetition_detection?: boolean;
+  context_length?: number;
+} = {}) {
   return fetchJson<{ status: string }>(`/run/${runId}/resume`, {
     method: 'POST',
     body: JSON.stringify(params),
@@ -144,11 +164,13 @@ export interface RunStatus {
   accuracy_display: string;
   avg_tps: number;
   avg_ttft: number;
+  avg_prompt_tps: number;
   total_tokens: number;
   thinking_tokens: number;
   response_tokens: number;
   repetition_warnings: number;
   safety_metrics?: any;
+  notes?: string;
   created_at?: string;
 }
 
@@ -173,8 +195,8 @@ export interface PollResponse {
     progress: number;
     status_md: string;
     active_task: string;
-    avg_tps: string;
-    avg_ttft: string;
+    avg_tps: number | string;
+    avg_ttft: number | string;
     accuracy: string;
     token_stats: string;
   };
@@ -189,11 +211,17 @@ export interface PollResponse {
     current_benchmark: string;
   };
   active_run_override?: number | null;
+  live_turn?: { run_id: number; turn: number; max_turns: number; elapsed: number; ts: number } | null;
 }
 
 export function poll(activeRunId?: number) {
   const q = activeRunId ? `?active_run_id=${activeRunId}` : '';
   return fetchJson<PollResponse>(`/poll${q}`);
+}
+
+export function pollStreamUrl(activeRunId?: number) {
+  const q = activeRunId ? `?active_run_id=${activeRunId}` : '';
+  return `${BASE}/poll/stream${q}`;
 }
 
 export interface HistoryEntry {
@@ -203,12 +231,19 @@ export interface HistoryEntry {
   Status: string;
   Progress: string;
   Accuracy: string;
+  Needles?: string;
+  'Needles Raw'?: string;
   'Avg TPS': string;
   'Avg TTFT': string;
+  'Avg Prompt TPS': number;
   'Avg Tokens': number;
   'Total Tokens': number;
+  'Context Length'?: string;
+  'Context Length Raw'?: number | string;
+  'Context K'?: string;
   Duration?: string;
   Batch?: string;
+  Notes?: string;
   Created: string;
 }
 
@@ -218,6 +253,8 @@ export function loadHistory() {
 
 export interface RunDetails {
   summary: string;
+  benchmark_name?: string;
+  context_length?: number | null;
   samples: any[];
   failed_tasks: string[];
   selected_failed: string | null;
@@ -235,6 +272,25 @@ export function getDiff(runId: number, taskId: string) {
   return fetchJson<{ html: string }>(`/runs/${runId}/diff/${encodeURIComponent(taskId)}`);
 }
 
+export function updateRunNotes(runId: number, notes: string) {
+  return fetchJson<{ status: string; notes: string }>(`/runs/${runId}/notes`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notes }),
+  });
+}
+
+export interface DepthResult {
+  task_id: string;
+  correct: boolean;
+  depth: number;
+  context_length: number;
+}
+
+export function loadDepthResults(runId: number) {
+  return fetchJson<{ results: DepthResult[] }>(`/runs/${runId}/depth-results`);
+}
+
 export interface BatchSummary {
   summary: any[];
   chart: any[];
@@ -243,10 +299,6 @@ export interface BatchSummary {
 
 export function loadBatchSummary(batchId: string) {
   return fetchJson<BatchSummary>(`/batch/${batchId}`);
-}
-
-export function exportResults(runId: number, format: string = 'CSV') {
-  return fetch(`${BASE}/export/runs/${runId}?format=${format}`);
 }
 
 export function exportBatch(batchId: string, format: string = 'CSV') {
@@ -271,6 +323,8 @@ export function startModelQueue(params: {
   max_tokens?: number;
   system_prompt?: string;
   quick_test?: boolean;
+  disable_repetition_detection?: boolean;
+  context_length?: number;
 }) {
   return fetchJson<ModelQueueResponse>('/model-queue/start', {
     method: 'POST',
@@ -319,10 +373,14 @@ export interface LeaderboardEntry {
   Model: string;
   Benchmark: string;
   Accuracy: string;
+  Needles?: string;
   'Avg TPS': string;
   'Avg TTFT': string;
   Passed: string;
   Tokens: number;
+  'Context Length'?: string;
+  'Context Length Raw'?: number | string;
+  'Context K'?: string;
   Date: string;
   QuickTest?: boolean;
 }
@@ -379,12 +437,43 @@ export function getTelemetry() {
   return fetchJson<TelemetryData>('/telemetry');
 }
 
+let _benchmarksCache: { data: { benchmarks: { label: string; name: string }[] }; ts: number } | null = null
+const BENCHMARKS_CACHE_TTL = 5 * 60 * 1000
+
 export function getBenchmarks() {
-  return fetchJson<{ benchmarks: { label: string; name: string }[] }>('/benchmarks');
+  if (_benchmarksCache && Date.now() - _benchmarksCache.ts < BENCHMARKS_CACHE_TTL) {
+    return Promise.resolve(_benchmarksCache.data)
+  }
+  return fetchJson<{ benchmarks: { label: string; name: string }[] }>('/benchmarks').then(data => {
+    _benchmarksCache = { data, ts: Date.now() }
+    return data
+  })
+}
+
+export function invalidateBenchmarksCache() {
+  _benchmarksCache = null
 }
 
 export function downloadRuntimes() {
-  return fetchJson<{ status: string }>('/runtimes/download', { method: 'POST' });
+  return fetchJson<{ status: string }>('/docker/build', { method: 'POST' });
+}
+
+export function getDockerStatus() {
+  return fetchJson<{ available: boolean; image_exists: boolean; message: string }>('/docker/status');
+}
+
+export interface ReadinessIssue {
+  benchmark: string
+  kind: 'dataset' | 'runtime'
+  message: string
+  action: 'install_dataset' | 'download_runtime'
+}
+
+export function checkRunReadiness(params: { benchmarks: string[]; quick_test?: boolean }) {
+  return fetchJson<{ ok: boolean; issues: ReadinessIssue[] }>('/run/check', {
+    method: 'POST',
+    body: JSON.stringify({ benchmarks: params.benchmarks, quick_test: params.quick_test }),
+  })
 }
 
 

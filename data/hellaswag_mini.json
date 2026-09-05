@@ -1,0 +1,62 @@
+[
+  {
+    "task_id": "hellaswag/0",
+    "question": "A man is sitting on a roof. he",
+    "options": [
+      "is using wrap to wrap a pair of skis.",
+      "is ripping level tiles off.",
+      "is holding a rubik's cube.",
+      "starts pulling up roofing on a roof."
+    ],
+    "answer": "D",
+    "category": "Roof shingle removal"
+  },
+  {
+    "task_id": "hellaswag/1",
+    "question": "A lady walks to a barbell. She bends down and grabs the pole. the lady",
+    "options": [
+      "swings and lands in her arms.",
+      "pulls the barbell forward.",
+      "pulls a rope attached to the barbell.",
+      "stands and lifts the weight over her head."
+    ],
+    "answer": "D",
+    "category": "Clean and jerk"
+  },
+  {
+    "task_id": "hellaswag/2",
+    "question": "Two women in a child are shown in a canoe while a man pulls the canoe while standing in the water, with other individuals visible in the background. the child and a different man",
+    "options": [
+      "are then shown paddling down a river in a boat while a woman talks.",
+      "are driving the canoe, they go down the river flowing side to side.",
+      "sit in a canoe while the man paddles.",
+      "walking go down the rapids, while the man in his helicopter almost falls and goes out of canoehood."
+    ],
+    "answer": "C",
+    "category": "Canoeing"
+  },
+  {
+    "task_id": "hellaswag/3",
+    "question": "A boy is running down a track. the boy",
+    "options": [
+      "runs into a car.",
+      "gets in a mat.",
+      "lifts his body above the height of a pole.",
+      "stands on his hands and springs."
+    ],
+    "answer": "C",
+    "category": "High jump"
+  },
+  {
+    "task_id": "hellaswag/4",
+    "question": "The boy lifts his body above the height of a pole. The boy lands on his back on to a red mat. the boy",
+    "options": [
+      "turns his body around on the mat.",
+      "gets up from the mat.",
+      "continues to lift his body over the pole.",
+      "wiggles out of the mat."
+    ],
+    "answer": "B",
+    "category": "High jump"
+  }
+]

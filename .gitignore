@@ -1,103 +1,144 @@
-# Virtual Environment
+# ── Python ──────────────────────────────────────────────────────────
+# Virtual environments
 .venv/
 venv/
 ENV/
+env/
 
-# Python caching
+# Bytecode / caches
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.dmypy.json
+dmypy.json
 
-# Databases
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ── Node / Frontend ─────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+# Vite / build caches
+frontend/.vite/
+*.tsbuildinfo
+
+# ── OS ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# ── IDE / Editors ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+.cursor/
+.opencode/
+opencode.json
+
+# ── Env / Secrets ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+# Tokens / secrets (all locations)
+data/.hf_token
+data/.lb_settings
+records/.hf_token
+records/.lb_settings
+.hf_token
+.lb_settings
+.cli_config.json
+Token-Stuff.md
+secrets.txt
+*.pem
+*.key
+
+# ── Databases / Records ─────────────────────────────────────────────
 records/*.db
 records/*.db-journal
 records/*.db-shm
 records/*.db-wal
-
-# Export artifacts
+records/*.launches.json
+# Export artifacts (generated) — all formats
 records/export_*
-
-# Personal history CSV exports
 records/*.csv
+records/*.xlsx
+records/*.md
+records/*.json
+# Root-level stray exports (user ran export to project root)
+all_history_*.csv
+all_history_*.xlsx
+all_history_*.md
+all_history_*.json
+export_*.csv
+export_*.xlsx
+export_*.md
+export_*.json
+export_run_*.csv
+run_*.csv
 
-# Runtime state files
-records/.launches.json
-records/.hf_token
-records/.lb_settings
-
-# Tokens / secrets (legacy paths)
-data/.hf_token
-data/.lb_settings
-
-# AI agent configuration (local)
-.opencode/
-opencode.json
-
-# Leaderboard API (superseded by direct Supabase calls)
-leaderboard-api/
-
-# Logs
+# ── Logs ────────────────────────────────────────────────────────────
 *.log
+logs/
+benchmax.log
+records/*.log
 
-# Tokens / secrets
-Token-Stuff.md
-
-# Large / regeneratable datasets (fetch scripts recreate them)
+# ── Large / regeneratable datasets (fetch scripts recreate them) ───
+# Mini datasets (5 samples) stay tracked for tests/.exe; full corpora are large
 data/longbench_v2_full.json
 data/mmmu_pro_images/
 data/mmmu_pro_full.json
 data/livecodebench_full.json
+data/niahs_corpus.json
+# BFCL full is 16 MB — tracked but listed here if you need to save space:
+# data/bfcl/bfcl_full.json
 
-# Personal AI prompts (not part of the project)
-
-# Agent documentation (internal, not for GitHub)
-PROJECT_STATE.md
-SESSION_CONTEXT.md
-CODE_OF_CONDUCT.md
-
-# Changelog (version tracking, internal)
-CHANGELOG.md
-
-# Release notes (internal)
-RELEASE_NOTES_*
-
-Archive/
-
-# Tickets (internal issue tracking)
-tickets/
-
-# PyInstaller build artifacts
+# ── Build artifacts ─────────────────────────────────────────────────
 build/
 dist/
+*.exe
+*.spec.bak
 
-# Agent & AI configuration (internal)
-.opencode/
-
-# Research notes (internal)
-research/
-
-# Node.js dependencies
-frontend/node_modules/
-
-# Temporary / scratch files
-.tmp_*
-Testing-*/
-
-# Portable runtimes (reinstallable via setup scripts)
+# ── Portable runtimes (reinstallable via setup scripts) ─────────────
 .runtimes/
 
-# Ad-hoc debugging scripts
+# ── Marketing site (Next.js static export — CI rebuilds via deploy-site.yml) ──
+site/node_modules/
+site/.next/
+site/out/
+
+# ── Temporary / scratch ─────────────────────────────────────────────
+tmp/
+.tmp_*/
+Testing-*/
+*.tmp
+*.bak
+*.orig
+
+# ── Markdown docs ───────────────────────────────────────────────────
+# All markdown ignored except root README (project docs stay local)
+*.md
+!README.md
+# Tau3-Airline runtime files (vendored upstream data, required by the benchmark)
+!data/taubench_airline_policy.md
+!data/taubench_airline_user_guidelines.md
+
+# ── Ad-hoc debugging scripts (not part of test suite) ───────────────
 test_*.py
-
-# Old README (superseded by README.md)
-README-Old.md
-
-# Implementation plan (superseded by PROJECT_STATE.md)
-implementation_plan.md
-
-# Python egg info
-*.egg-info/
-
-
+!tests/test_*.py
+debug_*.py
+scratch_*.py

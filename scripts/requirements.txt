@@ -1,0 +1,4 @@
+datasets>=3.0.0
+uncensorbench>=0.1.0
+pyarrow>=14.0.0
+numpy>=1.24.0
