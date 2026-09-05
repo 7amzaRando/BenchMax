@@ -116,6 +116,9 @@ dist/
 # ── Portable runtimes (reinstallable via setup scripts) ─────────────
 .runtimes/
 
+# ── Confidential / agent prompt templates ────────────────────────────
+prompts/
+
 # ── Marketing site (Next.js static export — CI rebuilds via deploy-site.yml) ──
 site/node_modules/
 site/.next/

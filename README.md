@@ -2,6 +2,8 @@
 
 **Local LLM Benchmarking Suite** — Score any LLM on 30 standardized benchmarks. Works with LM Studio, Ollama, OpenAI, and any OpenAI-compatible endpoint.
 
+**[Official Site](https://7amzarando.github.io/BenchMax/)** · [Docs](https://7amzarando.github.io/BenchMax/docs/) · [GitHub](https://github.com/7amzaRando/BenchMax)
+
 [![Python 3.11+](https://img.shields.io/badge/Python_3.11-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React 19](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
