@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
 title BenchMax Build
+cd /d "%~dp0"
 
 echo ========================================
 echo   BenchMax - Build Script

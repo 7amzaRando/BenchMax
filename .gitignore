@@ -133,6 +133,7 @@ Testing-*/
 # All markdown ignored except root README (project docs stay local)
 *.md
 !README.md
+!docs/*.md
 # Tau3-Airline runtime files (vendored upstream data, required by the benchmark)
 !data/taubench_airline_policy.md
 !data/taubench_airline_user_guidelines.md

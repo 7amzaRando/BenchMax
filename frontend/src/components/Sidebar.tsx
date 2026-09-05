@@ -116,6 +116,8 @@ export default memo(function Sidebar({ open, onClose }: { open: boolean; onClose
             <span className="font-mono">AGPL-3.0</span>
             <span className="opacity-40">·</span>
             <a href="https://github.com/7amzaRando/BenchMax" target="_blank" rel="noreferrer" className="hover:text-foreground underline-offset-4 hover:underline">GitHub</a>
+            <span className="opacity-40">·</span>
+            <a href="https://7amzarando.github.io/BenchMax/docs/" target="_blank" rel="noreferrer" className="hover:text-foreground underline-offset-4 hover:underline">Docs</a>
             <span className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">Press ?</span>
           </div>
         </div>

@@ -21,7 +21,7 @@ export default function RunBenchmarkTab() {
   const [benchmarks, setBenchmarks] = useState<BenchMeta[]>([])
   const [selectedBenchmark, setSelectedBenchmark] = useState('')
   const [quickTest, setQuickTest] = useState(false)
-  const [temperature, setTemperature] = useState(0)
+  const [temperature, setTemperature] = useState(0.0)
   const [useCustomTemp, setUseCustomTemp] = useState(false)
   const [maxTokens, setMaxTokens] = useState(8192)
   const [systemPrompt, setSystemPrompt] = useState("You are a precise AI assistant. Follow instructions exactly. Give direct, concise answers without preamble or explanation.")
@@ -153,20 +153,20 @@ export default function RunBenchmarkTab() {
     try {
       if (mode === 'model-queue') {
         if (!selectedQueueModels.length || !selectedBatchBenches.length) { setRunMsg('Select at least one model and one benchmark.'); return }
-        const r = await api.startModelQueue({ models: selectedQueueModels, benchmarks: selectedBatchBenches, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature/100 : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
+        const r = await api.startModelQueue({ models: selectedQueueModels, benchmarks: selectedBatchBenches, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
         dispatch({ type: 'SET_ACTIVE_RUN_ID', payload: null }); dispatch({ type: 'SET_ACTIVE_BATCH_ID', payload: null }); setRunMsg(r.message)
       } else if (mode === 'batch' && selectedBatchBenches.length >= 2) {
-        const r = await api.startBatch({ model: connection.selectedModel, benchmarks: selectedBatchBenches, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature/100 : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
+        const r = await api.startBatch({ model: connection.selectedModel, benchmarks: selectedBatchBenches, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
         if (r.run_id) dispatch({ type:'SET_ACTIVE_RUN_ID', payload:r.run_id}); if (r.batch_id) dispatch({ type:'SET_ACTIVE_BATCH_ID', payload:r.batch_id}); setRunMsg(r.message)
       } else {
-        const r = await api.startRun({ model: connection.selectedModel, benchmark: selectedBenchmark, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature/100 : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
+        const r = await api.startRun({ model: connection.selectedModel, benchmark: selectedBenchmark, api_url: connection.apiUrl, api_key: connection.apiKey, temperature: useCustomTemp ? temperature : undefined, max_tokens: maxTokens, system_prompt: systemPrompt, quick_test: quickTest, disable_repetition_detection: disableRepDetection, context_length: contextLength })
         dispatch({ type:'SET_ACTIVE_RUN_ID', payload:r.run_id}); dispatch({ type:'SET_ACTIVE_BATCH_ID', payload:null}); setRunMsg(r.message)
       }
     } catch (e:any) { openError('Failed to start', e.message) }
   }
 
   async function handlePause(){ if(!activeRunId) return; try{ const r=await api.pauseRun(activeRunId); setRunMsg(r.status)}catch{ setRunMsg('Pause failed')} }
-  async function handleResume(){ if(!activeRunId) return; try{ const r=await api.resumeRun(activeRunId,{ api_url:connection.apiUrl, api_key:connection.apiKey, temperature: useCustomTemp? temperature/100:undefined, max_tokens:maxTokens, system_prompt:systemPrompt, quick_test:quickTest, disable_repetition_detection:disableRepDetection, context_length:contextLength}); setRunMsg(r.status)}catch{ setRunMsg('Resume failed')} }
+  async function handleResume(){ if(!activeRunId) return; try{ const r=await api.resumeRun(activeRunId,{ api_url:connection.apiUrl, api_key:connection.apiKey, temperature: useCustomTemp? temperature:undefined, max_tokens:maxTokens, system_prompt:systemPrompt, quick_test:quickTest, disable_repetition_detection:disableRepDetection, context_length:contextLength}); setRunMsg(r.status)}catch{ setRunMsg('Resume failed')} }
   async function handleHalt(){ if(!activeRunId) return; try{ const r=await api.haltRun(activeRunId); setRunMsg(r.status)}catch{ setRunMsg('Halt failed')} }
   async function handleHaltModelQueue(){ try{ const r=await api.haltModelQueue(); setRunMsg(r.status)}catch{ setRunMsg('Halt queue failed')} }
   async function handleSkipModelQueue(){ try{ const r=await api.skipModelQueue(); setRunMsg(r.status)}catch{ setRunMsg('Skip failed')} }
@@ -320,8 +320,9 @@ export default function RunBenchmarkTab() {
                     </label>
                     {useCustomTemp ? (
                       <div className="pl-6 space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground"><span>Temperature</span><span className="font-mono">{temperature}</span></div>
-                        <input type="range" min={0} max={100} step={5} value={temperature} onChange={e=>setTemperature(parseInt(e.target.value))} className="w-full accent-[var(--primary)]" />
+                        <div className="flex justify-between text-xs text-muted-foreground"><span>Temperature</span><span className="font-mono">{temperature.toFixed(2)}</span></div>
+                        <input type="range" min={0} max={1} step={0.05} value={temperature} onChange={e=>setTemperature(parseFloat(e.target.value))} className="w-full accent-[var(--primary)]" />
+                        <div className="flex justify-between text-[11px] text-muted-foreground font-mono"><span>0.0</span><span>1.0</span></div>
                       </div>
                     ) : <p className="pl-6 text-xs text-muted-foreground">Uses model default (recommended).</p>}
                   </div>
