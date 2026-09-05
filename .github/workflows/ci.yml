@@ -32,7 +32,8 @@ jobs:
 
       - name: Security audit (pip-audit)
         run: |
-          pip-audit --desc || echo "::warning::pip-audit found vulnerabilities (see above)"
+          pip-audit --desc --no-deps 2>&1 || echo "::warning::pip-audit found vulnerabilities (see above)"
+        shell: bash
 
       - name: Lint with ruff
         run: |
