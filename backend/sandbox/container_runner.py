@@ -126,10 +126,12 @@ _LCB_IMPORT_DENY = frozenset({
     "subprocess", "multiprocessing", "ctypes", "code", "codeop",
 })
 
-# BigCodeBench needs unittest, os, sys, and other stdlib modules for running tests.
-# Uses the same deny-list approach as LiveCodeBench.
+# BigCodeBench needs unittest, os, sys, subprocess, and third-party packages
+# (pandas, numpy, psutil, matplotlib, ...) for running tests. The container is
+# the isolation boundary (--cap-drop ALL, no-new-privileges, read-only), so the
+# hook only blocks process-escape modules, not legitimate task dependencies.
 _BCB_IMPORT_DENY = frozenset({
-    "subprocess", "multiprocessing", "ctypes", "code", "codeop",
+    "multiprocessing", "ctypes", "code", "codeop",
 })
 
 
@@ -154,50 +156,76 @@ _IMPORTLIB_DENY = frozenset({"importlib"})
 
 def _safe_lcb_import(name, globals=None, locals=None, fromlist=(), level=0):
     top = name.split(".")[0]
-    if top in _LCB_IMPORT_DENY or top in _IMPORTLIB_DENY:
+    # importlib is allowed (unittest.mock needs it); mirrors the host hook.
+    if top in _LCB_IMPORT_DENY or (top in _IMPORTLIB_DENY and top != "importlib"):
         raise ImportError(f"Import of '{name}' is not allowed in LiveCodeBench sandbox")
-    if top not in sys.stdlib_module_names:
+    if top not in sys.stdlib_module_names and top != "importlib":
         raise ImportError(f"Import of '{name}' is not allowed in LiveCodeBench sandbox (non-stdlib)")
-    mod = importlib.import_module(name)
+    full = importlib.import_module(name)
     if fromlist:
         for attr in fromlist:
             if attr == "*":
                 continue
             try:
-                getattr(mod, attr)
+                getattr(full, attr)
             except AttributeError:
                 importlib.import_module(f"{name}.{attr}")
-    return mod
+        return full
+    # Real __import__ protocol: empty fromlist returns the top module, so
+    # `import xml.etree.ElementTree as ET` keeps working.
+    return importlib.import_module(top)
 
 
 def _safe_bigcodebench_import(name, globals=None, locals=None, fromlist=(), level=0):
-    """Allow stdlib imports for BigCodeBench (needs unittest, os, sys, etc.)."""
+    """Allow stdlib + installed third-party imports for BigCodeBench.
+
+    Tasks legitimately need subprocess (tar/wget/shell tasks), unittest.mock
+    (via importlib), and third-party packages pre-installed in the Docker image
+    (pandas, numpy, psutil, matplotlib, wordcloud, ...). Only process-escape
+    modules in _BCB_IMPORT_DENY are blocked; anything else importable is
+    allowed. Uninstalled third-party names still fail with ImportError.
+
+    Follows the real __import__ protocol: plain `import a.b` (empty
+    fromlist) returns the TOP module, so `import matplotlib.pyplot as plt`
+    keeps working (IMPORT_FROM then resolves 'pyplot' on the parent).
+    """
     top = name.split(".")[0]
-    if top in _BCB_IMPORT_DENY or top in _IMPORTLIB_DENY:
+    if top in _BCB_IMPORT_DENY:
         raise ImportError(f"Import of '{name}' is not allowed in BigCodeBench sandbox")
-    if top not in sys.stdlib_module_names:
-        raise ImportError(f"Import of '{name}' is not allowed in BigCodeBench sandbox (non-stdlib)")
-    mod = importlib.import_module(name)
+    if top in sys.stdlib_module_names or top == "importlib":
+        full = importlib.import_module(name)
+    else:
+        try:
+            full = importlib.import_module(name)
+        except ImportError:
+            raise ImportError(f"Import of '{name}' is not allowed in BigCodeBench sandbox (not installed)")
     if fromlist:
         for attr in fromlist:
             if attr == "*":
                 continue
             try:
-                getattr(mod, attr)
+                getattr(full, attr)
             except AttributeError:
                 importlib.import_module(f"{name}.{attr}")
-    return mod
+        return full
+    return importlib.import_module(top)
 
 
 def _sandboxed_open(tmpdir, original_open):
+    import tempfile as _tempfile
     tmpdir_real = os.path.realpath(tmpdir)
+    # BigCodeBench tests use tempfile.mkdtemp() (absolute /tmp/... paths) for
+    # scratch I/O — allow writes there and in the workspace, block elsewhere.
+    allowed_dirs = {tmpdir_real}
+    try:
+        allowed_dirs.add(os.path.realpath(_tempfile.gettempdir()))
+    except Exception:
+        pass
     def _open(path, *args, **kwargs):
         mode = args[0] if args else kwargs.get("mode", "r")
         if isinstance(mode, str) and ("w" in mode or "a" in mode or "x" in mode):
-            if os.path.isabs(path):
-                raise PermissionError(f"Write blocked: absolute path not allowed in sandbox: {path}")
-            real = os.path.realpath(os.path.join(tmpdir, path))
-            if not real.startswith(tmpdir_real + os.sep) and real != tmpdir_real:
+            real = os.path.realpath(path) if os.path.isabs(path) else os.path.realpath(os.path.join(tmpdir, path))
+            if not any(real == d or real.startswith(d + os.sep) for d in allowed_dirs):
                 raise PermissionError(f"Write blocked outside sandbox: {path}")
             return original_open(real, *args, **kwargs)
         return original_open(path, *args, **kwargs)
@@ -250,11 +278,14 @@ def _execute_bigcodebench(config):
     builtins.open = _sandboxed_open(tmpdir, original_open)
 
     _DENY_BUILTINS = frozenset({
-        "open", "exec", "eval", "compile",
+        "exec", "eval", "compile",
         "breakpoint", "exit", "quit", "globals", "locals",
     })
     safe_builtins = {k: v for k, v in vars(builtins).items() if k not in _DENY_BUILTINS}
     safe_builtins["__import__"] = _safe_bigcodebench_import
+    # File tasks (open/read/write) are legitimate — expose the tmpdir-restricted
+    # wrapper instead of removing open entirely (writes outside tmpdir blocked).
+    safe_builtins["open"] = _sandboxed_open(tmpdir, original_open)
 
     _DENY_OS = frozenset({
         "system", "popen", "execle", "execl", "execlp", "execv", "execve",
@@ -286,25 +317,25 @@ def _execute_bigcodebench(config):
     try:
         full_code = code + "\n" + test_code
         with _swallow_io():
-            exec(compile(full_code, f"{module_name}.py", "exec"), new_module.__dict__)
-            sys.modules[module_name] = new_module
-            TestCases = getattr(new_module, "TestCases")
-            loader = unittest.TestLoader()
-            suite = loader.loadTestsFromTestCase(TestCases)
-            test_result = unittest.TestResult()
             with _time_limit(timeout):
+                exec(compile(full_code, f"{module_name}.py", "exec"), new_module.__dict__)
+                sys.modules[module_name] = new_module
+                TestCases = getattr(new_module, "TestCases")
+                loader = unittest.TestLoader()
+                suite = loader.loadTestsFromTestCase(TestCases)
+                test_result = unittest.TestResult()
                 suite.run(test_result)
 
         issues = test_result.failures + test_result.errors
         if issues:
             for test, trace in issues:
-                details.append(f"{test.id()}: {trace}")
+                details.append(f"{test.id()}: {trace[:2000]}")
             return [{"result": "failed", "details": details}]
         return [{"result": "passed", "details": []}]
     except _TimeoutError:
         return [{"result": "timed out", "details": []}]
     except BaseException as e:
-        details.append(str(e))
+        details.append(str(e)[:2000])
         return [{"result": "failed", "details": details}]
     finally:
         builtins.open = original_open
@@ -533,15 +564,18 @@ def _write_workspace(sample, edited_code, tmpdir):
         write_file(rel_path, content)
 
     if lang == "javascript":
-        write_file("babel.config.js",
-                   "module.exports = { presets: ['@babel/preset-env'] };\n")
-        write_file("package.json", json.dumps({
-            "name": "aider-polyglot-js",
-            "private": True,
-            "jest": {
-                "transform": {"^.+\\.jsx?$": "babel-jest"},
-            },
-        }))
+        # Preserve dataset-pinned toolchain files when present.
+        if "babel.config.js" not in (extra_files or {}):
+            write_file("babel.config.js",
+                       "module.exports = { presets: ['@babel/preset-env'] };\n")
+        if "package.json" not in (extra_files or {}):
+            write_file("package.json", json.dumps({
+                "name": "aider-polyglot-js",
+                "private": True,
+                "jest": {
+                    "transform": {"^.+\\.jsx?$": "babel-jest"},
+                },
+            }))
 
     if lang == "go":
         has_mod = any(k.endswith("go.mod") for k in (extra_files or {}))
@@ -626,8 +660,9 @@ def _run_java_test(sample, tmpdir):
         return {"success": False, "stdout": r["stdout"], "stderr": r["stderr"],
                 "error": f"javac test failed: {r['error']}"}
 
-    # Run tests
-    test_class = _java_test_class(sample.get("source_path", ""))
+    # Run tests — derive the class from the TEST file (source path gives
+    # wrong classes, e.g. TreeTest for PovTest.java).
+    test_class = _java_test_class(sample.get("test_path") or sample.get("source_path", ""))
     return _subprocess_run(
         ["java", "-jar", junit_jar, "--classpath", cp, "--select-class", test_class],
         cwd=tmpdir, timeout=30,
@@ -677,8 +712,16 @@ def _run_rust_test(sample, tmpdir):
 
 def _run_cpp_test(sample, tmpdir):
     src_path = sample.get("source_path", "")
-    test_file = os.path.basename(src_path).replace('.cpp', '_test.cpp')
-    test_path = os.path.join(tmpdir, test_file)
+    # Prefer the dataset test_path (respects nested layouts); fall back to
+    # suffix-safe derivation. Suffix-only replace avoids corrupting stems
+    # containing ".cpp" mid-string.
+    test_rel = sample.get("test_path")
+    if not test_rel:
+        if src_path.endswith(".cpp"):
+            test_rel = src_path[:-4] + "_test.cpp"
+        else:
+            test_rel = os.path.basename(src_path).replace(".cpp", "_test.cpp")
+    test_path = os.path.join(tmpdir, test_rel)
     exe_path = os.path.join(tmpdir, "test")
 
     # Compile

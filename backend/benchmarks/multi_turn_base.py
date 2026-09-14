@@ -261,6 +261,25 @@ class MultiTurnBenchmark(BaseBenchmark):
 
         return conversation
 
+    @staticmethod
+    def _ensure_user_first(
+        conversation: List[Dict[str, str]],
+    ) -> List[Dict[str, str]]:
+        """Drop leading non-user messages so the first non-system message is
+        user-role (mirrors Tau3's _request_messages for strict chat
+        templates like ornith that reject user-less histories)."""
+        if not conversation:
+            return conversation
+        keep_system = conversation[0].get("role") == "system"
+        rest = conversation[1:] if keep_system else conversation
+        idx = 0
+        while idx < len(rest) and rest[idx].get("role") != "user":
+            idx += 1
+        if idx:
+            del rest[:idx]
+            conversation[:] = ([conversation[0]] if keep_system else []) + rest
+        return conversation
+
     async def evaluate_sample(
         self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str
     ) -> Dict[str, Any]:
@@ -332,6 +351,23 @@ class MultiTurnBenchmark(BaseBenchmark):
 
             # Context overflow handling: truncate oldest turns if too long
             conversation = self._truncate_conversation(conversation, max_context_tokens)
+            # Truncation can leave an assistant/tool-first history, which
+            # strict chat templates (e.g. ornith) reject with "No user query
+            # found in messages". Re-ensure user-first before sending.
+            conversation = self._ensure_user_first(conversation)
+            if not any(m.get("role") == "user" and (m.get("content") or "").strip()
+                       for m in conversation):
+                logger.error("No user message left after truncation at turn %d", turn_idx)
+                _clear_live_turn()
+                return self._result(
+                    initial_prompt,
+                    {"elapsed_time": total_elapsed, "tps": last_tps, "ttft": last_ttft,
+                     "thinking_tokens": total_tokens["thinking"], "response_tokens": total_tokens["response"],
+                     "prompt_tokens": total_tokens["prompt"]},
+                    correct=False,
+                    error_message="No user message left after context truncation",
+                    scoring_details={"turns": turn_details, "error_turn": turn_idx},
+                )
 
             try:
                 result = await self.evaluate_turn(
@@ -350,7 +386,7 @@ class MultiTurnBenchmark(BaseBenchmark):
                     scoring_details={"turns": turn_details, "error_turn": turn_idx},
                 )
 
-            response = result.get("response", "")
+            response = result.get("response") or ""
             tool_calls = result.get("tool_calls")
             done = result.get("done", False)
 

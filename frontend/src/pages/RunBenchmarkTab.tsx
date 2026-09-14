@@ -10,7 +10,7 @@ import { AlertDialog, type DialogAction } from '@/components/ui/alert-dialog'
 import * as api from '@/lib/api'
 import { useApp } from '@/lib/context'
 
-type BenchMeta = { label: string; name: string; category: string; docker: boolean; samples: number; short: string }
+type BenchMeta = { label: string; name: string; category: string; docker: boolean; docker_partial?: boolean; samples: number; short: string }
 const CATEGORY_ORDER = ["All","Coding","Reasoning","Knowledge","Instruction","Tool-Use","Long-Context","Vision","Composite","Safety","Speed"]
 
 export default function RunBenchmarkTab() {
@@ -55,7 +55,11 @@ export default function RunBenchmarkTab() {
       dispatch({ type: 'SET_PENDING_RERUN', payload: null })
     }
   }, [pendingRerun, dispatch])
-  useEffect(() => { setLiveOverride(null) }, [runStatus])
+  useEffect(() => {
+    if (runStatus && ['COMPLETED', 'FAILED', 'HALTED'].includes(runStatus)) {
+      setLiveOverride(null)
+    }
+  }, [runStatus])
 
   async function handleRefresh() {
     if (!activeRunId) return
@@ -136,12 +140,21 @@ export default function RunBenchmarkTab() {
     return names.some(n => benchmarks.find(b => b.name === n)?.docker)
   }, [mode, selectedBenchmark, selectedBatchBenches, benchmarks])
 
+  const needsDockerPartial = useMemo(() => {
+    if (needsDocker) return false
+    const names = mode === 'single' ? [selectedBenchmark] : selectedBatchBenches
+    return names.some(n => benchmarks.find(b => b.name === n)?.docker_partial)
+  }, [mode, selectedBenchmark, selectedBatchBenches, benchmarks, needsDocker])
+
   async function handleStart() {
     if (mode !== 'model-queue' && !connection.selectedModel) { openError('No model selected', 'Connect and select a model first.'); return }
     const benchNames = mode === 'single' ? [selectedBenchmark] : selectedBatchBenches
     if (!benchNames.length || (mode === 'single' && !selectedBenchmark)) { openError('No benchmark selected', 'Select at least one benchmark.'); return }
     try {
-      const { ok, issues } = await api.checkRunReadiness({ benchmarks: benchNames, quick_test: quickTest })
+      const { ok, issues, warnings } = await api.checkRunReadiness({ benchmarks: benchNames, quick_test: quickTest })
+      if (warnings?.length) {
+        toast({ title: 'Heads up', description: warnings.map(w => w.message).join(' '), variant: 'default' })
+      }
       if (!ok) {
         const actions: DialogAction[] = []
         if (issues.some(i => i.action === 'install_dataset')) actions.push({ label: 'Install datasets', variant: 'soft', onClick: async () => { closeError(); try { await api.installAllDatasets(); toast({ title: 'Install started', description: 'Datasets installing in background.', variant: 'success' }) } catch (e:any){ toast({ title:'Install failed', description:e.message, variant:'error'}) } } })
@@ -184,6 +197,7 @@ export default function RunBenchmarkTab() {
             {connection.connected ? (connection.selectedModel ? connection.selectedModel.slice(0,28) : 'Connected') : 'Not connected'}
           </div>
           {needsDocker && <Badge variant="warning">🐳 Docker required</Badge>}
+          {needsDockerPartial && <Badge variant="warning" title="Only coding questions need Docker — other categories run without it">◐ Docker for coding</Badge>}
           <span className="hidden sm:inline text-xs font-mono text-muted-foreground border px-2 py-1 rounded-full bg-card">ctx {contextWindow}</span>
         </div>
         <div className="flex rounded-xl border bg-card p-1 gap-1">
@@ -270,13 +284,14 @@ export default function RunBenchmarkTab() {
               {mode==='single' ? (
                 <div className="space-y-2">
                   <select className="flex h-9 w-full rounded-lg border bg-card px-3 text-sm" value={selectedBenchmark} onChange={e=>setSelectedBenchmark(e.target.value)}>
-                    {filteredBenches.map(b=><option key={b.name} value={b.name}>{b.name} — {b.short} · {b.samples.toLocaleString()} {b.docker ? '🐳':''}</option>)}
+                    {filteredBenches.map(b=><option key={b.name} value={b.name}>{b.name} — {b.short} · {b.samples.toLocaleString()} {b.docker ? '🐳':(b.docker_partial ? '◐':'')}</option>)}
                   </select>
                   {selBenchMeta && (
                     <div className="flex flex-wrap items-center gap-2 text-xs px-3 py-2.5 rounded-lg border bg-muted/40">
                       <Badge variant="outline" className="text-[11px]">{selBenchMeta.category}</Badge>
                       <span className="font-mono">{selBenchMeta.samples.toLocaleString()} samples</span>
                       {selBenchMeta.docker && <Badge variant="warning" className="text-[11px]">Docker</Badge>}
+                      {!selBenchMeta.docker && selBenchMeta.docker_partial && <Badge variant="warning" className="text-[11px]" title="Only coding questions need Docker — other categories run without it">Docker · coding only</Badge>}
                       <span className="ml-auto text-muted-foreground truncate hidden sm:inline">{selBenchMeta.short}</span>
                     </div>
                   )}
@@ -293,6 +308,7 @@ export default function RunBenchmarkTab() {
                             <span className="text-xs font-semibold truncate">{b.name}</span>
                             <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">{b.category}</Badge>
                             {b.docker && <span className="text-[11px]">🐳</span>}
+                            {!b.docker && b.docker_partial && <span className="text-[11px]" title="Docker needed for coding questions only">◐</span>}
                           </div>
                           <div className="text-[11px] text-muted-foreground truncate">{b.short} · {b.samples.toLocaleString()}</div>
                         </div>

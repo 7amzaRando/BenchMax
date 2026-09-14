@@ -37,7 +37,7 @@
 
 ## Code execution
 
-The 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) run in Docker (`benchmax-sandbox`) with a clear error if Docker is unavailable. The other 25 run host-local with no Docker.
+The 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) run in Docker (`benchmax-sandbox`) with a clear error if Docker is unavailable. The other 24 run fully host-local. LiveBench is mixed: 5 of its 6 categories run host-local, but its coding questions need Docker — without it they are skipped upfront (no LLM time wasted) and the run warns instead of blocking.
 
 ## Datasets
 

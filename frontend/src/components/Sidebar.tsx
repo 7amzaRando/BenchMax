@@ -38,7 +38,7 @@ export default memo(function Sidebar({ open, onClose }: { open: boolean; onClose
           </div>
           <div className="min-w-0">
             <div className="font-display font-bold text-[15px] leading-none tracking-tight">BenchMax</div>
-            <div className="text-[11px] text-muted-foreground font-mono leading-none mt-1">v2.0 · 30 benchmarks</div>
+            <div className="text-[11px] text-muted-foreground font-mono leading-none mt-1">v2.0.1 · 30 benchmarks</div>
           </div>
           <span className="ml-auto hidden lg:inline-flex text-[10px] font-mono px-1.5 py-0.5 rounded border border-border bg-muted text-muted-foreground">LOCAL</span>
           <button

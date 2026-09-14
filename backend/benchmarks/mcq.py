@@ -1,7 +1,8 @@
-import re
 import logging
+import string as string_module
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark
+from backend.benchmarks.scoring import _expand_valid_letters, score_mcq
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +29,15 @@ class GenericMCQBenchmark(BaseBenchmark):
         gen = await self._generate(prompt, params, model_name)
 
         ac = gen.get("answer_content", "").strip()
-        answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
-        extracted = re.findall(rf'\b([{self.valid_letters}])\b', answer_content)
-        answer = extracted[-1] if extracted else None
-        correct = answer == sample.get("answer", "")
+        answer_content = (ac if ac else gen.get("raw_response", "")).strip()
+        # Option universe = letters actually shown (options count), capped by
+        # the benchmark's valid_letters. A stray letter from prose outside the
+        # shown options can no longer count as (or spoil) the answer.
+        shown = [string_module.ascii_uppercase[i] for i in range(len(options))]
+        allowed = _expand_valid_letters(self.valid_letters)
+        universe = "".join(L for L in shown if L in allowed) or self.valid_letters
+        correct, err = score_mcq(answer_content, sample.get("answer", ""),
+                                 universe, single_answer=True)
 
         # Store category for per-category chart (sorted display via operations.py)
         cat = sample.get("category") or sample.get("topic") or sample.get("domain") or sample.get("subject") or "unknown"
@@ -39,6 +45,6 @@ class GenericMCQBenchmark(BaseBenchmark):
             prompt, gen,
             extracted_code=answer_content,
             correct=correct,
-            error_message=None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
+            error_message=None if correct else err,
             scoring_details={"category": cat},
         )

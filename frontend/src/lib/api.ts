@@ -2,8 +2,8 @@ const BASE = '/api';
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
   });
   if (!res.ok) {
     const err = await res.text().catch(() => 'Unknown error');
@@ -272,6 +272,37 @@ export function getDiff(runId: number, taskId: string) {
   return fetchJson<{ html: string }>(`/runs/${runId}/diff/${encodeURIComponent(taskId)}`);
 }
 
+export interface TrustedCard {
+  run_id: number;
+  text: string;
+  display_name: string;
+  publisher: string;
+  model_id: string;
+  arch: string;
+  quant: string;
+  size_gb: string;
+  max_context: number | null;
+  loaded_context: number | null;
+  hardware: string;
+  date: string;
+  benchmark: string;
+  accuracy: number;
+  correct: number;
+  total: number;
+  status: string;
+  quick_test: boolean;
+  avg_tps: number;
+  avg_prompt_tps: number;
+  avg_tokens: number;
+  think_pct: number;
+  resp_pct: number;
+  avg_ttft: number;
+}
+
+export function loadTrustedCard(runId: number) {
+  return fetchJson<TrustedCard>(`/runs/${runId}/card`);
+}
+
 export function updateRunNotes(runId: number, notes: string) {
   return fetchJson<{ status: string; notes: string }>(`/runs/${runId}/notes`, {
     method: 'PATCH',
@@ -395,6 +426,13 @@ export function deleteLeaderboardEntry(runId: number) {
   });
 }
 
+export function deleteRuns(runIds: number[]) {
+  const ids = [...runIds].sort((a, b) => a - b).join(',');
+  return fetchJson<{ leaderboard: LeaderboardEntry[]; status: string }>(`/leaderboard?run_ids=${encodeURIComponent(ids)}`, {
+    method: 'DELETE',
+  });
+}
+
 export function clearAllHistory(confirmText: string) {
   return fetchJson<{ history: any[]; leaderboard: LeaderboardEntry[]; status: string }>('/leaderboard/clear', {
     method: 'POST',
@@ -444,7 +482,7 @@ export function getBenchmarks() {
   if (_benchmarksCache && Date.now() - _benchmarksCache.ts < BENCHMARKS_CACHE_TTL) {
     return Promise.resolve(_benchmarksCache.data)
   }
-  return fetchJson<{ benchmarks: { label: string; name: string }[] }>('/benchmarks').then(data => {
+  return fetchJson<{ benchmarks: { label: string; name: string; docker?: boolean; docker_partial?: boolean }[] }>('/benchmarks').then(data => {
     _benchmarksCache = { data, ts: Date.now() }
     return data
   })
@@ -465,12 +503,13 @@ export function getDockerStatus() {
 export interface ReadinessIssue {
   benchmark: string
   kind: 'dataset' | 'runtime'
+  severity?: 'blocking' | 'warning'
   message: string
   action: 'install_dataset' | 'download_runtime'
 }
 
 export function checkRunReadiness(params: { benchmarks: string[]; quick_test?: boolean }) {
-  return fetchJson<{ ok: boolean; issues: ReadinessIssue[] }>('/run/check', {
+  return fetchJson<{ ok: boolean; issues: ReadinessIssue[]; warnings?: ReadinessIssue[] }>('/run/check', {
     method: 'POST',
     body: JSON.stringify({ benchmarks: params.benchmarks, quick_test: params.quick_test }),
   })

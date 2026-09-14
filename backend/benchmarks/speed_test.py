@@ -11,7 +11,9 @@ class WritingSpeedTestBenchmark(BaseBenchmark):
     """Writing & Creative Writing speed benchmark (5 prompts, ~300 tokens each).
 
     Tests creative text generation including RP dialogue, short stories,
-    descriptive passages, and poetry. No code extraction — correct is always True.
+    descriptive passages, and poetry. No code extraction — correct unless the
+    response is empty. Uses a fixed per-sample token target (not the run's
+    max-tokens setting) so speed numbers stay comparable.
     """
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):
@@ -55,7 +57,9 @@ class CodingSpeedTestBenchmark(BaseBenchmark):
     """Coding speed benchmark (5 prompts, ~300 tokens each).
 
     Tests raw code generation speed — functions, scripts, regex patterns,
-    and data structures. correct is always True.
+    and data structures. Correct unless the response is empty. Uses a fixed
+    per-sample token target (not the run's max-tokens setting) so speed
+    numbers stay comparable.
     """
 
     def __init__(self, db: Session, client: LMStudioClient, quick_test: bool = False):

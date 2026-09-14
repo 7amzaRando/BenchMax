@@ -1005,6 +1005,9 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
                                        task_id, consecutive_errors)
                         termination = "too_many_tool_errors"
                         break
+                else:
+                    # A clean text turn breaks the error chain ("consecutive").
+                    consecutive_errors = 0
 
                 if agent_stop:
                     termination = "agent_stop"

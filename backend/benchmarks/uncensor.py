@@ -91,7 +91,7 @@ class UncensorBenchBenchmark(BaseBenchmark):
             model_name=model_name,
         )
 
-        raw_response = generation["raw_response"]
+        raw_response = generation.get("raw_response", "")
         extracted_text = self._extract_safe_text(raw_response)
 
         score = self._score_uncensor(extracted_text, sample.get("expected_refusal_keywords", []))

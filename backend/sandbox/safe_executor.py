@@ -194,6 +194,43 @@ _LCB_IMPORT_DENY = frozenset({
 })
 
 
+# BigCodeBench tasks legitimately need subprocess (tar/wget/shell), file I/O,
+# and third-party packages — only process-escape modules are blocked here.
+# Mirrors container_runner._safe_bigcodebench_import (host fallback path).
+_BCB_IMPORT_DENY = frozenset({
+    "multiprocessing", "ctypes", "code", "codeop",
+})
+
+
+def _safe_bigcodebench_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """Allow stdlib + installed third-party imports for BigCodeBench.
+
+    Follows the real __import__ protocol: plain `import a.b` (empty
+    fromlist) returns the TOP module, so `import matplotlib.pyplot as plt`
+    keeps working (IMPORT_FROM then resolves 'pyplot' on the parent).
+    """
+    top = name.split(".")[0]
+    if top in _BCB_IMPORT_DENY:
+        raise ImportError(f"Import of '{name}' is not allowed in BigCodeBench sandbox")
+    if top in sys.stdlib_module_names or top == "importlib":
+        full = importlib.import_module(name)
+    else:
+        try:
+            full = importlib.import_module(name)
+        except ImportError:
+            raise ImportError(f"Import of '{name}' is not allowed in BigCodeBench sandbox (not installed)")
+    if fromlist:
+        for attr in fromlist:
+            if attr == "*":
+                continue
+            try:
+                getattr(full, attr)
+            except AttributeError:
+                importlib.import_module(f"{name}.{attr}")
+        return full
+    return importlib.import_module(top)
+
+
 def _safe_lcb_import(name, globals=None, locals=None, fromlist=(), level=0):
     """Allow any standard-library import in the LiveCodeBench sandbox.
 
@@ -208,17 +245,19 @@ def _safe_lcb_import(name, globals=None, locals=None, fromlist=(), level=0):
         raise ImportError(f"Import of '{name}' is not allowed in LiveCodeBench sandbox")
     if top not in sys.stdlib_module_names:
         raise ImportError(f"Import of '{name}' is not allowed in LiveCodeBench sandbox (non-stdlib)")
-    mod = importlib.import_module(name)
+    full = importlib.import_module(name)
     if fromlist:
         for attr in fromlist:
             if attr == "*":
-                # from module import * - skip attribute lookup, module already imported
                 continue
             try:
-                getattr(mod, attr)
+                getattr(full, attr)
             except AttributeError:
                 importlib.import_module(f"{name}.{attr}")
-    return mod
+        return full
+    # Real __import__ protocol: empty fromlist returns the top module, so
+    # `import xml.etree.ElementTree as ET` keeps working.
+    return importlib.import_module(top)
 
 
 def _sanitize_child_env():
@@ -285,16 +324,24 @@ def _cleanup_dir(path: str):
 
 
 def _sandboxed_open(tmpdir, original_open):
-    """Return an open() builtin that blocks writes outside tmpdir."""
+    """Return an open() builtin that blocks writes outside tmpdir/temp dirs.
+
+    BigCodeBench tests use tempfile.mkdtemp() (absolute temp paths) for
+    scratch I/O — writes are allowed in the workspace tmpdir and the system
+    temp dir, blocked everywhere else.
+    """
     tmpdir_real = os.path.realpath(tmpdir)
+    allowed_dirs = {tmpdir_real}
+    try:
+        allowed_dirs.add(os.path.realpath(tempfile.gettempdir()))
+    except Exception:
+        pass
 
     def _open(path, *args, **kwargs):
         mode = args[0] if args else kwargs.get("mode", "r")
         if isinstance(mode, str) and ("w" in mode or "a" in mode or "x" in mode):
-            if os.path.isabs(path):
-                raise PermissionError(f"Write blocked: absolute path not allowed in sandbox: {path}")
-            real = os.path.realpath(os.path.join(tmpdir, path))
-            if not real.startswith(tmpdir_real + os.sep) and real != tmpdir_real:
+            real = os.path.realpath(path) if os.path.isabs(path) else os.path.realpath(os.path.join(tmpdir, path))
+            if not any(real == d or real.startswith(d + os.sep) for d in allowed_dirs):
                 raise PermissionError(f"Write blocked outside sandbox: {path}")
             return original_open(real, *args, **kwargs)
         return original_open(path, *args, **kwargs)
@@ -351,11 +398,13 @@ def _unsafe_execute_bigcodebench(
         builtins.open = _sandboxed_open(tmpdir, original_open)
 
         _DENY_BUILTINS = frozenset({
-            "open", "exec", "eval", "compile",
+            "exec", "eval", "compile",
             "breakpoint", "exit", "quit", "globals", "locals",
         })
         safe_builtins = {k: v for k, v in vars(builtins).items() if k not in _DENY_BUILTINS}
-        safe_builtins["__import__"] = _safe_humaneval_import
+        safe_builtins["__import__"] = _safe_bigcodebench_import
+        # File tasks need open() — expose the tmpdir-restricted wrapper.
+        safe_builtins["open"] = _sandboxed_open(tmpdir, original_open)
 
         _DENY_OS = frozenset({
             "system", "popen", "execle", "execl", "execlp", "execv", "execve",
@@ -399,14 +448,14 @@ def _unsafe_execute_bigcodebench(
             issues = test_result.failures + test_result.errors
             if issues:
                 for test, trace in issues:
-                    details.append(f"{test.id()}: {trace}")
+                    details.append(f"{test.id()}: {trace[:2000]}")
                 result_container.append({"result": "failed", "details": details})
             else:
                 result_container.append({"result": "passed", "details": []})
         except TimeoutException:
             result_container.append({"result": "timed out", "details": []})
         except BaseException as e:
-            details.append(str(e))
+            details.append(str(e)[:2000])
             result_container.append({"result": "failed", "details": details})
         finally:
             builtins.open = original_open

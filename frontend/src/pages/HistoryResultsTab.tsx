@@ -19,6 +19,8 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
   const historyRefreshKey = state.historyRefreshKey
   const [runs, setRuns] = useState<api.HistoryEntry[]>([])
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const anchorRef = useRef<number | null>(null)
   const [runDetails, setRunDetails] = useState<api.RunDetails | null>(null)
   const [batchId, setBatchId] = useState('')
   const [batchSummary, setBatchSummary] = useState<api.BatchSummary | null>(null)
@@ -32,6 +34,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [historyFilter, setHistoryFilter] = useState('')
   const [exportFormat, setExportFormat] = useState<'CSV' | 'JSON' | 'XLSX' | 'MD'>('CSV')
+  const [selFormat, setSelFormat] = useState<'CSV' | 'JSON' | 'XLSX'>('CSV')
   const [page, setPage] = useState(0)
   const [sampleCategoryFilter, setSampleCategoryFilter] = useState('__all')
   const [depthResults, setDepthResults] = useState<api.DepthResult[]>([])
@@ -39,6 +42,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
   const [notesValue, setNotesValue] = useState('')
   const [showConversation, setShowConversation] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+  const [deleteTargets, setDeleteTargets] = useState<number[] | null>(null)
   const { toast } = useToast()
 
   const sortedRuns = useMemo(() => {
@@ -66,6 +70,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
 
   const mountedRef = useRef(true)
   useEffect(() => { return () => { mountedRef.current = false } }, [])
+  const loadDetailsRunIdRef = useRef<number | null>(null)
   function handleSort(col: string) { if (sortColumn === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortColumn(col); setSortDir('asc') } }
   useEffect(() => { if (activeTab === 'history') loadRuns() }, [activeTab])
   useEffect(() => { loadRuns() }, [historyRefreshKey])
@@ -86,15 +91,80 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
     return { total_runs: total, completed_runs: completed, total_tokens_generated: totalTokens, benchmarks_run: benchmarks, models_tested: models, best_accuracy: { model: bestModel, benchmark: bestBench, accuracy: bestAcc || '—' } }
   }, [filteredRuns])
 
+  function handleRowClick(e: React.MouseEvent, runId: number, globalIndex: number) {
+    // Ctrl/Cmd+click: toggle one row. Shift+click: range from anchor.
+    if (e.ctrlKey || e.metaKey) {
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(runId)) next.delete(runId); else next.add(runId)
+        return next
+      })
+      anchorRef.current = runId
+      loadDetails(runId)
+      return
+    }
+    if (e.shiftKey && anchorRef.current !== null) {
+      const ids = filteredRuns.map(r => r['Run ID'])
+      const a = ids.indexOf(anchorRef.current)
+      const b = globalIndex
+      if (a !== -1 && b !== -1) {
+        const [lo, hi] = a < b ? [a, b] : [b, a]
+        setSelectedIds(new Set(ids.slice(lo, hi + 1)))
+        loadDetails(runId)
+        return
+      }
+    }
+    setSelectedIds(new Set([runId]))
+    anchorRef.current = runId
+    loadDetails(runId)
+  }
+
+  function toggleOne(runId: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(runId)) next.delete(runId); else next.add(runId)
+      return next
+    })
+    anchorRef.current = runId
+  }
+
+  async function copyText(t: string) {
+    try { await navigator.clipboard.writeText(t); toast({ title: 'Copied', variant: 'default' }) }
+    catch { toast({ title: 'Copy failed', description: 'Clipboard blocked', variant: 'error' }) }
+  }
+
+  async function copyCard(runId: number) {
+    try { const c = await api.loadTrustedCard(runId); await copyText(c.text) }
+    catch { toast({ title: 'Card failed', description: `Could not build card for #${runId}`, variant: 'error' }) }
+  }
+
+  async function copySelectedCards() {
+    const ids = [...selectedIds].sort((a, b) => a - b)
+    if (!ids.length) return
+    try {
+      const cards = await Promise.all(ids.map(id => api.loadTrustedCard(id)))
+      await copyText(cards.map(c => c.text).join('\n\n'))
+    } catch { toast({ title: 'Card failed', description: 'Could not build cards', variant: 'error' }) }
+  }
+
+  function compareSelected() {
+    const ids = [...selectedIds].sort((a, b) => a - b).join(',')
+    if (!ids) return
+    setCompareIds(ids)
+    setLoadError(null)
+    api.loadComparison(ids).then(d => { if (mountedRef.current) setComparison(d) }).catch(() => setLoadError('Failed to compare'))
+  }
+
   async function loadDetails(runId: number) {
+    loadDetailsRunIdRef.current = runId
     setSelectedRunId(runId); setDiffHtml(''); setRunDetails(null); setLoadError(null); setDepthResults([]); setSampleCategoryFilter('__all')
     try {
       const data = await api.loadRunDetails(runId)
-      if (!mountedRef.current) return
+      if (!mountedRef.current || loadDetailsRunIdRef.current !== runId) return
       setRunDetails(data as any)
       if (data.samples?.length) setSelectedTask(data.samples[0].Task || data.samples[0].task_id || '')
       const isNIAHS = (data as any).benchmark_name === 'NIAHS' || data.summary?.includes('NIAHS')
-      if (isNIAHS) { try { const d = await api.loadDepthResults(runId); if (mountedRef.current) setDepthResults(d.results || []) } catch {} }
+      if (isNIAHS) { try { const d = await api.loadDepthResults(runId); if (mountedRef.current && loadDetailsRunIdRef.current === runId) setDepthResults(d.results || []) } catch {} }
     } catch { setLoadError('Failed to load run details') }
   }
   async function saveNotes(runId: number) {
@@ -104,7 +174,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
   useEffect(()=>{ setShowConversation(false)}, [selectedTask])
   async function loadBatch(id?: string){ const bid=(id || batchId).trim(); if(!bid) return; if(id) setBatchId(bid); setLoadError(null); try{ const d=await api.loadBatchSummary(bid); if(mountedRef.current){ setBatchSummary(d); setTimeout(()=>{ document.querySelector('#batch-summary')?.scrollIntoView({ behavior:'smooth', block:'center'})},100)} }catch{ setLoadError('Failed to load batch') } }
   async function handleCompare(){ if(!compareIds.trim()) return; setLoadError(null); try{ const d=await api.loadComparison(compareIds); if(mountedRef.current) setComparison(d)}catch{ setLoadError('Failed to compare') } }
-  async function handleClear(){ setLoadError(null); try{ const d=await api.clearAllHistory(clearConfirm); if(mountedRef.current){ setRuns(d.history||[]); setClearConfirm(''); dispatch({ type:'INCREMENT_HISTORY_REFRESH'}) } }catch{ setLoadError('Failed to clear') } }
+  async function handleClear(){ setLoadError(null); try{ const d=await api.clearAllHistory(clearConfirm); if(mountedRef.current){ setRuns(d.history||[]); setClearConfirm(''); setSelectedRunId(null); setRunDetails(null); setBatchSummary(null); setComparison(null); setDiffHtml(''); dispatch({ type:'INCREMENT_HISTORY_REFRESH'}) } }catch{ setLoadError('Failed to clear') } }
   // Group run-detail samples by per-question category (from scoring_details;
   // falls back to task-id prefix, then benchmark name, so single-category
   // benchmarks still show one group). Powers the category filter + headers.
@@ -139,6 +209,20 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
 
   async function handleDeleteRun(runId:number){    try{ const d=await api.deleteLeaderboardEntry(runId); setRuns(prev=>prev.filter(r=>r['Run ID']!==runId)); if(selectedRunId===runId){ setSelectedRunId(null); setRunDetails(null)} dispatch({ type:'INCREMENT_HISTORY_REFRESH'}); toast({ title:'Run deleted', description:d.status||`Run ${runId} removed`, variant:'default'}) }catch(e:any){ toast({ title:'Delete failed', description:e.message, variant:'error'})}
     setDeleteTarget(null)
+  }
+
+  async function handleDeleteRuns(ids:number[]){
+    try{
+      const d=await api.deleteRuns(ids)
+      const gone = new Set(ids)
+      setRuns(prev=>prev.filter(r=>!gone.has(r['Run ID'])))
+      if(selectedRunId!==null && gone.has(selectedRunId)){ setSelectedRunId(null); setRunDetails(null) }
+      setSelectedIds(prev=>{ const next=new Set(prev); ids.forEach(id=>next.delete(id)); return next })
+      anchorRef.current = null
+      dispatch({ type:'INCREMENT_HISTORY_REFRESH'})
+      toast({ title:'Runs deleted', description:d.status||`${ids.length} runs removed`, variant:'default'})
+    }catch(e:any){ toast({ title:'Delete failed', description:e.message, variant:'error'})}
+    setDeleteTargets(null)
   }
 
   const batchSummaryData = batchSummary as Record<string, unknown> | null
@@ -182,12 +266,44 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
         <Input placeholder="Filter by model, benchmark or status…" value={historyFilter} onChange={e=>setHistoryFilter(e.target.value)} className="h-8 text-xs max-w-sm" />
         <span className="text-xs text-muted-foreground hidden sm:inline">{filteredRuns.length} shown · {PAGE_SIZE}/page</span>
       </div>
+      <div className="text-[11px] text-muted-foreground">Tip: Ctrl+click toggles a run, Shift+click selects a range.</div>
+      {selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs">
+          <Badge variant="outline" className="font-mono">{selectedIds.size} selected</Badge>
+          <Button variant="outline" size="xs" onClick={compareSelected}>Compare selected</Button>
+          <Button variant="outline" size="xs" onClick={copySelectedCards}>Copy {selectedIds.size > 1 ? `${selectedIds.size} cards` : 'card'}</Button>
+          <select className="h-6 text-xs rounded-md border bg-card px-1" value={selFormat} onChange={e=>setSelFormat(e.target.value as any)} aria-label="Selected export format">
+            <option value="CSV">CSV</option><option value="JSON">JSON</option><option value="XLSX">Excel</option>
+          </select>
+          <Button variant="outline" size="xs" asChild>
+            <a href={`/api/export/selected?run_ids=${[...selectedIds].sort((a,b)=>a-b).join(',')}&format=${selFormat}`} download>Export selected</a>
+          </Button>
+          <Button variant="destructive" size="xs" onClick={() => setDeleteTargets([...selectedIds].sort((a,b)=>a-b))}>Delete</Button>
+          <Button variant="ghost" size="xs" onClick={() => { setSelectedIds(new Set()); anchorRef.current = null }}>Clear</Button>
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0 overflow-auto max-h-[460px]">
           <table className="w-full text-sm min-w-[960px]">
             <thead className="bg-muted/70 sticky top-0 z-10 backdrop-blur text-[11px] tracking-widest uppercase">
               <tr className="border-b">
+                <th className="w-[36px] px-2 py-2.5" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    aria-label="Select all runs on this page"
+                    checked={paginatedRuns.length > 0 && paginatedRuns.every(r => selectedIds.has(r['Run ID']))}
+                    onChange={e => {
+                      e.stopPropagation()
+                      setSelectedIds(prev => {
+                        const next = new Set(prev)
+                        if (paginatedRuns.every(r => next.has(r['Run ID']))) paginatedRuns.forEach(r => next.delete(r['Run ID']))
+                        else paginatedRuns.forEach(r => next.add(r['Run ID']))
+                        return next
+                      })
+                    }}
+                  />
+                </th>
                 {[
                   { k:'Run ID', label:'Run', w:'w-[72px]' },
                   { k:'Model', label:'Model', w:'min-w-[160px]' },
@@ -206,8 +322,11 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {paginatedRuns.map(r=>(
-                <tr key={r['Run ID']} data-run-id={r['Run ID']} className={`group cursor-pointer ${selectedRunId===r['Run ID'] ? 'bg-primary/[0.06]' : 'hover:bg-muted/40'}`} onClick={()=>loadDetails(r['Run ID'])}>
+              {paginatedRuns.map((r, i)=>(
+                <tr key={r['Run ID']} data-run-id={r['Run ID']} aria-selected={selectedIds.has(r['Run ID'])} className={`group cursor-pointer ${(selectedRunId===r['Run ID'] || selectedIds.has(r['Run ID'])) ? 'bg-primary/[0.06]' : 'hover:bg-muted/40'}`} onClick={e=>handleRowClick(e, r['Run ID'], safePage * PAGE_SIZE + i)}>
+                  <td className="px-2 py-3" onClick={e=>e.stopPropagation()}>
+                    <input type="checkbox" aria-label={`Select run ${r['Run ID']}`} checked={selectedIds.has(r['Run ID'])} onChange={()=>toggleOne(r['Run ID'])} />
+                  </td>
                   <td className="px-3 py-3 font-mono text-xs font-medium"><span className="inline-flex items-center gap-1.5"><span className={`w-1.5 h-1.5 rounded-full ${r.Status==='COMPLETED'?'bg-emerald-500':r.Status==='ERROR'?'bg-red-500':r.Status==='RUNNING'?'bg-amber-500 animate-pulse':'bg-zinc-400'}`} />#{r['Run ID']}</span></td>
                   <td className="px-3 py-3"><div className="flex items-center gap-1.5 max-w-[180px]"><span className="truncate text-xs font-medium">{r.Model}</span><CopyButton value={r.Model} /></div>{r.Notes && r.Notes!=='—' && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{r.Notes}</div>}</td>
                   <td className="px-3 py-3"><div className="text-xs font-medium leading-tight">{r.Benchmark}</div><div className="flex items-center gap-1.5 mt-1">{r.Benchmark==='NIAHS' ? (r['Context K'] && r['Context K']!=='—' ? <Badge variant="outline" className="text-[10px] font-mono" title={`NIAHS context length${r['Context Length'] && r['Context Length']!=='—' ? `: ${r['Context Length']} tokens` : ''}`}>{r['Context K']}</Badge> : <span className="text-[11px] text-muted-foreground">64K</span>) : null}{r.Batch && r.Batch!=='—' && <button className="text-[10px] text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-2" title={`Load batch summary (${r.Batch})`} onClick={e=>{ e.stopPropagation(); loadBatch(String(r.Batch)) }}>batch</button>}</div></td>
@@ -230,7 +349,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
                   </td>
                 </tr>
               ))}
-              {!paginatedRuns.length && <tr><td colSpan={9} className="px-4 py-12 text-center text-sm text-muted-foreground">{historyFilter? 'No runs match filter' : 'No runs yet — start one from the Run tab.'}</td></tr>}
+              {!paginatedRuns.length && <tr><td colSpan={10} className="px-4 py-12 text-center text-sm text-muted-foreground">{historyFilter? 'No runs match filter' : 'No runs yet — start one from the Run tab.'}</td></tr>}
             </tbody>
           </table>
         </CardContent>
@@ -252,6 +371,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
                 Run #{selectedRunId}
                 {runDetails.benchmark_name==='NIAHS' && runDetails.context_length && <Badge variant="outline" className="font-mono text-xs" title={typeof runDetails.context_length==='number' ? `${runDetails.context_length.toLocaleString()} tokens` : String(runDetails.context_length)}>{typeof runDetails.context_length==='number' ? `${Math.floor((runDetails.context_length as number)/1024)}K` : String(runDetails.context_length)}</Badge>}
                 {runDetails.benchmark_name && <Badge variant="soft">{runDetails.benchmark_name}</Badge>}
+                <Button variant="outline" size="xs" className="ml-auto" onClick={() => selectedRunId !== null && copyCard(selectedRunId)}>Copy trusted card</Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -411,6 +531,7 @@ export default function HistoryResultsTab({ onRerun }: { onRerun?: (model: strin
       </Card>
 
       <ConfirmDialog open={deleteTarget!==null} onOpenChange={o=>{ if(!o) setDeleteTarget(null)}} onConfirm={()=>{ if(deleteTarget!==null) handleDeleteRun(deleteTarget)}} title="Delete run" description={`Delete run #${deleteTarget}? This removes it from history and leaderboard and cannot be undone.`} confirmText="Delete" />
+      <ConfirmDialog open={deleteTargets!==null} onOpenChange={o=>{ if(!o) setDeleteTargets(null)}} onConfirm={()=>{ if(deleteTargets!==null) handleDeleteRuns(deleteTargets)}} title={`Delete ${deleteTargets?.length || 0} runs`} description={`Delete runs ${deleteTargets?.join(', ')}? This removes them from history and leaderboard and cannot be undone.`} confirmText="Delete" />
     </div>
   )
 }

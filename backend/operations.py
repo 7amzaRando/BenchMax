@@ -141,6 +141,8 @@ def _sample_category_for_benchmark(sample: dict, benchmark_name: str) -> str | N
         return sample.get("difficulty") or None
     if benchmark_name == "Aider Polyglot":
         return sample.get("language") or None
+    if benchmark_name in ("BigCodeBench", "BigCodeBench-Hard"):
+        return benchmark_name
     for key in ("category", "topic", "domain", "subject"):
         val = sample.get(key)
         if isinstance(val, str) and val and val != "unknown":
@@ -260,7 +262,33 @@ def _build_token_stats_str(stats: dict) -> str:
     return f"Think: {think_pct}% | Resp: {resp_pct}% | Total: {stats['total_tk']}"
 
 
-def _result_to_export_dict(r) -> dict:
+def _run_params_for_export(run) -> dict:
+    """Flatten a Run's stored parameters into export-friendly columns."""
+    try:
+        params = run.get_parameters() if run is not None else {}
+    except Exception:
+        params = {}
+    if not isinstance(params, dict):
+        params = {}
+    quick_test = params.get("quick_test")
+    if quick_test is None and run is not None:
+        quick_test = (run.total_samples or 0) <= 10
+    return {
+        "model": run.model_name if run is not None else "",
+        "benchmark": run.benchmark_name if run is not None else "",
+        "run_status": run.status if run is not None else "",
+        "temperature": params.get("temperature", ""),
+        "max_tokens": params.get("max_completion_tokens", params.get("max_tokens", "")),
+        "system_prompt": params.get("system_prompt") or "",
+        "quick_test": bool(quick_test),
+        "repetition_detection_off": bool(params.get("disable_repetition_detection", False)),
+        "context_length": params.get("context_length", ""),
+        "api_url": params.get("api_url", ""),
+        "batch_id": run.batch_id if run is not None and run.batch_id else "",
+    }
+
+
+def _result_to_export_dict(r, run=None) -> dict:
     row = {
         "run_id": r.run_id,
         "task_id": r.task_id,
@@ -276,6 +304,8 @@ def _result_to_export_dict(r) -> dict:
         "raw_response": r.raw_response,
         "extracted_code": r.extracted_code,
     }
+    if run is not None:
+        row.update(_run_params_for_export(run))
     return _add_scoring_columns(row, r)
 
 
@@ -388,15 +418,24 @@ BENCHMARK_CLASSES = {
 
 
 def _instantiate_benchmark(benchmark_name: str, db, client, quick_test=False, hard=False):
+    import inspect as _inspect
     entry = BENCHMARK_CLASSES.get(benchmark_name)
     if not entry:
         raise ValueError(f"Unknown benchmark: {benchmark_name}")
     mod_path, cls_name = entry
     mod = __import__(mod_path, fromlist=[cls_name])
     cls = getattr(mod, cls_name)
+    # hard=True comes from either the explicit flag or the "-Hard" preset name.
+    # Only pass it when the benchmark class actually accepts it.
+    wants_hard = bool(hard) or "hard" in benchmark_name.lower()
     kwargs = {}
-    if "hard" in benchmark_name.lower():
-        kwargs["hard"] = True
+    if wants_hard:
+        try:
+            params = _inspect.signature(cls.__init__).parameters
+            if "hard" in params:
+                kwargs["hard"] = True
+        except (TypeError, ValueError):
+            pass
     return cls(db, client, quick_test=quick_test, **kwargs)
 
 
@@ -632,11 +671,13 @@ def _dataset_files(rel_path) -> list:
 
 
 def check_benchmark_readiness(benchmark_name: str, quick_test: bool = False) -> List[dict]:
-    """Return a list of readiness issues that would prevent a benchmark from running.
+    """Return a list of readiness issues for a benchmark.
 
     An empty list means the benchmark is ready to start. Each issue has keys:
-    benchmark, kind (``dataset`` | ``runtime``), message, action
-    (``install_dataset`` | ``download_runtime``).
+    benchmark, kind (``dataset`` | ``runtime``), severity (``blocking`` |
+    ``warning``), message, action (``install_dataset`` | ``download_runtime``).
+    ``blocking`` issues prevent the run; ``warning`` issues (partial-Docker
+    benchmarks like LiveBench) still allow it, with degraded slices.
     """
     issues: List[dict] = []
 
@@ -656,25 +697,73 @@ def check_benchmark_readiness(benchmark_name: str, quick_test: bool = False) -> 
                 issues.append({
                     "benchmark": benchmark_name,
                     "kind": "dataset",
+                    "severity": "blocking",
                     "message": f"The {benchmark_name} dataset is not installed (missing: {', '.join(missing)}).",
                     "action": "install_dataset",
                 })
 
-    # Aider Polyglot — Docker-only (benchmax-sandbox has all runtimes).
-    if benchmark_name == "Aider Polyglot":
-        from backend.config import SANDBOX_USE_DOCKER
-        docker_available = SANDBOX_USE_DOCKER and _docker_daemon_running()
-        if not docker_available:
-            from backend.sandbox.docker_executor import _image_exists
-            if not _image_exists():
-                issues.append({
-                    "benchmark": benchmark_name,
-                    "kind": "runtime",
-                    "message": "Aider Polyglot needs Docker image (click Build Docker Image).",
-                    "action": "download_runtime",
-                })
+    # Docker-only benchmarks (benchmax-sandbox image + running daemon).
+    # These BLOCK the run without Docker — every sample needs the sandbox.
+    _DOCKER_BENCHMARKS = {
+        "Aider Polyglot", "HumanEval", "BigCodeBench",
+        "BigCodeBench-Hard", "LiveCodeBench",
+    }
+    # Partial-Docker benchmarks: only one slice needs the sandbox (LiveBench
+    # coding questions via check_correctness_humaneval; the other 5 categories
+    # run host-local). These WARN but never block the run.
+    _DOCKER_PARTIAL_BENCHMARKS = {
+        "LiveBench",
+    }
+    if benchmark_name in _DOCKER_BENCHMARKS:
+        issues.extend(_docker_runtime_issues(benchmark_name, blocking=True))
+    elif benchmark_name in _DOCKER_PARTIAL_BENCHMARKS:
+        issues.extend(_docker_runtime_issues(benchmark_name, blocking=False))
 
     return issues
+
+
+def _docker_runtime_issues(benchmark_name: str, blocking: bool) -> List[dict]:
+    """Probe Docker daemon + benchmax-sandbox image, return readiness issues.
+
+    Args:
+        benchmark_name: Benchmark being checked.
+        blocking: True → severity "blocking" (run cannot start); False →
+            severity "warning" (run starts anyway, affected slice degraded).
+
+    Returns:
+        Empty list when Docker is fully usable (or Docker checks disabled).
+    """
+    from backend.config import SANDBOX_USE_DOCKER
+    if not SANDBOX_USE_DOCKER:
+        return []
+    from backend.sandbox.docker_executor import _image_exists
+    daemon_running = _docker_daemon_running()
+    try:
+        image_built = _image_exists()
+    except Exception:
+        image_built = False
+    if daemon_running and image_built:
+        return []
+    severity = "blocking" if blocking else "warning"
+    if blocking:
+        if not daemon_running:
+            message = f"{benchmark_name} needs Docker running (start Docker Desktop first)."
+        else:
+            message = f"{benchmark_name} needs Docker image (click Build Docker Image)."
+    else:
+        missing = "Docker running" if not daemon_running else "Docker image"
+        message = (
+            f"{benchmark_name} coding questions need {missing} "
+            f"({'start Docker Desktop' if not daemon_running else 'click Build Docker Image'}) — "
+            "they will be skipped without it, other categories run normally."
+        )
+    return [{
+        "benchmark": benchmark_name,
+        "kind": "runtime",
+        "severity": severity,
+        "message": message,
+        "action": "download_runtime",
+    }]
 
 
 def _scan_datasets() -> pd.DataFrame:
@@ -723,7 +812,7 @@ def _scan_datasets() -> pd.DataFrame:
             "Installed": "✅" if found else "❌",
             "Samples": sample_count if found else "—",
             "Category": meta.get("category", "—"),
-            "Docker": "🐳" if meta.get("docker") else "",
+            "Docker": "🐳" if meta.get("docker") else ("◐" if meta.get("docker_partial") else ""),
             "Short": meta.get("short", ""),
         })
     result = pd.DataFrame(rows)
@@ -1444,9 +1533,12 @@ def halt_run(run_id: int) -> str:
 def load_history(offset: int = 0, limit: int = 0) -> tuple[pd.DataFrame, int]:
     """Load run history with aggregated statistics per run.
 
-    Returns a DataFrame with columns: Run ID, Model, Benchmark, Status, Accuracy,
-    Avg TPS, Avg TTFT, Tokens, Duration, Notes, Date. Supports pagination via
-    offset/limit parameters.
+    Returns a DataFrame with columns: Run ID, Model, Benchmark, Status, Progress,
+    Correct, Total, Accuracy, Needles (+Raw), Avg TPS, Avg TTFT, Avg Prompt TPS,
+    Avg Tokens, Total Tokens, Thinking Tokens, Response Tokens, Context Length
+    (+Raw, K), Temperature, Max Tokens, System Prompt, Quick Test,
+    Repetition Detection Off, API URL, Duration, Batch, Notes, Created.
+    Supports pagination via offset/limit parameters.
 
     Args:
         offset: Number of runs to skip (for pagination).
@@ -1556,9 +1648,17 @@ def load_history(offset: int = 0, limit: int = 0) -> tuple[pd.DataFrame, int]:
                 "Avg Prompt TPS": stats["avg_prompt_tps"],
                 "Avg Tokens": avg_tokens,
                 "Total Tokens": total_tk,
+                "Thinking Tokens": stats.get("think_tk", 0),
+                "Response Tokens": stats.get("resp_tk", 0),
                 "Context Length": ctx_str,
                 "Context Length Raw": ctx_len_val if ctx_len_val is not None else "",
                 "Context K": ctx_k,
+                "Temperature": params_dict.get("temperature", ""),
+                "Max Tokens": params_dict.get("max_completion_tokens", params_dict.get("max_tokens", "")),
+                "System Prompt": params_dict.get("system_prompt") or "",
+                "Quick Test": params_dict.get("quick_test", ""),
+                "Repetition Detection Off": params_dict.get("disable_repetition_detection", ""),
+                "API URL": params_dict.get("api_url", ""),
                 "Duration": duration_str,
                 "Batch": r.batch_id or "",
                 "Notes": r.notes or "",
@@ -1732,13 +1832,192 @@ def load_batch_summary(batch_id_str: str) -> tuple[pd.DataFrame, pd.DataFrame, p
     return summary_df, chart_df, latency_df
 
 
+CARD_VERSION = "2.0"
+
+
+def _fmt_ctx_k(n) -> str:
+    """Format a context length as '262k' (rounded thousands)."""
+    try:
+        return f"{int(round(int(n) / 1000))}k"
+    except Exception:
+        return "?"
+
+
+async def _query_card_model_info(client, model_id: str) -> tuple[dict, dict]:
+    """Fetch /api/v0 metadata + /api/v1 native entry for a model id."""
+    v0: dict = {}
+    v1entry: dict = {}
+    try:
+        meta = await client.get_models_metadata()
+        if isinstance(meta, dict):
+            v0 = meta.get(model_id, {}) or {}
+    except Exception as e:
+        logger.debug(f"card v0 metadata failed: {e}")
+    try:
+        base = client.base_url.rsplit("/v1", 1)[0] if "/v1" in client.base_url else client.base_url
+        resp = await client._get_client().get(f"{base}/api/v1/models", timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            entries = data.get("models", data.get("data", []))
+            for e in entries:
+                if isinstance(e, dict) and (e.get("key") == model_id or e.get("id") == model_id):
+                    v1entry = e
+                    break
+    except Exception as e:
+        logger.debug(f"card v1 metadata failed: {e}")
+    return v0, v1entry
+
+
+def build_trusted_card(run_id: int) -> dict:
+    """Build a copy-paste Trusted Card block for a single run.
+
+    Model specs are queried live from LM Studio (best effort — falls back
+    to '?' when offline); score/timing come from stored results; hardware
+    is this machine's current telemetry + OS string.
+    """
+    with get_db() as db:
+        run = db.query(Run).filter(Run.id == run_id).first()
+        if not run:
+            raise ValueError(f"Run {run_id} not found")
+        stats = _compute_run_stats_sql(db, run_id)
+        params = run.get_parameters()
+        api_url = params.get("api_url") or "http://127.0.0.1:1234/v1"
+        api_key = params.get("api_key") or ""
+        model_id = run.model_name
+        benchmark = run.benchmark_name or "?"
+        date_str = run.created_at.strftime("%Y-%m-%d") if run.created_at else "?"
+        acc = stats.get("accuracy", 0.0)
+        tps = stats.get("avg_tps", 0.0)
+        prompt_tps = stats.get("avg_prompt_tps", 0.0)
+        correct = stats.get("correct", 0)
+        total = stats.get("total", 0)
+        status = run.status or ""
+        qt = params.get("quick_test")
+        quick_test = bool(qt) if qt is not None else (run.total_samples or 0) <= 10
+        # Precise per-sample token/TTFT means (unrounded — _compute_batch_stats_sql rounds ttft to 1dp)
+        rows = db.query(Result.thinking_tokens, Result.response_tokens, Result.ttft).filter(Result.run_id == run_id).all()
+        n = len(rows) or 1
+        think_sum = sum((r[0] or 0) for r in rows)
+        resp_sum = sum((r[1] or 0) for r in rows)
+        ttfts = [r[2] for r in rows if r[2]]
+        avg_tok = round((think_sum + resp_sum) / n, 1)
+        avg_ttft = round(sum(ttfts) / len(ttfts), 3) if ttfts else 0.0
+
+    # Live model specs (best effort)
+    display_name, publisher, arch = model_id, "?", "?"
+    quant, size_gb, max_ctx, loaded_ctx = "?", "?", None, None
+    v0, v1e = {}, None
+    try:
+        client = _make_client(api_url, api_key)
+
+        async def _gather():
+            try:
+                return await _query_card_model_info(client, model_id)
+            finally:
+                await client.aclose()
+
+        v0, v1e = _run_async(_gather())
+        if v1e:
+            display_name = v1e.get("display_name") or model_id
+            publisher = v1e.get("publisher") or v0.get("publisher", "?") or "?"
+            arch = v1e.get("architecture") or v0.get("arch", "?") or "?"
+            q = v1e.get("quantization") or {}
+            quant = q.get("name") or v0.get("quantization", "?") or "?"
+            sb = v1e.get("size_bytes")
+            if sb:
+                try:
+                    size_gb = f"{float(sb) / (1024 ** 3):.2f}"
+                except Exception:
+                    size_gb = "?"
+            max_ctx = v1e.get("max_context_length") or v0.get("max_context_length")
+            for inst in v1e.get("loaded_instances", []) or []:
+                cfg = (inst or {}).get("config", {}) or {}
+                if cfg.get("context_length"):
+                    loaded_ctx = cfg["context_length"]
+                    break
+        elif v0:
+            publisher = v0.get("publisher", "?") or "?"
+            arch = v0.get("arch", "?") or "?"
+            quant = v0.get("quantization", "?") or "?"
+            max_ctx = v0.get("max_context_length")
+    except Exception as e:
+        logger.debug(f"card model lookup failed: {e}")
+    if loaded_ctx is None:
+        loaded_ctx = v0.get("loaded_context_length") or max_ctx
+
+    # Hardware (current machine)
+    try:
+        m = get_system_metrics()
+    except Exception:
+        m = {}
+    gpu = (m.get("gpu_name") or "CPU").strip()
+    try:
+        vram_gb = int(round(float(m.get("vram_total_mb", 0)) / 1024)) if m.get("vram_total_mb") else 0
+    except Exception:
+        vram_gb = 0
+    try:
+        ram_gb = int(round(float(m.get("ram_total_gb", 0)))) if m.get("ram_total_gb") else 0
+    except Exception:
+        ram_gb = 0
+    gpu_part = f"{gpu} {vram_gb}GB" if vram_gb else gpu
+    hw_str = f"{gpu_part} | {ram_gb}GB RAM"
+    acc_str = f"{acc:g}"
+    tps_str = f"{tps:g}"
+    tok_total = think_sum + resp_sum
+    think_pct = round(think_sum * 100 / tok_total) if tok_total else 0
+    resp_pct = 100 - think_pct if tok_total else 0
+    flags = ""
+    if quick_test:
+        flags += " [quick-test]"
+    if status and status not in ("COMPLETED",):
+        flags += f" [{status}]"
+    text = (
+        f"BenchMax Trusted Card v{CARD_VERSION} | {date_str}\n"
+        f"Model: {display_name} ({publisher}/{model_id})\n"
+        f"Config: {arch} | {quant} | {size_gb} GB\n"
+        f"Context: {_fmt_ctx_k(max_ctx)} max / {_fmt_ctx_k(loaded_ctx)} loaded\n"
+        f"Hardware: {hw_str}\n"
+        f"Benchmark: Run #{run_id} {benchmark} \u2014 {acc_str}% ({correct}/{total}, {tps_str} tps){flags}\n"
+        f"Tokens: {avg_tok} avg (think {think_pct}% \u00b7 resp {resp_pct}%) | TTFT avg {avg_ttft:.3f}s | Prompt {f'{prompt_tps:g} t/s' if prompt_tps else 'n/a'}"
+    )
+    return {
+        "run_id": run_id,
+        "text": text,
+        "display_name": display_name,
+        "publisher": publisher,
+        "model_id": model_id,
+        "arch": arch,
+        "quant": quant,
+        "size_gb": size_gb,
+        "max_context": max_ctx,
+        "loaded_context": loaded_ctx,
+        "hardware": hw_str,
+        "date": date_str,
+        "benchmark": benchmark,
+        "accuracy": acc,
+        "correct": correct,
+        "total": total,
+        "status": status,
+        "quick_test": quick_test,
+        "avg_tps": tps,
+        "avg_prompt_tps": prompt_tps,
+        "avg_tokens": avg_tok,
+        "think_pct": think_pct,
+        "resp_pct": resp_pct,
+        "avg_ttft": avg_ttft,
+    }
+
+
 
 def load_leaderboard() -> pd.DataFrame:
     """Load the local leaderboard (completed runs with aggregated metrics).
 
     Returns:
-        DataFrame with columns: run_id, model_name, benchmark, accuracy, avg_tps,
-        avg_ttft, total_tokens, samples, date, notes.
+        DataFrame with columns: Run ID, Model, Benchmark, Accuracy, Needles,
+        Avg TPS, Avg TTFT, Avg Prompt TPS, Passed, Correct, Total, Tokens,
+        Thinking Tokens, Response Tokens, Temperature, Max Tokens,
+        System Prompt, API URL, Context Length (+Raw, K), Date, Notes,
+        status, QuickTest.
     """
     with get_db() as db:
         runs = db.query(Run).filter(
@@ -1818,11 +2097,20 @@ def load_leaderboard() -> pd.DataFrame:
                 "Avg TTFT": avg_ttft,
                 "Avg Prompt TPS": avg_prompt_tps,
                 "Passed": f"{ok}/{n}",
+                "Correct": ok,
+                "Total": n,
                 "Tokens": total_tk,
+                "Thinking Tokens": stats.get("think_tk", 0),
+                "Response Tokens": stats.get("resp_tk", 0),
+                "Temperature": params.get("temperature", ""),
+                "Max Tokens": params.get("max_completion_tokens", params.get("max_tokens", "")),
+                "System Prompt": params.get("system_prompt") or "",
+                "API URL": params.get("api_url", ""),
                 "Context Length": ctx_str,
                 "Context Length Raw": ctx_len_val if ctx_len_val is not None else "",
                 "Context K": ctx_k,
                 "Date": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
+                "Notes": r.notes or "",
                 "status": r.status,
                 "QuickTest": quick_test,
             })
@@ -1849,6 +2137,35 @@ def delete_leaderboard_entry(run_id_str: str) -> tuple[pd.DataFrame, str]:
             return load_leaderboard(), f"Run {run_id} deleted."
         except Exception as e:
             logger.error(f"delete_leaderboard_entry failed: {e}", exc_info=True)
+            return pd.DataFrame(), str(e)
+
+
+def delete_runs(run_ids_csv: str) -> tuple[pd.DataFrame, str]:
+    """Delete multiple runs by comma-separated IDs in a single transaction.
+
+    Args:
+        run_ids_csv: Comma-separated run IDs (e.g. "1,2,3").
+
+    Returns:
+        Tuple of (updated_leaderboard_df, status_message).
+    """
+    ids = [int(x.strip()) for x in run_ids_csv.split(",") if x.strip().isdigit()]
+    if not ids:
+        return load_leaderboard(), "No valid run IDs provided."
+    with get_db() as db:
+        try:
+            runs = db.query(Run).filter(Run.id.in_(ids)).all()
+            found = sorted(r.id for r in runs)
+            for r in runs:
+                db.delete(r)
+            db.commit()
+            missing = [i for i in ids if i not in set(found)]
+            msg = f"Deleted {len(found)} run(s): {found}."
+            if missing:
+                msg += f" Not found: {missing}."
+            return load_leaderboard(), msg
+        except Exception as e:
+            logger.error(f"delete_runs failed: {e}", exc_info=True)
             return pd.DataFrame(), str(e)
 
 
@@ -1912,20 +2229,29 @@ def load_cross_comparison(run_ids_csv: str) -> tuple[pd.DataFrame, pd.DataFrame,
             label = f"#{run.id} {run.benchmark_name}"
             acc_rows.append({
                 "Run": label,
+                "Model": run.model_name,
+                "Benchmark": run.benchmark_name,
+                "Status": run.status,
                 "Accuracy": stats["accuracy"],
                 "Correct": ok,
                 "Total": n,
             })
             lat_rows.append({
                 "Run": label,
+                "Model": run.model_name,
+                "Benchmark": run.benchmark_name,
                 "Avg TPS": stats["avg_tps"],
                 "Avg TTFT (s)": stats["avg_ttft"],
+                "Avg Prompt TPS (t/s)": stats["avg_prompt_tps"],
             })
             tok_rows.append({
                 "Run": label,
+                "Model": run.model_name,
+                "Benchmark": run.benchmark_name,
                 "Thinking": stats["think_tk"],
                 "Response": stats["resp_tk"],
                 "Total": total_tk,
+                "Avg Tokens/Sample": stats["avg_tokens"],
             })
         return (
             pd.DataFrame(acc_rows) if acc_rows else pd.DataFrame(),
@@ -1955,14 +2281,17 @@ def _export_dataframe(df: pd.DataFrame, prefix: str, fmt: str) -> tuple[str | No
 
 
 def export_results(run_id_str: str, format_type: str) -> tuple[str | None, str]:
-    """Exports a single run's results as CSV or JSON. Includes per-sample correctness, timing, tokens, and errors."""
+    """Exports a single run's results as CSV or JSON. One row per sample with
+    full prompt/response text, timing, tokens, errors, benchmark extras, plus
+    run-level columns (model, benchmark, status, temperature, max tokens,
+    system prompt, quick-test flag, API URL, batch)."""
     with get_db() as db:
         run_id = int(run_id_str)
         run = db.query(Run).filter(Run.id == run_id).first()
         if not run:
             return None, "Run not found."
         results = db.query(Result).filter(Result.run_id == run_id).order_by(Result.id).all()
-        rows = [_result_to_export_dict(r) for r in results]
+        rows = [_result_to_export_dict(r, run) for r in results]
         if not rows:
             return None, "No results to export."
         df = pd.DataFrame(rows)
@@ -1970,15 +2299,18 @@ def export_results(run_id_str: str, format_type: str) -> tuple[str | None, str]:
 
 
 def export_batch_results(batch_id: str, format_type: str) -> tuple[str | None, str]:
-    """Exports all results across a batch as CSV or JSON. Same fields as export_results but aggregated by run within the batch."""
+    """Exports all results across a batch as CSV or JSON. Same per-sample detail
+    as export_results (full prompt/response text + run-level columns),
+    stacked across every run in the batch."""
     with get_db() as db:
         runs = db.query(Run).filter(Run.batch_id == batch_id).order_by(Run.id).all()
         if not runs:
             return None, "Batch not found."
+        run_by_id = {r.id: r for r in runs}
         results = db.query(Result).filter(
             Result.run_id.in_([r.id for r in runs])
         ).order_by(Result.run_id, Result.id).all()
-        rows = [_result_to_export_dict(r) for r in results]
+        rows = [_result_to_export_dict(r, run_by_id.get(r.run_id)) for r in results]
         if not rows:
             return None, "No results to export."
         df = pd.DataFrame(rows)
@@ -1989,6 +2321,22 @@ def export_all_history(format_type: str = "CSV") -> tuple[str | None, str]:
     """Exports all completed/failed runs as CSV or JSON via load_history(). Includes per-run summary metrics."""
     df, _ = load_history()
     return _export_dataframe(df, "all_history", format_type)
+
+
+def export_selected_runs(run_ids_csv: str, format_type: str = "CSV") -> tuple[str | None, str]:
+    """Exports per-run summaries for the given comma-separated run IDs (same columns as history export)."""
+    wanted = [int(x) for x in (run_ids_csv or "").split(",") if x.strip().isdigit()]
+    if not wanted:
+        return None, "No run IDs provided."
+    df, _ = load_history()
+    if df.empty:
+        return None, "No history to export."
+    sel = df[df["Run ID"].isin(wanted)].copy()
+    if sel.empty:
+        return None, "No matching runs found."
+    sel["__ord"] = sel["Run ID"].apply(lambda v: wanted.index(v) if v in wanted else len(wanted))
+    sel = sel.sort_values("__ord").drop(columns="__ord")
+    return _export_dataframe(sel, "selected_runs", format_type)
 
 
 def export_leaderboard(format_type: str = "CSV") -> tuple[str | None, str]:
@@ -2009,7 +2357,10 @@ def export_comparison(run_ids_csv: str, format_type: str = "CSV") -> tuple[str |
 
 
 def export_run_markdown(run_id_str: str) -> tuple[str | None, str]:
-    """Generates a Markdown report for a single run."""
+    """Generates a detailed Markdown report for a single run: summary stats,
+    full configuration (temperature, max tokens, system prompt, flags, API URL,
+    context, batch), a compact table of every sample, and the complete
+    prompt + model response + error for every failed sample."""
     with get_db() as db:
         run_id = int(run_id_str)
         run = db.query(Run).filter(Run.id == run_id).first()
@@ -2020,6 +2371,7 @@ def export_run_markdown(run_id_str: str) -> tuple[str | None, str]:
         n = stats["total"]
         ok = stats["correct"]
         accuracy = stats["accuracy"]
+        cfg = _run_params_for_export(run)
 
         duration_str = "—"
         if run.status in ("COMPLETED", "FAILED", "HALTED") and run.updated_at and run.created_at:
@@ -2053,18 +2405,64 @@ def export_run_markdown(run_id_str: str) -> tuple[str | None, str]:
             f"| Run ID | #{run.id} |",
             f"| Date | {run.created_at.strftime('%Y-%m-%d %H:%M') if run.created_at else '—'} |",
             "",
+            "## Configuration",
+            "",
+            "| Setting | Value |",
+            "|---------|-------|",
+            f"| Temperature | {cfg['temperature'] if cfg['temperature'] != '' else 'default'} |",
+            f"| Max Tokens | {cfg['max_tokens'] if cfg['max_tokens'] != '' else 'default'} |",
+            f"| System Prompt | {cfg['system_prompt'] or '—'} |",
+            f"| Quick Test | {cfg['quick_test']} |",
+            f"| Repetition Detection Off | {cfg['repetition_detection_off']} |",
+            f"| Context Length | {cfg['context_length'] if cfg['context_length'] != '' else '—'} |",
+            f"| API URL | `{cfg['api_url'] or '—'}` |",
+            f"| Batch | `{cfg['batch_id'] or '—'}` |",
+            "",
         ]
 
+        lines.append("## All Samples")
+        lines.append("")
+        lines.append("| Task | Correct | TPS | TTFT (s) | Think | Resp | Error |")
+        lines.append("|------|---------|-----|----------|-------|------|-------|")
+        for r in results:
+            err = (r.error_message or "").replace("|", "\\|").replace("\n", " ")[:120]
+            mark = "PASS" if r.correct else "FAIL"
+            lines.append(
+                f"| {r.task_id or 'unknown'} | {mark} | {r.tps or 0} | "
+                f"{r.ttft or 0} | {r.thinking_tokens or 0} | "
+                f"{r.response_tokens or 0} | {err} |"
+            )
+        lines.append("")
+
         if failed:
-            lines.append(f"## Failed Samples ({len(failed)})")
+            lines.append(f"## Failed Samples — Full Detail ({len(failed)})")
             lines.append("")
-            for r in failed[:20]:
+            for r in failed:
                 task = r.task_id or "unknown"
-                err = (r.error_message or "unknown error")[:120]
-                lines.append(f"- **{task}**: {err}")
-            if len(failed) > 20:
-                lines.append(f"- ... and {len(failed) - 20} more")
-            lines.append("")
+                lines.append(f"### {task}")
+                lines.append("")
+                if r.error_message:
+                    lines.append(f"**Error:** {r.error_message}")
+                    lines.append("")
+                lines.append("**Prompt:**")
+                lines.append("")
+                lines.append("```")
+                lines.append(r.prompt or "")
+                lines.append("```")
+                lines.append("")
+                lines.append("**Model Response:**")
+                lines.append("")
+                lines.append("```")
+                lines.append(r.raw_response or "")
+                lines.append("```")
+                lines.append("")
+                if r.extracted_code:
+                    lines.append("**Extracted Code:**")
+                    lines.append("")
+                    lines.append("```")
+                    lines.append(r.extracted_code)
+                    lines.append("```")
+                    lines.append("")
 
         if errors and len(errors) != len(failed):
             err_only = [r for r in errors if r.correct]
@@ -2093,7 +2491,9 @@ def export_run_markdown(run_id_str: str) -> tuple[str | None, str]:
 
 
 def export_all_history_markdown() -> tuple[str | None, str]:
-    """Generates a Markdown summary table of all runs."""
+    """Generates a detailed Markdown report of all runs: a full summary table
+    plus a per-run section with stats, configuration, notes, and failed-sample
+    errors for every run in history."""
     df, _ = load_history()
     if df.empty:
         return None, "No history to export."
@@ -2105,8 +2505,8 @@ def export_all_history_markdown() -> tuple[str | None, str]:
         "",
         f"**{len(df)} runs total**",
         "",
-        "| Run ID | Model | Benchmark | Status | Accuracy | Avg TPS | Avg TTFT | Tokens | Date |",
-        "|--------|-------|-----------|--------|----------|---------|----------|--------|------|",
+        "| Run ID | Model | Benchmark | Status | Correct | Total | Accuracy | Avg TPS | Avg TTFT | Avg Prompt TPS | Total Tokens | Think | Resp | Duration | Date | Notes |",
+        "|--------|-------|-----------|--------|---------|-------|----------|---------|----------|----------------|--------------|-------|------|----------|------|-------|",
     ]
 
     for _, row in df.iterrows():
@@ -2114,16 +2514,72 @@ def export_all_history_markdown() -> tuple[str | None, str]:
         model = row.get("Model", "")
         bench = row.get("Benchmark", "")
         status = row.get("Status", "")
+        correct = row.get("Correct", "")
+        total = row.get("Total", "")
         acc = row.get("Accuracy", "")
         tps = row.get("Avg TPS", "")
         ttft = row.get("Avg TTFT", "")
+        prompt_tps = row.get("Avg Prompt TPS", "")
         tokens = row.get("Total Tokens", "")
+        think = row.get("Thinking Tokens", "")
+        resp = row.get("Response Tokens", "")
+        duration = row.get("Duration", "")
         date = row.get("Created", "")
-        notes = row.get("Notes", "")
-        note_marker = " *" + notes + "*" if notes else ""
-        lines.append(f"| {rid} | {model} | {bench} | {status} | {acc} | {tps} | {ttft} | {tokens} | {date} |{note_marker}")
+        notes = str(row.get("Notes", "")).replace("|", "\\|").replace("\n", " ")
+        lines.append(
+            f"| {rid} | {model} | {bench} | {status} | {correct} | {total} | "
+            f"{acc} | {tps} | {ttft} | {prompt_tps} | {tokens} | {think} | "
+            f"{resp} | {duration} | {date} | {notes} |"
+        )
 
-    lines.extend(["", "---", "*Generated by BenchMax*"])
+    lines.append("")
+    with get_db() as db:
+        for _, row in df.iterrows():
+            try:
+                rid = int(row.get("Run ID"))
+            except (TypeError, ValueError):
+                continue
+            run = db.query(Run).filter(Run.id == rid).first()
+            if not run:
+                continue
+            cfg = _run_params_for_export(run)
+            results = db.query(Result).filter(Result.run_id == rid).order_by(Result.id).all()
+            stats = _compute_result_stats(results)
+            failed = [r for r in results if not r.correct]
+            lines.append(f"## Run #{rid} — {run.model_name} / {run.benchmark_name}")
+            lines.append("")
+            lines.append(
+                f"Status `{run.status}` · Accuracy **{stats['accuracy']}%** "
+                f"({stats['correct']}/{stats['total']}) · Avg TPS {stats['avg_tps']} · "
+                f"Avg TTFT {stats['avg_ttft']}s · Avg Prompt TPS {stats['avg_prompt_tps']} · "
+                f"Tokens {stats['total_tk']:,} (think {stats['think_tk']:,}, "
+                f"resp {stats['resp_tk']:,})"
+            )
+            lines.append("")
+            lines.append(
+                f"Temperature `{cfg['temperature'] if cfg['temperature'] != '' else 'default'}` · "
+                f"Max tokens `{cfg['max_tokens'] if cfg['max_tokens'] != '' else 'default'}` · "
+                f"Quick test `{cfg['quick_test']}` · "
+                f"Repetition detection off `{cfg['repetition_detection_off']}` · "
+                f"Context `{cfg['context_length'] if cfg['context_length'] != '' else '—'}` · "
+                f"Batch `{cfg['batch_id'] or '—'}`"
+            )
+            lines.append("")
+            if cfg["system_prompt"]:
+                lines.append(f"System prompt: {cfg['system_prompt']}")
+                lines.append("")
+            if run.notes:
+                lines.append(f"Notes: {run.notes}")
+                lines.append("")
+            if failed:
+                lines.append(f"Failed samples ({len(failed)}):")
+                lines.append("")
+                for r in failed:
+                    err = (r.error_message or "wrong answer").replace("\n", " ")[:200]
+                    lines.append(f"- **{r.task_id or 'unknown'}**: {err}")
+                lines.append("")
+
+    lines.extend(["---", "*Generated by BenchMax*"])
 
     md_content = "\n".join(lines)
     os.makedirs(ROOT / "records", exist_ok=True)

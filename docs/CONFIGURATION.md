@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- **Python 3.11+** (for source builds) — or use the standalone .exe (`.\build.bat` → `dist\BenchMax.exe`, no Python needed)
+- **Python 3.11+** (for source builds) — or use the standalone .exe (`.\build.bat` → `dist\BenchMax.exe`, no Python needed; release tags also auto-build it via GitHub Actions, see **GitHub Releases**)
 - **Node.js 18+** — for the one-time frontend build only (`cd frontend && npm install && npm run build`)
-- **Docker Desktop** — only for the 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) via the `benchmax-sandbox` image (Python 3.11, Node 20, GCC, Java 17, Go 1.22, Rust 1.75). Build it from the Connection tab (**Build Docker Image**) or `py cli.py build-docker`. All other benchmarks run host-local with no Docker.
+- **Docker Desktop** — only for the 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) via the `benchmax-sandbox` image (Python 3.11, Node 20, GCC, Java 17, Go 1.22, Rust 1.75), plus LiveBench's coding questions. Build it from the Connection tab (**Build Docker Image**) or `py cli.py build-docker`. Everything else runs host-local with no Docker — without it, LiveBench coding questions are skipped (other categories unaffected).
 - **An API endpoint** — LM Studio (`localhost:1234`), Ollama (`localhost:11434`), OpenAI, Groq, etc. 8 provider presets ship in the Connection tab.
 
 Without the frontend build, the API endpoints work but the browser UI will not load.

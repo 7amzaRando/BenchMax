@@ -62,6 +62,7 @@ class TestMMLUProBenchmark:
 
 class TestHumanEvalBenchmark:
     def test_evaluate_sample_structure(self):
+        from unittest.mock import patch
         from backend.benchmarks.humaneval import HumanEvalBenchmark
         db = MagicMock()
         client = MagicMock()
@@ -77,10 +78,16 @@ class TestHumanEvalBenchmark:
             "canonical_solution": "    for i in range(len(numbers)):\n        for j in range(i+1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
             "test": "def check(has_close_elements):\n    assert has_close_elements([1.0, 2.0, 3.0], 0.5) == False",
         }
-        result = _run_async(bench.evaluate_sample(sample, {"temperature": 0.0, "max_completion_tokens": 512}, "test"))
-        assert "correct" in result
-        assert "elapsed_time" in result
-        assert "tps" in result
+        # Hermetic: sandbox execution is covered by Docker-gated
+        # test_safe_executor.py; here we verify grading wiring only.
+        with patch("backend.benchmarks.humaneval.check_correctness_humaneval",
+                   return_value={"passed": True, "result": "passed"}):
+            result = _run_async(bench.evaluate_sample(sample, {"temperature": 0.0, "max_completion_tokens": 512}, "test"))
+        assert isinstance(result["correct"], bool)
+        assert result["correct"] is True
+        assert isinstance(result["elapsed_time"], (int, float))
+        assert isinstance(result["tps"], (int, float))
+        assert result["prompt"] == sample["prompt"]
 
 
 # ── AIME (exact answer extraction) ────────────────────────────────
@@ -191,4 +198,5 @@ class TestUncensorBenchBenchmark:
             "expected_refusal_keywords": ["I cannot", "I'm sorry", "I can't"],
         }
         result = _run_async(bench.evaluate_sample(sample, {"temperature": 0.0, "max_completion_tokens": 200}, "test"))
-        assert "correct" in result
+        assert isinstance(result["correct"], bool)
+        assert result["correct"] is True  # refusal keywords present -> uncensored=False -> correct refusal

@@ -44,7 +44,9 @@ def _extract_code(text: str) -> str:
         if not s:
             continue
         if any(s.startswith(kw) for kw in ['def ', 'class ', 'import ', 'from ',
-                                            'for ', 'while ', 'if ', 'return ']):
+                                            'for ', 'while ', 'if ', 'return ',
+                                            'with ', 'try', 'except ', 'elif ',
+                                            'print(', 'assert ', 'raise ']):
             code_lines.append(line)
         elif code_lines and len(code_lines) > 1:
             return '\n'.join(code_lines).strip()
@@ -74,8 +76,8 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
         gen = await self._generate(prompt, params, model_name)
 
-        raw_response = gen["raw_response"]
-        answer_content = gen["answer_content"]
+        raw_response = gen.get("raw_response", "")
+        answer_content = gen.get("answer_content", "") or ""
 
         extracted_code = _extract_code(answer_content)
         if not extracted_code:
@@ -99,9 +101,11 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
             )
             correct = result["passed"]
             error_msg = None if result["passed"] else result["result"]
+            if error_msg:
+                error_msg = error_msg[:1500]
         except Exception as e:
             return self._result(prompt, gen, extracted_code=extracted_code,
-                                error_message=f"Execution error: {str(e)}",
+                                error_message=f"Execution error: {str(e)[:500]}",
                                 scoring_details={"category": cat, "platform": sample.get("platform", ""), "difficulty": cat})
 
         return self._result(prompt, gen, extracted_code=extracted_code,

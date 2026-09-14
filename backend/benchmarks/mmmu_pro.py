@@ -1,4 +1,3 @@
-import re
 import string as string_module
 import base64
 import logging
@@ -6,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark
+from backend.benchmarks.scoring import score_mcq
 
 logger = logging.getLogger(__name__)
 
@@ -59,17 +59,31 @@ class MMMUProBenchmark(BaseBenchmark):
         gen = await self._generate(prompt, params, model_name, images=images if images else None)
 
         ac = gen.get("answer_content", "").strip()
-        answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
-        pattern = r'\b([' + ''.join(letters) + r'])\b'
-        extracted = re.findall(pattern, answer_content)
-        answer = extracted[-1] if extracted else None
-        correct = answer == sample.get("answer", "")
+        answer_content = (ac if ac else gen.get("raw_response", "")).strip()
+        if not letters:
+            return self._result(
+                prompt, gen,
+                extracted_code=answer_content,
+                correct=False,
+                error_message="No options in sample",
+                scoring_details={"category": sample.get("subject", "unknown")},
+            )
+        universe = f"A-{letters[-1]}"
+        correct, err = score_mcq(answer_content, sample.get("answer", ""),
+                                 universe, single_answer=True)
 
         cat = sample.get("subject", "unknown")
+        details = {"category": cat}
+        if not images and sample.get("image_paths"):
+            # Text-only run (images missing/unreadable) — flag it so a fail
+            # reads as a data problem, not a model failure.
+            details["images_missing"] = True
+            logger.warning("MMMU-Pro %s: images missing, running text-only",
+                           sample.get("task_id", "unknown"))
         return self._result(
             prompt, gen,
             extracted_code=answer_content,
             correct=correct,
-            error_message=None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
-            scoring_details={"category": cat},
+            error_message=None if correct else err,
+            scoring_details=details,
         )

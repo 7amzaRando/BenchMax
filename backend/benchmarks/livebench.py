@@ -1,9 +1,10 @@
 import ast
+import json
 import re
 import logging
 from typing import Dict, Any, List, Optional
 
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 from backend.benchmarks.aime import extract_aime_answer
 from backend.benchmarks.ifeval_official import instructions_registry
 
@@ -22,6 +23,50 @@ def _extract_answer_numbers(text: str) -> Optional[List[int]]:
     nums = [int(x) for x in re.findall(r"\d+", text)]
     return nums or None
 
+
+def _split_list_answer(text: str) -> List[str]:
+    """Split a comma/newline-separated answer into normalized parts."""
+    cleaned = text.replace(" and ", ",")
+    return [p.strip().lower() for p in re.split(r"[,\n]+", cleaned) if p.strip()]
+
+
+def _extract_answer_parts(text: str) -> List[str]:
+    """Extract ordered answer parts from a list-style response.
+
+    Prefers the 'Answer:' line (first line after the marker); falls back to
+    the last non-empty line so free-form outputs still grade.
+    """
+    m = re.search(r"[Aa]nswer\s*:\s*(.+)", text)
+    if m:
+        first_line = m.group(1).split("\n")[0]
+        parts = _split_list_answer(first_line)
+        if parts:
+            return parts
+    lines = [ln.strip() for ln in text.strip().split("\n") if ln.strip()]
+    if lines:
+        return _split_list_answer(lines[-1])
+    return []
+
+
+def _extract_json_answer(text: str):
+    """Extract a JSON value from a data-analysis response (fence or Answer: or raw)."""
+    m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
+    if m:
+        try:
+            return json.loads(m.group(1))
+        except (json.JSONDecodeError, ValueError):
+            pass
+    m = re.search(r"[Aa]nswer\s*:\s*([\s\S]+)", text)
+    if m:
+        try:
+            return json.loads(m.group(1).strip())
+        except (json.JSONDecodeError, ValueError):
+            pass
+    try:
+        return json.loads(text.strip())
+    except (json.JSONDecodeError, ValueError):
+        return None
+
 class LiveBenchBenchmark(BaseBenchmark):
     """
     6-category meta-benchmark:
@@ -30,20 +75,30 @@ class LiveBenchBenchmark(BaseBenchmark):
     """
     def __init__(self, db, client, quick_test=False):
         super().__init__(db, client, quick_test)
+        self._docker_usable_cache: bool | None = None
+
+    def _docker_usable(self) -> bool:
+        """Probe once per run whether the Docker sandbox can grade code.
+
+        Result is cached on the instance — one `docker info` + image inspect
+        per run, not per coding sample. Any failure (daemon down, image not
+        built, docker package missing) means "unusable".
+        """
+        if self._docker_usable_cache is None:
+            try:
+                from backend.sandbox.docker_executor import _docker_available, _image_exists
+                self._docker_usable_cache = bool(_docker_available() and _image_exists())
+            except Exception:
+                self._docker_usable_cache = False
+        return self._docker_usable_cache
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        filename = "livebench_mini.json" if self.quick_test else "livebench_full.json"
-        self.dataset_path = resolve_data_file(__file__, filename)
-        if not self.dataset_path:
-            logger.warning("Full LiveBench dataset not found, falling back to mini dataset")
-            fallback = "livebench_mini.json"
-            self.dataset_path = resolve_data_file(__file__, fallback)
-        if not self.dataset_path:
-            raise FileNotFoundError(
-                "LiveBench dataset not found. "
-                "Run 'scripts/fetch_livebench.py' to download it."
-            )
-        return self._load_json_cached(self.dataset_path)
+        path = self._resolve_dataset(
+            "livebench_full.json", mini_name="livebench_mini.json",
+            fetch_hint="Run 'scripts/fetch_livebench.py' to download it.",
+        )
+        self.dataset_path = path
+        return self._load_json_cached(path)
 
     @staticmethod
     def _parse_question_list(question: Any) -> List[str]:
@@ -130,7 +185,36 @@ class LiveBenchBenchmark(BaseBenchmark):
             test_suite = sample.get("test", "") or ""
             entry_point = sample.get("entry_point", "") or "solution"
             prompt = code_prompt
-        # MCQ (language, data, reasoning) — regex letter extraction from options
+            if not self._docker_usable():
+                # Skip BEFORE generation: no LLM time/tokens wasted on a
+                # sample that cannot be graded without the Docker sandbox.
+                return self._result(
+                    prompt, {},
+                    extracted_code="",
+                    correct=False,
+                    error_message=(
+                        "Skipped: Docker sandbox unavailable (daemon not running or "
+                        "benchmax-sandbox image not built) — start Docker Desktop and "
+                        "build the image to grade coding questions."
+                    ),
+                    scoring_details={"category": "coding", "skipped": True,
+                                     "skip_reason": "docker_unavailable"},
+                )
+        # Ordered lists (reasoning zebra puzzles, language word lists) —
+        # the dataset ships comma-separated answers with no options, so ask
+        # for a comma-separated Answer: line and compare ordered parts.
+        elif category in ("reasoning", "language"):
+            prompt = (
+                f"{question_text}\n\nRespond with ONLY the comma-separated "
+                f"answer values on one line as: Answer: v1, v2, ..."
+            )
+        # Data analysis — JSON table output compared structurally.
+        elif category == "data_analysis":
+            prompt = (
+                f"{question_text}\n\nRespond with ONLY the result "
+                f"(a JSON table), no other text."
+            )
+        # MCQ fallback — regex letter extraction from options
         else:
             options = sample.get("options", [])
             prompt = f"{question_text}\n\nOptions:\n"
@@ -138,14 +222,7 @@ class LiveBenchBenchmark(BaseBenchmark):
                 prompt += f"  {letter}. {opt}\n"
             prompt += "\nAnswer with only the letter of the correct option."
 
-        gen = await self.client.generate_completion(
-            prompt=prompt,
-            system_prompt=params.get("system_prompt"),
-            temperature=params.get("temperature", 0.0),
-            max_completion_tokens=params.get("max_completion_tokens"),
-            stop_tokens=params.get("stop_tokens"),
-            model_name=model_name,
-        )
+        gen = await self._generate(prompt, params, model_name)
 
         answer_content = gen.get("answer_content", "").strip()
         raw_response = gen.get("raw_response", "")
@@ -226,13 +303,19 @@ class LiveBenchBenchmark(BaseBenchmark):
 
         elif category == "coding":
             response_text = answer_content or raw_response
+            thinking = gen.get("thinking_content", "")
             code_blocks = re.findall(r"```(?:python)?\s*(.*?)\s*```", response_text, re.DOTALL | re.IGNORECASE)
+            if not code_blocks and thinking:
+                code_blocks = re.findall(r"```(?:python)?\s*(.*?)\s*```", thinking, re.DOTALL | re.IGNORECASE)
             code = code_blocks[0].strip() if code_blocks else response_text.strip()
             extracted = code
             if not code:
                 error_message = "No code extracted from model response"
             elif not test_suite or not test_suite.strip():
-                error_message = "No test suite available for this sample"
+                error_message = (
+                    "No test suite bundled for this LiveBench coding sample "
+                    "(upstream hidden tests are not vendored)"
+                )
             else:
                 from backend.sandbox.safe_executor import check_correctness_humaneval
                 try:
@@ -245,9 +328,33 @@ class LiveBenchBenchmark(BaseBenchmark):
                     )
                     correct = result["passed"]
                     if not correct:
-                        error_message = result["result"]
+                        error_message = result["result"][:1500]
                 except Exception as e:
-                    error_message = f"Execution error: {e}"
+                    error_message = f"Execution error: {str(e)[:500]}"
+
+        elif category in ("reasoning", "language"):
+            expected_parts = _split_list_answer(str(sample.get("answer", "")))
+            actual_parts = _extract_answer_parts(answer_content or raw_response)
+            correct = bool(expected_parts) and actual_parts == expected_parts
+            if not correct:
+                error_message = f"Expected {expected_parts}, got {actual_parts}"
+            extracted = answer_content
+
+        elif category == "data_analysis":
+            try:
+                expected_json = json.loads(str(sample.get("answer", "")))
+            except (json.JSONDecodeError, ValueError):
+                expected_json = None
+            actual_json = _extract_json_answer(answer_content or raw_response)
+            if expected_json is None:
+                error_message = "No parseable expected JSON in sample"
+            elif actual_json is None:
+                error_message = "No parseable JSON found in response"
+            else:
+                correct = actual_json == expected_json
+                if not correct:
+                    error_message = "JSON output does not match expected table"
+            extracted = answer_content
 
         else:
             answer_upper = answer_content.upper()

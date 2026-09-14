@@ -4,9 +4,9 @@ import re
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
-from backend.benchmarks.base import BaseBenchmark, resolve_data_file
+from backend.benchmarks.base import BaseBenchmark
 from backend.lm_studio.client import LMStudioClient
-from backend.sandbox.bfcl_checker import ast_checker, Language, multi_turn_simplified_checker
+from backend.sandbox.bfcl_checker import ast_checker, multi_turn_simplified_checker
 
 logger = logging.getLogger(__name__)
 
@@ -73,15 +73,15 @@ class BFCLBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
     
     def load_dataset(self) -> List[Dict[str, Any]]:
-        if self.quick_test:
-            mini_path = resolve_data_file(__file__, "bfcl/bfcl_mini.json")
-            if mini_path:
-                return self._load_json_cached(mini_path)
-        full_path = resolve_data_file(__file__, "bfcl/bfcl_full.json")
-        if full_path:
-            return self._load_json_cached(full_path)
-        logger.info("No BFCL dataset found. Using bundled samples.")
-        return self._get_bundled_samples()
+        try:
+            path = self._resolve_dataset(
+                "bfcl/bfcl_full.json", mini_name="bfcl/bfcl_mini.json",
+                fetch_hint="Run 'scripts/fetch_bfcl.py' to download it.",
+            )
+            return self._load_json_cached(path)
+        except FileNotFoundError:
+            logger.info("No BFCL dataset found. Using bundled samples.")
+            return self._get_bundled_samples()
 
     def _get_bundled_samples(self) -> List[Dict[str, Any]]:
         """Return bundled BFCL samples for quick testing (5 samples covering key categories)"""
@@ -215,7 +215,7 @@ class BFCLBenchmark(BaseBenchmark):
         return await self._evaluate_single_turn(sample, params, model_name)
 
     async def _evaluate_single_turn(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
-        question = sample["question"]
+        question = sample.get("question", "")
         category = sample.get("category", "unknown")
         functions = sample.get("function", [])
         expected_answer = sample.get("answer", [])
@@ -234,7 +234,7 @@ class BFCLBenchmark(BaseBenchmark):
 
         logger.debug(f"RAW_GENERATION_DEBUG: {generation!r}")
 
-        raw_response = generation["raw_response"]
+        raw_response = generation.get("raw_response", "")
         answer_content = generation.get("answer_content", "") or ""
 
         extracted = (answer_content or raw_response).strip()
@@ -251,6 +251,7 @@ class BFCLBenchmark(BaseBenchmark):
         if category in ("irrelevance", "live_irrelevance") or not expected_answer:
             correct = len(actual_calls) == 0
             score_data = {
+                "category": category,
                 "ast_score": 1.0 if correct else 0.0,
                 "refusal_detected": len(actual_calls) > 0 if not expected_answer else False,
                 "error_message": None if correct else "Model called functions when it should abstain",
@@ -263,13 +264,14 @@ class BFCLBenchmark(BaseBenchmark):
                     func_description=functions,
                     model_output=official_model_out,
                     possible_answer=official_answer,
-                    language=Language.PYTHON,
+                    language="python",
                     test_category=category,
                     model_name=model_name,
                 )
                 correct = result_check["valid"]
                 err = "; ".join(result_check.get("error", [])) if not correct else None
                 score_data = {
+                    "category": category,
                     "ast_score": 1.0 if correct else 0.0,
                     "refusal_detected": False,
                     "error_message": err,
@@ -278,6 +280,7 @@ class BFCLBenchmark(BaseBenchmark):
                 logger.warning(f"Official AST checker failed for {task_id}, using fallback: {e}")
                 correct = False
                 score_data = {
+                    "category": category,
                     "ast_score": 0.0,
                     "refusal_detected": False,
                     "error_message": f"Checker error: {e}",
@@ -311,10 +314,11 @@ class BFCLBenchmark(BaseBenchmark):
         all_turns_output = []
         raw_responses = []
         total_elapsed = 0.0
-        total_tps = 0.0
-        total_ttft = 0.0
         total_thinking = 0
         total_response_tokens = 0
+        total_prompt_tokens = 0
+        first_ttft = 0.0
+        turn_details = []
         conversation_history = []
 
         for turn_idx, turn in enumerate(question_turns):
@@ -339,7 +343,7 @@ class BFCLBenchmark(BaseBenchmark):
                 model_name=model_name,
             )
 
-            raw_response = generation["raw_response"]
+            raw_response = generation.get("raw_response", "")
             raw_responses.append(raw_response)
             answer_content = generation.get("answer_content", "") or ""
 
@@ -356,10 +360,23 @@ class BFCLBenchmark(BaseBenchmark):
             conversation_history.append({"user": user_msg, "model_calls": turn_calls})
 
             total_elapsed += generation.get("elapsed_time", 0.0)
-            total_tps += generation.get("tps", 0.0)
-            total_ttft += generation.get("ttft", 0.0)
             total_thinking += generation.get("thinking_tokens", 0)
             total_response_tokens += generation.get("response_tokens", 0)
+            total_prompt_tokens += generation.get("prompt_tokens", 0)
+            if turn_idx == 0:
+                first_ttft = generation.get("ttft", 0.0)
+            turn_details.append({
+                "turn": turn_idx,
+                "role": "assistant",
+                "content": raw_response[:4000],
+                "tps": generation.get("tps", 0.0),
+                "ttft": generation.get("ttft", 0.0),
+                "thinking_tokens": generation.get("thinking_tokens", 0),
+                "response_tokens": generation.get("response_tokens", 0),
+                "prompt_tokens": generation.get("prompt_tokens", 0),
+                "elapsed_time": generation.get("elapsed_time", 0.0),
+                "tool_calls": turn_calls,
+            })
 
         result_check = multi_turn_simplified_checker(
             model_turns=all_turns_output,
@@ -373,10 +390,11 @@ class BFCLBenchmark(BaseBenchmark):
         synth_gen = {
             "raw_response": json.dumps(raw_responses),
             "elapsed_time": total_elapsed,
-            "tps": total_tps / max(len(question_turns), 1),
-            "ttft": total_ttft / max(len(question_turns), 1),
+            "tps": (total_response_tokens / total_elapsed) if total_elapsed > 0 else 0.0,
+            "ttft": first_ttft,
             "thinking_tokens": total_thinking,
             "response_tokens": total_response_tokens,
+            "prompt_tokens": total_prompt_tokens,
         }
         return self._result(
             json.dumps({"turns": question_turns, "system": system_prompt}),
@@ -385,9 +403,11 @@ class BFCLBenchmark(BaseBenchmark):
             correct=correct,
             error_message=result_check.get("error_message") if not correct else None,
             scoring_details={
+                "category": category,
                 "multi_turn": True,
                 "checker_result": result_check,
                 "per_turn_output": all_turns_output,
+                "turns": turn_details,
                 "categories": [category],
             },
         )
@@ -397,7 +417,7 @@ class BFCLBenchmark(BaseBenchmark):
         lines = ["You have access to the following functions. Use them if required - otherwise, respond with an empty list []."]
         
         for func in functions:
-            name = func["name"]
+            name = func.get("name", "unknown")
             desc = func.get("description", "")
             params = func.get("parameters", {})
             

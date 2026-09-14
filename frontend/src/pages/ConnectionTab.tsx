@@ -232,7 +232,7 @@ export default function ConnectionTab({ onConnect }: { onConnect?: () => void })
           <Card>
             <CardHeader>
               <CardTitle>Docker sandbox</CardTitle>
-              <CardDescription>Required for 5 code benchmarks: HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot. Image is <span className="font-mono">benchmax-sandbox</span>.</CardDescription>
+              <CardDescription>Required for 5 code benchmarks: HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot — plus LiveBench coding questions (skipped without it). Image is <span className="font-mono">benchmax-sandbox</span>.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
@@ -326,7 +326,7 @@ export default function ConnectionTab({ onConnect }: { onConnect?: () => void })
           ) : (
             <div className="rounded-lg border border-dashed p-8 text-center">
               <div className="text-sm font-medium">{datasetsLoading ? 'Scanning…' : 'No datasets scanned yet'}</div>
-              <div className="text-xs text-muted-foreground mt-1">Click <span className="font-mono">Scan</span> to check which of the 28 benchmark datasets are present in <span className="font-mono">data/</span>.</div>
+              <div className="text-xs text-muted-foreground mt-1">Click <span className="font-mono">Scan</span> to check which of the 30 benchmark datasets are present in <span className="font-mono">data/</span>.</div>
             </div>
           )}
         </CardContent>

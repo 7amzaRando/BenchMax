@@ -18,7 +18,9 @@ class TestCheckBenchmarkReadiness:
     def test_unknown_benchmark(self):
         from backend.operations import check_benchmark_readiness
         issues = check_benchmark_readiness("Nonexistent Benchmark")
-        assert isinstance(issues, list)
+        # Unknown names have no dataset/runtime entries, so no known
+        # blockers — rejection happens later at trigger time (ValueError).
+        assert issues == []
 
 
 class TestInstantiateBenchmark:
@@ -70,28 +72,41 @@ class TestBuildRunParams:
 
 class TestPollStructure:
     def test_poll_returns_expected_keys(self):
+        from unittest.mock import patch
         from backend.operations import poll
-        result = poll(active_run_id=None)
+        fake_metrics = {
+            "cpu_percent": 12.5, "ram_used_gb": 4.0, "ram_total_gb": 16.0,
+            "ram_percent": 25.0, "gpu_available": False, "gpu_name": "none",
+            "gpu_load": 0.0, "vram_total_mb": 0, "vram_used_mb": 0, "vram_percent": 0.0,
+        }
+        with patch("backend.operations.get_system_metrics", return_value=fake_metrics):
+            result = poll(active_run_id=None)
+        # operations.poll returns the FLAT internal dict (api_poll nests it
+        # into telemetry/run_progress/batch_progress for the REST response).
         assert isinstance(result, dict)
-        # Should have telemetry keys
-        assert "cpu_text" in result or "metrics" in result
+        for key in ("metrics", "prog_val", "status_md", "avg_tps",
+                    "avg_ttft", "accuracy", "batch_prog_val", "batch_done", "batch_total"):
+            assert key in result, key
+        assert result["metrics"]["cpu_percent"] == 12.5
 
 
 class TestLiveProgress:
-    def test_counter_roundtrip(self):
+    def test_counter_roundtrip(self, uuid_run_ids):
         from backend.benchmarks.base import (
             set_live_progress, get_live_progress, clear_live_progress)
-        assert get_live_progress(999999) is None
-        set_live_progress(999999, 7)
-        assert get_live_progress(999999) == 7
-        clear_live_progress(999999)
-        assert get_live_progress(999999) is None
+        rid = uuid_run_ids[0]
+        assert get_live_progress(rid) is None
+        set_live_progress(rid, 7)
+        assert get_live_progress(rid) == 7
+        clear_live_progress(rid)
+        assert get_live_progress(rid) is None
 
-    def test_run_progress_prefers_live_counter(self):
+    def test_run_progress_prefers_live_counter(self, uuid_run_ids):
         from backend.benchmarks.base import set_live_progress, clear_live_progress
         from backend.operations import _compute_run_progress
+        rid = uuid_run_ids[1]
         run = MagicMock()
-        run.id = 999998
+        run.id = rid
         run.benchmark_name = "HumanEval"
         run.status = "RUNNING"
         run.total_samples = 100
@@ -99,12 +114,12 @@ class TestLiveProgress:
         stats = {"avg_tps": 10.0, "avg_ttft": 0.5, "avg_prompt_tps": 20.0,
                  "accuracy": "50.0%", "think_tk": 10, "resp_tk": 10, "total_tk": 20}
         try:
-            set_live_progress(999998, 9)  # 4 more samples done since flush
+            set_live_progress(rid, 9)  # 4 more samples done since flush
             rp = _compute_run_progress(run, stats=stats)
             assert rp["prog_val"] == 0.09
             assert "(9/100)" in rp["status_md"]
         finally:
-            clear_live_progress(999998)
+            clear_live_progress(rid)
         rp = _compute_run_progress(run, stats=stats)
         assert rp["prog_val"] == 0.05
         assert "(5/100)" in rp["status_md"]

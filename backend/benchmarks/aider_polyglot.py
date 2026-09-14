@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -29,11 +30,25 @@ JARS_DIR = RUNTIMES_DIR / "jars" if RUNTIMES_EXISTS else None
 NODE_MODULES = RUNTIMES_DIR / "node_pkg" / "node_modules" if RUNTIMES_EXISTS else None
 
 
-def _java_test_class(src_name: str) -> str:
-    stem = Path(src_name).stem
+def _java_test_class(test_src_name: str) -> str:
+    """Derive the JUnit test class from the TEST file path (not source).
+
+    Passing the source path (e.g. Tree.java) yields a wrong class (TreeTest)
+    when the real test class differs (e.g. PovTest.java → PovTest).
+    """
+    stem = Path(test_src_name).stem
     if stem.endswith("Test"):
         return stem
     return stem.replace("Test", "") + "Test"
+
+
+def _cpp_test_rel(src_name: str, test_rel: str | None = None) -> str:
+    """Test file location, suffix-safe. Prefers the dataset test_path."""
+    if test_rel:
+        return test_rel
+    if src_name.endswith(".cpp"):
+        return src_name[:-4] + "_test.cpp"
+    return src_name + "_test.cpp"
 
 
 LANGUAGE_CONFIGS = {
@@ -52,6 +67,7 @@ LANGUAGE_CONFIGS = {
         "test_cmd": lambda src_name, tmpdir: [
             os.path.join(NODE_MODULES, ".bin", "jest.cmd"),
             "--no-coverage",
+            "--runInBand",
         ],
         "env": {"NODE_PATH": str(NODE_MODULES)},
     },
@@ -123,9 +139,9 @@ def _run_java_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
     }
 
 
-def _run_cpp_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
+def _run_cpp_test(src_name: str, tmpdir: str, test_rel: str | None = None) -> Dict[str, Any]:
     gxx = str(GCC_BIN / "g++.exe")
-    test_file = src_name.replace('.cpp', '_test.cpp')
+    test_file = _cpp_test_rel(src_name, test_rel)
     test_path = os.path.join(tmpdir, test_file)
     exe_path = os.path.join(tmpdir, "test.exe")
 
@@ -190,15 +206,19 @@ def _write_temp_workspace(sample: Dict[str, Any], edited_code: str, tmpdir: str)
         write_file(rel_path, content)
 
     if lang == "javascript":
-        write_file("babel.config.js",
-                   "module.exports = { presets: ['@babel/preset-env'] };\n")
-        write_file("package.json", json.dumps({
-            "name": "aider-polyglot-js",
-            "private": True,
-            "jest": {
-                "transform": {"^.+\\.jsx?$": "babel-jest"},
-            },
-        }))
+        # Only write generic toolchain files when the dataset doesn't ship
+        # its own (some samples pin a specific babel preset in extra_files).
+        if "babel.config.js" not in (extra_files or {}):
+            write_file("babel.config.js",
+                       "module.exports = { presets: ['@babel/preset-env'] };\n")
+        if "package.json" not in (extra_files or {}):
+            write_file("package.json", json.dumps({
+                "name": "aider-polyglot-js",
+                "private": True,
+                "jest": {
+                    "transform": {"^.+\\.jsx?$": "babel-jest"},
+                },
+            }))
 
     if lang == "go":
         has_mod = any(k.endswith("go.mod") for k in (extra_files or {}))
@@ -217,6 +237,13 @@ def _run_test(tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
                 "error": f"Unknown language: {lang}"}
 
     if "run_test" in config:
+        # Java test-class derivation needs the TEST path (source path gives
+        # wrong classes like TreeTest for PovTest.java); C++ needs the
+        # dataset test_path to respect nested layouts.
+        if lang == "java":
+            return config["run_test"](sample.get("test_path", sample["source_path"]), tmpdir)
+        if lang == "cpp":
+            return _run_cpp_test(sample["source_path"], tmpdir, sample.get("test_path"))
         return config["run_test"](sample["source_path"], tmpdir)
 
     test_name = sample["test_path"]
@@ -323,10 +350,12 @@ class AiderPolyglotBenchmark(BaseBenchmark):
             if not s:
                 continue
             if any(s.startswith(kw) for kw in [
-                "import", "from", "def ", "class ", "function", "const ",
-                "let ", "var ", "export", "public ", "private ", "package",
-                "use ", "fn ", "struct ", "enum ", "#include", "using ",
-                "package ", "pub ", "impl ",
+                "import", "from", "def ", "class ", "function", "func ",
+                "const ", "let ", "var ", "export", "public ", "private ",
+                "package", "use ", "fn ", "struct ", "enum ", "#include",
+                "using ", "pub ", "impl ", "namespace ", "return", "if ",
+                "for ", "while ", "with ", "TEST", "EXPECT", "ASSERT",
+                "console.", "expect(", "describe(", "test(", "it(",
             ]):
                 code_lines.append(line)
             elif code_lines:
@@ -395,17 +424,19 @@ class AiderPolyglotBenchmark(BaseBenchmark):
                 "scoring_details": {"category": sample.get("language", "unknown")},
             }
 
+        _t0 = time.monotonic()
         tr = check_correctness_aider(
             _run_test_in_sandbox, sample, edited_code,
             timeout=300,
         )
+        _test_secs_1 = time.monotonic() - _t0
 
         if tr["success"]:
             return {
                 "prompt": prompt, "raw_response": raw_response,
                 "extracted_code": edited_code, "correct": True,
                 "error_message": None,
-                "elapsed_time": gen["elapsed_time"],
+                "elapsed_time": gen["elapsed_time"] + _test_secs_1,
                 "tps": gen["tps"], "ttft": gen["ttft"],
                 "thinking_tokens": gen["thinking_tokens"],
                 "response_tokens": gen["response_tokens"],
@@ -414,23 +445,6 @@ class AiderPolyglotBenchmark(BaseBenchmark):
             }
 
         test_output = (tr.get("stdout", "") + "\n" + tr.get("stderr", ""))[:3000]
-
-        if not edited_code or len(edited_code) < 10:
-            return {
-                "prompt": prompt, "raw_response": raw_response,
-                "extracted_code": edited_code, "correct": False,
-                "error_message": (
-                    tr.get("error")
-                    or (tr.get("stderr") or "")[:500]
-                    or "Tests failed on first attempt"
-                ),
-                "elapsed_time": gen["elapsed_time"],
-                "tps": gen["tps"], "ttft": gen["ttft"],
-                "thinking_tokens": gen["thinking_tokens"],
-                "response_tokens": gen["response_tokens"],
-                "prompt_tokens": gen.get("prompt_tokens", 0),
-                "scoring_details": {"category": sample.get("language", "unknown")},
-            }
 
         retry_prompt = (
             f"The tests failed for `{sample.get('source_path', '')}`.\n"
@@ -451,16 +465,40 @@ class AiderPolyglotBenchmark(BaseBenchmark):
             model_name=model_name,
         )
 
-        answer2 = gen2.get("answer_content", "") or gen2["raw_response"]
-        edited_code2 = self._extract_edited_code(answer2)
-        if not edited_code2 or len(edited_code2) < 10:
+        # Same 3-candidate extraction as attempt 1 (answer → raw → thinking).
+        answer2 = gen2.get("answer_content", "")
+        raw2 = gen2.get("raw_response", "")
+        thinking2 = gen2.get("thinking_content", "")
+        edited_code2 = next(
+            (c for c in [
+                self._extract_edited_code(answer2),
+                self._extract_edited_code(raw2),
+                self._extract_edited_code(thinking2) if thinking2 else "",
+            ] if c and len(c) > 10),
+            "",
+        )
+        if not edited_code2:
             edited_code2 = edited_code
 
+        _t1 = time.monotonic()
         tr2 = check_correctness_aider(
             _run_test_in_sandbox, sample, edited_code2,
             timeout=300,
         )
+        _test_secs_2 = time.monotonic() - _t1
 
+        total_elapsed = (
+            gen["elapsed_time"] + gen2["elapsed_time"]
+            + _test_secs_1 + _test_secs_2
+        )
+        total_resp = gen["response_tokens"] + gen2.get("response_tokens", 0)
+        # Combined throughput across both LLM calls; TTFT is first-token
+        # latency of the initial attempt.
+        combined_tps = (
+            total_resp / (gen["elapsed_time"] + gen2["elapsed_time"])
+            if (gen["elapsed_time"] + gen2["elapsed_time"]) > 0
+            else gen2["tps"]
+        )
         return {
             "prompt": prompt, "raw_response": raw_response,
             "extracted_code": edited_code2,
@@ -470,15 +508,13 @@ class AiderPolyglotBenchmark(BaseBenchmark):
                 else (tr2.get("error") or tr2.get("stderr", "")[:500]
                       or "Tests failed after 2 attempts")
             ),
-            "elapsed_time": gen["elapsed_time"] + gen2["elapsed_time"],
-            "tps": gen2["tps"],
-            "ttft": gen2["ttft"],
+            "elapsed_time": total_elapsed,
+            "tps": combined_tps,
+            "ttft": gen["ttft"],
             "thinking_tokens": (
                 gen["thinking_tokens"] + gen2.get("thinking_tokens", 0)
             ),
-            "response_tokens": (
-                gen["response_tokens"] + gen2.get("response_tokens", 0)
-            ),
+            "response_tokens": total_resp,
             "prompt_tokens": gen.get("prompt_tokens", 0) + gen2.get("prompt_tokens", 0),
             "scoring_details": {"category": sample.get("language", "unknown")},
         }

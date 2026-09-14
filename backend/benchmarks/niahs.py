@@ -139,6 +139,7 @@ class NIAHSBenchmark(BaseBenchmark):
             correct=correct,
             error_message=error_message,
             scoring_details={
+                "category": "NIAHS",
                 "expected": needles,  # depth_str -> needle value (new multi-needle schema)
                 "per_depth_correct": per_depth_correct,
                 "depths": depths,

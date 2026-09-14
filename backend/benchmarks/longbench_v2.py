@@ -1,7 +1,7 @@
-import re
 import logging
 from typing import Dict, Any, List
 from backend.benchmarks.base import BaseBenchmark
+from backend.benchmarks.scoring import score_mcq
 
 logger = logging.getLogger(__name__)
 
@@ -44,16 +44,15 @@ class LongBenchV2Benchmark(BaseBenchmark):
         gen = await self._generate(prompt, params, model_name)
 
         ac = gen.get("answer_content", "").strip()
-        answer_content = (ac if ac else gen.get("raw_response", "")).strip().upper()
-        extracted = re.findall(r'\b([A-D])\b', answer_content)
-        answer = extracted[-1] if extracted else None
-        correct = answer == sample.get("answer", "")
+        answer_content = (ac if ac else gen.get("raw_response", "")).strip()
+        correct, err = score_mcq(answer_content, sample.get("answer", ""),
+                                 "A-D", single_answer=True)
 
         cat = sample.get("domain", "unknown")
         return self._result(
             prompt, gen,
             extracted_code=answer_content,
             correct=correct,
-            error_message=None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
+            error_message=None if correct else err,
             scoring_details={"category": cat, "sub_domain": sample.get("sub_domain", ""), "difficulty": sample.get("difficulty", "")},
         )

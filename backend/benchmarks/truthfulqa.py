@@ -1,6 +1,5 @@
-import re
-
 from backend.benchmarks.mcq import GenericMCQBenchmark
+from backend.benchmarks.scoring import score_mcq
 
 
 class TruthfulQABenchmark(GenericMCQBenchmark):
@@ -18,13 +17,12 @@ class TruthfulQABenchmark(GenericMCQBenchmark):
             f"Answer with only the letter of the correct option."
         )
         gen = await self._generate(prompt, params, model_name)
-        answer_content = (gen.get("answer_content") or gen.get("raw_response", "")).strip().upper()
-        extracted = re.findall(r'\b([A-B])\b', answer_content)
-        answer = extracted[-1] if extracted else None
-        correct = answer == sample.get("answer", "")
+        answer_content = (gen.get("answer_content") or gen.get("raw_response", "")).strip()
+        correct, err = score_mcq(answer_content, sample.get("answer", ""),
+                                 "AB", single_answer=True)
         return self._result(
             prompt, gen,
             extracted_code=answer_content,
             correct=correct,
-            error_message=None if correct else f"Expected {sample.get('answer', '')}, got {answer}",
+            error_message=None if correct else err,
         )

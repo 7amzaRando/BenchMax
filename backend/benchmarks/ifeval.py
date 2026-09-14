@@ -22,7 +22,9 @@ class IFEvalBenchmark(BaseBenchmark):
         data = self._load_json_cached(path)
         for item in data:
             if "task_id" not in item:
-                item["task_id"] = item.get("key", str(item.get("_id", "unknown")))
+                item["task_id"] = str(item.get("key", item.get("_id", "unknown")))
+            else:
+                item["task_id"] = str(item["task_id"])
         return data
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
@@ -59,14 +61,29 @@ class IFEvalBenchmark(BaseBenchmark):
 
         failed = [instr_id for instr_id, ok in zip(instruction_ids, is_following) if not ok]
 
+        if not response.strip():
+            return self._result(
+                prompt, gen,
+                extracted_code=response,
+                correct=False,
+                error_message="Empty response",
+                scoring_details={
+                    "category": instruction_ids[0] if len(instruction_ids) == 1 else "IFEval",
+                    "follow_instruction_list": is_following,
+                    "instruction_id_list": instruction_ids,
+                    "strict_correct": False,
+                },
+            )
+        correct = len(failed) == 0 and len(instruction_ids) > 0
         return self._result(
             prompt, gen,
             extracted_code=response,
-            correct=len(failed) == 0,
-            error_message="; ".join(failed) if failed else None,
+            correct=correct,
+            error_message="; ".join(failed) if failed else (None if correct else "No instructions configured"),
             scoring_details={
+                "category": instruction_ids[0] if len(instruction_ids) == 1 else "IFEval",
                 "follow_instruction_list": is_following,
                 "instruction_id_list": instruction_ids,
-                "strict_correct": len(failed) == 0,
+                "strict_correct": correct,
             },
         )

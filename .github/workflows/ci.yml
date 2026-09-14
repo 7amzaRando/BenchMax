@@ -41,7 +41,7 @@ jobs:
 
       - name: Run backend tests
         run: |
-          python -m pytest tests/ -v --tb=short --timeout=60 --cov=backend --cov-report=term-missing --cov-fail-under=25
+          python -m pytest tests/ -v --tb=short --timeout=60 --cov=backend --cov-report=term-missing --cov-fail-under=48
         env:
           BENCHMAX_LOG_LEVEL: WARNING
 

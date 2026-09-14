@@ -1,2 +1,6 @@
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = [
+    "docker: tests requiring the benchmax-sandbox Docker image (skipped when not built)",
+    "smoke: fast registration/shape checks",
+]

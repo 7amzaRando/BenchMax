@@ -146,7 +146,7 @@ function AppContent() {
 
           <footer className="border-t border-border/40 bg-card/30 backdrop-blur">
             <div className="max-w-[1280px] mx-auto px-4 lg:px-6 py-3 flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
-              <span className="font-mono font-medium tracking-tight">BenchMax <span className="text-foreground">v2.0</span></span>
+              <span className="font-mono font-medium tracking-tight">BenchMax <span className="text-foreground">v2.0.1</span></span>
               <span className="hidden sm:inline-flex items-center gap-2">
                 <span className="w-px h-3 bg-border hidden sm:block" />
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 font-medium">

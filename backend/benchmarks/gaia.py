@@ -274,7 +274,7 @@ class GAIABenchmark(MultiTurnBenchmark):
             model_name,
         )
 
-        response = gen.get("answer_content", "") or gen.get("raw_response", "")
+        response = gen.get("answer_content") or gen.get("raw_response") or ""
 
         # Parse tool calls from response
         tool_calls = self._parse_tool_calls(response)

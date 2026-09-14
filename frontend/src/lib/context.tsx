@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, type ReactNode } from 'react'
 import type { PollResponse, ModelMetadata } from './api'
 
 export interface ConnectionState {
@@ -123,9 +123,8 @@ export function useApp(): BenchMaxContextValue {
 
 export function BenchMaxProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const value = useMemo(() => ({ state, dispatch }), [state, dispatch])
   return (
-    <BenchMaxContext.Provider value={value}>
+    <BenchMaxContext.Provider value={{ state, dispatch }}>
       {children}
     </BenchMaxContext.Provider>
   )

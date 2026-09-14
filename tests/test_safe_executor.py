@@ -18,22 +18,37 @@ from backend.sandbox.safe_executor import (
 )
 
 
+_docker_probe_cache: dict = {}
+
+
 def _docker_image_available() -> bool:
-    """Check if the benchmax-sandbox Docker image exists locally."""
+    """Check if the benchmax-sandbox Docker image exists locally.
+
+    Result cached per session — the subprocess probe runs at most once,
+    at test-setup time (never at collection).
+    """
+    if "available" in _docker_probe_cache:
+        return _docker_probe_cache["available"]
     try:
         r = subprocess.run(
             ["docker", "image", "inspect", "benchmax-sandbox:latest"],
             capture_output=True, timeout=10,
         )
-        return r.returncode == 0
+        _docker_probe_cache["available"] = (r.returncode == 0)
     except Exception:
-        return False
+        _docker_probe_cache["available"] = False
+    return _docker_probe_cache["available"]
 
 
-needs_docker = pytest.mark.skipif(
-    not _docker_image_available(),
-    reason="benchmax-sandbox Docker image not built",
-)
+needs_docker = pytest.mark.docker
+
+
+@pytest.fixture(autouse=True)
+def _skip_without_docker(request):
+    """Skip docker-marked tests at setup time if the image isn't built."""
+    if request.node.get_closest_marker("docker") is not None:
+        if not _docker_image_available():
+            pytest.skip("benchmax-sandbox Docker image not built")
 
 
 # ── _safe_humaneval_import ─────────────────────────────────────────
@@ -104,6 +119,7 @@ class TestHumanEval:
             timeout=2.0,
         )
         assert result["passed"] is False
+        assert "timed out" in result["result"]
 
     def test_import_typing(self):
         """The bug we fixed: from typing import List should work."""
@@ -167,6 +183,7 @@ class TestBigCodeBench:
             block_child_processes=False, block_network=False,
         )
         assert result["passed"] is False
+        assert "timed out" in result["result"]
 
     def test_syntax_error(self):
         code = "def add(a, b):\n    return a + b"
@@ -191,7 +208,7 @@ class TestCleanupDir:
         assert not os.path.exists(d)
 
     def test_noop_for_none(self):
-        _cleanup_dir(None)  # should not raise
+        assert _cleanup_dir(None) is None  # no-op, must not raise
 
     def test_noop_for_missing(self):
-        _cleanup_dir("/nonexistent/path/that/does/not/exist")
+        assert _cleanup_dir("/nonexistent/path/that/does/not/exist") is None

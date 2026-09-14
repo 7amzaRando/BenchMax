@@ -430,21 +430,32 @@ class BaseBenchmark(ABC):
                     # failed result and keep going; only abort the run if many
                     # samples fail in a row (pointing at a systemic problem).
                     run_logger.error("Error evaluating sample %d: %s", i, exc)
-                    _flush_batch(i)
-                    fail_result = Result(
-                        run_id=run_id,
-                        task_id=sample.get("task_id", f"sample_{i}"),
-                        prompt=sample.get("prompt", ""),
-                        raw_response="",
-                        extracted_code="",
-                        correct=False,
-                        error_message=str(exc),
-                        elapsed_time=0.0, tps=0.0, ttft=0.0,
-                        thinking_tokens=0, response_tokens=0,
-                    )
-                    self.db.add(fail_result)
-                    run.current_index = i + 1
-                    self.db.commit()
+                    try:
+                        _flush_batch(i)
+                        fail_result = Result(
+                            run_id=run_id,
+                            task_id=sample.get("task_id", f"sample_{i}"),
+                            prompt=sample.get("prompt", ""),
+                            raw_response="",
+                            extracted_code="",
+                            correct=False,
+                            error_message=str(exc),
+                            elapsed_time=0.0, tps=0.0, ttft=0.0,
+                            thinking_tokens=0, response_tokens=0,
+                        )
+                        self.db.add(fail_result)
+                        run.current_index = i + 1
+                        self.db.commit()
+                    except Exception as commit_exc:
+                        # The Run row was deleted mid-run (e.g. user deleted it
+                        # from history while this thread was still writing).
+                        # The session is poisoned — roll back and abort quietly.
+                        run_logger.warning("Aborting loop — cannot record failure: %s", commit_exc)
+                        try:
+                            self.db.rollback()
+                        except Exception:
+                            pass
+                        return
                     set_live_progress(run_id, i + 1)
                     consecutive_failures += 1
                     if consecutive_failures >= _MAX_CONSECUTIVE_FAILURES:

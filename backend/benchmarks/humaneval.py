@@ -125,7 +125,8 @@ class HumanEvalBenchmark(BaseBenchmark):
 
         if not is_valid:
             return self._result(prompt, generation, extracted_code=extracted_code,
-                                error_message="Code preparation failed: empty or invalid response")
+                                error_message="Code preparation failed: empty or invalid response",
+                                scoring_details={"category": "HumanEval"})
 
         try:
             code_size = len(runnable_code)
@@ -139,12 +140,16 @@ class HumanEvalBenchmark(BaseBenchmark):
             )
             correct = result["passed"]
             error_msg = None if result["passed"] else result["result"]
+            if error_msg:
+                error_msg = error_msg[:1500]
         except Exception as e:
             return self._result(prompt, generation, extracted_code=extracted_code,
-                                error_message=f"Execution error: {str(e)}")
+                                error_message=f"Execution error: {str(e)[:500]}",
+                                scoring_details={"category": "HumanEval"})
 
         return self._result(prompt, generation, extracted_code=extracted_code,
-                            correct=correct, error_message=error_msg)
+                            correct=correct, error_message=error_msg,
+                            scoring_details={"category": "HumanEval"})
 
     def generate_diff(self, sample: dict, result_data: dict) -> str:
         import difflib

@@ -318,8 +318,11 @@ class TestGetScorer:
     def test_free_form(self):
         assert get_scorer("free_form") is score_free_form
 
-    def test_unknown_falls_back(self):
-        assert get_scorer("unknown") is score_free_form
+    def test_unknown_fails_closed(self):
+        ok, err = get_scorer("unknown")("anything", "anything")
+        assert ok is False
+        assert "Unknown" in err
 
-    def test_empty_falls_back(self):
-        assert get_scorer("") is score_free_form
+    def test_empty_fails_closed(self):
+        ok, err = get_scorer("")("anything", "anything")
+        assert ok is False

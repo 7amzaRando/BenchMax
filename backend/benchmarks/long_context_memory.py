@@ -47,9 +47,12 @@ class LongContextMemoryBenchmark(BaseBenchmark):
         norm_response = _normalize_answer(response)
         norm_expected = _normalize_answer(expected)
 
-        correct = (norm_expected == norm_response
-                   or (len(norm_expected) > 3 and norm_expected in norm_response)
-                   or (len(norm_response) > 3 and norm_response in norm_expected))
+        if not norm_expected:
+            correct = False
+        else:
+            correct = (norm_expected == norm_response
+                       or (len(norm_expected) > 3 and norm_expected in norm_response)
+                       or (len(norm_response) > 3 and norm_response in norm_expected))
 
         if not correct:
             expected_words = set(norm_expected.split())

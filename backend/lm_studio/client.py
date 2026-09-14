@@ -1,4 +1,5 @@
 import time
+import asyncio
 import json
 import re
 import orjson as _orjson
@@ -21,6 +22,7 @@ class LMStudioClient:
                 # The connection pool is abandoned; no cleanup needed.
                 pass
             self._client = None
+            self._client_loop = None
 
     def __init__(self, base_url: str = "http://127.0.0.1:1234", api_key: Optional[str] = None):
         base_url = base_url.rstrip("/")
@@ -30,6 +32,7 @@ class LMStudioClient:
         if api_key:
             self._headers["Authorization"] = f"Bearer {api_key}"
         self._client: Optional[httpx.AsyncClient] = None
+        self._client_loop = None  # Event loop the pooled client is bound to
 
         # Repetition detection state
         self._rep_buffer = ""        # Sliding buffer of accumulated output (last 1000 chars)
@@ -50,9 +53,33 @@ class LMStudioClient:
         logger.debug(f"[DEBUG] LMStudioClient.__init__: received={base_url} -> stored as '{self.base_url}'")
 
     def _get_client(self) -> httpx.AsyncClient:
-        """Lazily create httpx.AsyncClient bound to the current event loop."""
+        """Lazily create httpx.AsyncClient bound to the current event loop.
+
+        _run_async() creates a fresh event loop per call, and the model-queue
+        path reuses one LMStudioClient across load → run → unload. An
+        httpx.AsyncClient's connection pool is bound to the loop that created
+        it, so reusing it on a new loop crashes on Windows with
+        "Event loop is closed" (proactor transport.close → call_soon on the
+        dead loop). Detect the loop switch and abandon the stale pool.
+        """
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
         if self._client is None:
             self._client = httpx.AsyncClient(timeout=None, headers=self._headers)
+            self._client_loop = running_loop
+        elif (
+            running_loop is not None
+            and self._client_loop is not None
+            and self._client_loop is not running_loop
+        ):
+            # Stale pool from a previous (now closed) loop — cannot await
+            # aclose() from this sync method, so abandon it. Its sockets
+            # belong to the dead loop; the new pool replaces it.
+            logger.debug("Discarding stale httpx client from a closed event loop")
+            self._client = httpx.AsyncClient(timeout=None, headers=self._headers)
+            self._client_loop = running_loop
         return self._client
 
     def _check_repetition(self) -> bool:
@@ -505,6 +532,9 @@ class LMStudioClient:
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         logger.warning("Repetition detected in reasoning — model may be looping.")
                                         self._repetition_detected = True
+                                        # Close the stream while the loop is alive so the
+                                        # response generator isn't destroyed pending at shutdown.
+                                        await response.aclose()
                                         break
                                 content = delta.get("content")
                                 if content is not None:
@@ -518,6 +548,9 @@ class LMStudioClient:
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         logger.warning("Repetition detected — model may be looping.")
                                         self._repetition_detected = True
+                                        # Close the stream while the loop is alive so the
+                                        # response generator isn't destroyed pending at shutdown.
+                                        await response.aclose()
                                         break
                                 
                             if "usage" in chunk_json:
@@ -706,6 +739,7 @@ class LMStudioClient:
                                     self._rep_chunk_count += 1
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         self._repetition_detected = True
+                                        await response.aclose()
                                         break
                                 content = delta.get("content")
                                 if content is not None:
@@ -718,6 +752,7 @@ class LMStudioClient:
                                     self._rep_chunk_count += 1
                                     if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
                                         self._repetition_detected = True
+                                        await response.aclose()
                                         break
                             if "usage" in chunk_json:
                                 usage = chunk_json["usage"]

@@ -51,7 +51,8 @@ class AIMEBenchmark(BaseBenchmark):
         super().__init__(db, client, quick_test)
 
     def load_dataset(self) -> List[Dict[str, Any]]:
-        path = self._resolve_dataset("aime_full.json")
+        path = self._resolve_dataset("aime_full.json", mini_name="aime_mini.json",
+                                     fetch_hint="Run 'scripts/fetch_aime.py' to download it.")
         return self._load_json_cached(path)
 
     async def evaluate_sample(self, sample: Dict[str, Any], params: Dict[str, Any], model_name: str) -> Dict[str, Any]:
@@ -77,4 +78,5 @@ class AIMEBenchmark(BaseBenchmark):
             extracted_code=answer_content,
             correct=correct,
             error_message=error_msg,
+            scoring_details={"category": "AIME"},
         )

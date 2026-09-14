@@ -20,7 +20,7 @@ from backend.telemetry.monitor import get_system_metrics  # noqa: E402
 from backend.operations import (  # noqa: E402
     connect_lm_studio, trigger_run, start_batch, pause_run, resume_run, halt_run,
     load_history, load_run_details, load_batch_summary,
-    load_leaderboard, delete_leaderboard_entry,
+    load_leaderboard, delete_leaderboard_entry, delete_runs,
     clear_all_history, load_cross_comparison, export_results, export_batch_results,
     export_all_history, generate_diff,
     export_leaderboard, export_comparison, export_run_markdown,
@@ -33,6 +33,7 @@ from backend.operations import (  # noqa: E402
     start_model_queue, get_model_queue_state, halt_model_queue, skip_current_model,
     check_benchmark_readiness,
     build_docker_image, get_docker_status,
+    build_trusted_card, export_selected_runs,
 )
 from backend.config import BENCHMARKS  # noqa: E402
 logger = logging.getLogger(__name__)
@@ -258,7 +259,9 @@ def api_check_run_readiness(req: RunCheckRequest):
         issues = []
         for bn in req.benchmarks:
             issues.extend(check_benchmark_readiness(bn, req.quick_test))
-        return {"ok": len(issues) == 0, "issues": issues}
+        blocking = [i for i in issues if i.get("severity", "blocking") == "blocking"]
+        warnings = [i for i in issues if i.get("severity") == "warning"]
+        return {"ok": len(blocking) == 0, "issues": blocking, "warnings": warnings}
     except Exception:
         _handle_api_error("api_check_run_readiness failed")
 
@@ -414,6 +417,17 @@ def api_load_run_details(run_id: int):
     except Exception:
         _handle_api_error(f"api_load_run_details({run_id}) failed")
 
+@router.get("/runs/{run_id}/card")
+def api_trusted_card(run_id: int):
+    """Build a copy-paste Trusted Card block for a single run."""
+    try:
+        return sanitize_for_json(build_trusted_card(run_id))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception:
+        _handle_api_error(f"api_trusted_card({run_id}) failed")
+
+
 @router.get("/runs/{run_id}/diff/{task_id:path}")
 def api_generate_diff(run_id: int, task_id: str):
     """Generate a unified diff between the expected answer and model output for a specific task."""
@@ -532,6 +546,18 @@ def api_export_history(export_format: str = Query("CSV", alias="format")):
     except Exception:
         _handle_api_error("api_export_history failed")
 
+@router.get("/export/selected")
+def api_export_selected(run_ids: str = Query(""), export_format: str = Query("CSV", alias="format")):
+    """Export per-run summaries for selected run IDs as CSV, JSON, or Excel file download."""
+    try:
+        file_path, status = export_selected_runs(run_ids, export_format)
+        if file_path:
+            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
+            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
+        return {"status": status, "file": None}
+    except Exception:
+        _handle_api_error("api_export_selected failed")
+
 @router.get("/export/history/markdown")
 def api_export_history_markdown():
     """Export all run history as a Markdown summary table."""
@@ -599,6 +625,15 @@ def api_leaderboard():
         return {"leaderboard": _df_to_dict(df)}
     except Exception:
         _handle_api_error("api_leaderboard failed")
+
+@router.delete("/leaderboard")
+def api_delete_runs(run_ids: str = Query("")):
+    """Delete multiple runs by comma-separated IDs."""
+    try:
+        lb_df, status = delete_runs(run_ids)
+        return {"leaderboard": _df_to_dict(lb_df), "status": status}
+    except Exception:
+        _handle_api_error("api_delete_runs failed")
 
 @router.delete("/leaderboard/{run_id}")
 def api_delete_leaderboard(run_id: int):
@@ -805,6 +840,7 @@ def api_benchmarks():
                 "name": name,
                 "category": meta.get("category", "Other"),
                 "docker": bool(meta.get("docker")),
+                "docker_partial": bool(meta.get("docker_partial", False)),
                 "samples": meta.get("samples", 0),
                 "short": meta.get("short", ""),
             })

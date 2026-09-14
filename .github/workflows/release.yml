@@ -1,0 +1,97 @@
+name: Release build
+
+# Builds BenchMax.exe on a GitHub-hosted runner and attaches it to the
+# GitHub Release — mirrors build.bat steps (pip install backend/requirements,
+# npm ci + build, pyinstaller benchmax.spec) without the interactive pauses.
+# The user only pushes source (small); the runner does all heavy downloading.
+#
+# Agent flow for "push and release as vX.Y.Z with <notes file>":
+#   1. Copy <notes file> to docs/releases/vX.Y.Z.md, commit + push.
+#   2. Tag and push the tag:  git tag vX.Y.Z; git push origin vX.Y.Z
+#   3. This workflow builds the .exe and creates Release vX.Y.Z whose body
+#      is docs/releases/vX.Y.Z.md (fallback: generated notes).
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v2.0.1"
+        required: true
+      notes_file:
+        description: "Repo path to release-notes markdown (must be committed)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+        shell: bash
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          test -f dist/index.html || (echo "ERROR: frontend/dist/index.html missing" && exit 1)
+        shell: bash
+
+      - name: Build BenchMax.exe
+        run: |
+          pyinstaller benchmax.spec --clean
+          test -f dist/BenchMax.exe || (echo "ERROR: dist/BenchMax.exe missing" && exit 1)
+        shell: bash
+
+      - name: Resolve release notes
+        id: notes
+        shell: bash
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ inputs.notes_file }}" ] && [ -f "${{ inputs.notes_file }}" ]; then
+            cp "${{ inputs.notes_file }}" release_body.md
+            echo "source=${{ inputs.notes_file }}" >> "$GITHUB_OUTPUT"
+          elif [ -f "docs/releases/${TAG}.md" ]; then
+            cp "docs/releases/${TAG}.md" release_body.md
+            echo "source=docs/releases/${TAG}.md" >> "$GITHUB_OUTPUT"
+          else
+            printf '# BenchMax %s\n\nSee CHANGELOG.md for what changed.\n' "$TAG" > release_body.md
+            echo "source=fallback" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.notes.outputs.tag }}
+          files: dist/BenchMax.exe
+          fail_on_unmatched_files: true
+          body_path: release_body.md

@@ -55,7 +55,7 @@ BENCHMARK_META: dict[str, dict] = {
     "LongBench-v2":     {"category": "Long-Context", "docker": False, "samples": 503,   "short": "Long-context QA"},
     "Aider Polyglot":   {"category": "Coding",       "docker": True,  "samples": 225,   "short": "Multi-lang editing"},
     "MMMU-Pro":         {"category": "Vision",       "docker": False, "samples": 1200,  "short": "Multimodal MCQ"},
-    "LiveBench":        {"category": "Composite",    "docker": False, "samples": 1436,  "short": "Meta-benchmark"},
+    "LiveBench":        {"category": "Composite",    "docker": False, "docker_partial": True, "samples": 1436,  "short": "Meta-benchmark (coding needs Docker)"},
     "LiveCodeBench":    {"category": "Coding",       "docker": True,  "samples": 175,   "short": "Live code gen"},
     "BenchMax Personal":{"category": "Composite",    "docker": False, "samples": 100,   "short": "Composite BMS"},
     "BenchMax Lite":    {"category": "Composite",    "docker": False, "samples": 50,    "short": "All-round MCQ"},

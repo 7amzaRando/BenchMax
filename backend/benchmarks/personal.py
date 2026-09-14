@@ -51,7 +51,8 @@ class BenchMaxPersonalBenchmark(BaseBenchmark):
             dim_results: Dict[str, list] = {d["name"]: [] for d in DIMENSIONS}
             task_to_cat: Dict[str, str] = {}
             for s in self.load_dataset():
-                task_to_cat[s["task_id"]] = s.get("category", "Knowledge")
+                if s.get("task_id"):
+                    task_to_cat[s["task_id"]] = s.get("category", "Knowledge")
             for r in result_rows:
                 cat = task_to_cat.get(r.task_id, "Knowledge")
                 dim_results.setdefault(cat, []).append(r.correct)

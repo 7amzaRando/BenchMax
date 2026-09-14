@@ -94,11 +94,13 @@ def score_mcq_multi(response: str, answers: Sequence[str],
 def score_code(response: str, func_name: str) -> Tuple[bool, str]:
     if not response or not response.strip():
         return False, "Empty response"
+    if not func_name or not func_name.strip():
+        return False, "No function configured"
+    # Strict: require an actual `def func_name(` definition. (A looser
+    # fence-mention fallback used to live here; it credited prose that merely
+    # named the function, so it was removed.)
     pattern = r'def\s+' + re.escape(func_name) + r'\s*\('
     if re.search(pattern, response):
-        return True, ""
-    alt = r'```.*\n.*' + re.escape(func_name) + r'.*```'
-    if re.search(alt, response, re.DOTALL):
         return True, ""
     return False, f"Function '{func_name}' not found in response"
 
@@ -185,11 +187,15 @@ def score_free_form(response: str, answer: str) -> Tuple[bool, str]:
         return False, "Empty response"
     keywords = [k.strip().lower() for k in re.split(r'[,;\s]+', answer) if k.strip()]
     if not keywords:
-        return True, ""
+        return False, "No ground-truth keywords configured"
     missing = [kw for kw in keywords if kw not in response.lower()]
     if missing:
         return False, f"Missing keywords: {', '.join(missing[:3])}"
     return True, ""
+
+def _unknown_scorer(*args, **kwargs) -> Tuple[bool, str]:
+    return False, "Unknown question type"
+
 
 def get_scorer(sample_type: str):
     scorers = {
@@ -201,22 +207,36 @@ def get_scorer(sample_type: str):
         "constraint": score_constraints,
         "free_form": score_free_form,
     }
-    return scorers.get(sample_type, score_free_form)
+    return scorers.get(sample_type, _unknown_scorer)
 
 
 def _words(text: str) -> List[str]:
     return re.findall(r"[A-Za-z0-9']+", text)
 
 
+def _check_int_constraint(n: int, spec: Dict[str, Any], rule_name: str) -> str | None:
+    """Check == / >= / <= constraints on an integer value. Returns error string or None (pass)."""
+    for key, op in (("eq", "=="), ("min", ">="), ("max", "<=")):
+        if key in spec:
+            try:
+                target = int(spec[key])
+            except (TypeError, ValueError):
+                return f"{rule_name}: malformed spec value {spec[key]!r} for '{key}'"
+            if op == "==" and n != target:
+                return f"{rule_name}: got {n}, expected == {target}"
+            if op == ">=" and n < target:
+                return f"{rule_name}: got {n}, expected >= {target}"
+            if op == "<=" and n > target:
+                return f"{rule_name}: got {n}, expected <= {target}"
+    return None
+
+
 def _check_constraint(response: str, spec: Dict[str, Any]) -> Tuple[bool, str]:
     """Evaluate one verifiable instruction-following constraint."""
     rule = spec.get("rule", "")
     if rule == "word_count":
-        n = len(_words(response))
-        for key, label in (("eq", "=="), ("min", ">="), ("max", "<=")):
-            if key in spec and not eval(f"{n}{label}{int(spec[key])}"):
-                return False, f"word_count: got {n}, expected {label} {spec[key]}"
-        return True, ""
+        err = _check_int_constraint(len(_words(response)), spec, "word_count")
+        return (False, err) if err else (True, "")
     if rule == "nth_word":
         words = _words(response)
         n = int(spec.get("n", 1))
@@ -226,11 +246,8 @@ def _check_constraint(response: str, spec: Dict[str, Any]) -> Tuple[bool, str]:
             return False, f"nth_word: word #{n} is '{got}', expected '{want}'"
         return True, ""
     if rule == "comma_count":
-        n = response.count(",")
-        for key, label in (("eq", "=="), ("min", ">="), ("max", "<=")):
-            if key in spec and not eval(f"{n}{label}{int(spec[key])}"):
-                return False, f"comma_count: got {n}, expected {label} {spec[key]}"
-        return True, ""
+        err = _check_int_constraint(response.count(","), spec, "comma_count")
+        return (False, err) if err else (True, "")
     if rule == "contains":
         text = str(spec.get("text", ""))
         min_count = int(spec.get("min_count", 1))
@@ -294,7 +311,10 @@ def score_sample(raw_response: str, sample: Dict[str, Any]) -> Tuple[bool, str]:
     multi-answer / multi-part items), ``match`` ("strict" | "numeric"),
     ``constraints`` (list of rule specs for type "constraint").
     """
-    qtype = sample.get("type", "free_form")
+    qtype = sample.get("type")
+    if qtype is None:
+        # Typeless samples keep the legacy free-form keyword behavior.
+        return score_free_form(raw_response, sample.get("answer", ""))
     if qtype == "mcq":
         valid_letters = sample.get("valid_letters") or _infer_valid_letters(sample.get("prompt", ""))
         return score_mcq(raw_response, sample.get("answer", ""),
@@ -317,4 +337,7 @@ def score_sample(raw_response: str, sample: Dict[str, Any]) -> Tuple[bool, str]:
         return score_code(raw_response, normalize_code_answer(sample.get("answer", "")))
     if qtype == "constraint":
         return score_constraints(raw_response, sample.get("constraints", []))
-    return score_free_form(raw_response, sample.get("answer", ""))
+    if qtype == "free_form":
+        return score_free_form(raw_response, sample.get("answer", ""))
+    # Unknown explicit type — fail closed instead of keyword-matching.
+    return False, f"Unknown question type '{qtype}'"

@@ -48,7 +48,7 @@ cd ..
 
 Open **http://localhost:8000**, connect to your provider (LM Studio, Ollama, OpenAI, …), pick a benchmark, and press Start.
 
-Prefer a standalone app? `.\build.bat` produces `dist\BenchMax.exe` (no Python needed). Code benchmarks need Docker Desktop plus one click on **Build Docker Image** in the Connection tab.
+Prefer a standalone app? `.\build.bat` produces `dist\BenchMax.exe` (no Python needed). Code benchmarks need Docker Desktop plus one click on **Build Docker Image** in the Connection tab. No build machine? Every `v*.*.*` tag auto-builds the .exe via GitHub Actions — download it from **GitHub Releases**.
 
 ---
 

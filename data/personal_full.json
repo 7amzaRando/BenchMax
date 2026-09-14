@@ -102,7 +102,8 @@
     "category": "Code",
     "type": "exact",
     "prompt": "What is printed? Output only the printed number exactly.\nSnippet:\nprint(0.1 + 0.2)",
-    "answer": "0.30000000000000004"
+    "answer": "0.30000000000000004",
+    "match": "numeric"
   },
   {
     "task_id": "personal_code_15",
@@ -792,7 +793,8 @@
     "category": "Logic",
     "type": "exact",
     "prompt": "A 3-digit code uses distinct digits from 1-6. Clues (exact): '123' has exactly 1 digit correct and in the correct place. '456' has 0 digits correct (none appear). '352' has exactly 2 digits correct but 0 in the correct place. Brute-force the unique code. Output only the 3 digits with no spaces (e.g. 123).",
-    "answer": "213"
+    "answer": "213",
+    "match": "numeric"
   },
   {
     "task_id": "personal_logic_02",
@@ -820,7 +822,8 @@
     "category": "Logic",
     "type": "exact",
     "prompt": "A 4-digit code uses distinct digits from 0-7. Clues (exact): '0123' has exactly 1 digit correct and in the correct place. '4567' has 0 digits correct (none appear). '0245' has exactly 2 digits correct and both in the correct place. Brute-force the unique code. Output only the 4 digits with no spaces (e.g. 0123).",
-    "answer": "0231"
+    "answer": "0231",
+    "match": "numeric"
   },
   {
     "task_id": "personal_logic_06",

@@ -27,13 +27,11 @@ async def test_benchmarks(client):
     data = resp.json()
     assert "benchmarks" in data
     assert isinstance(data["benchmarks"], list)
-    assert len(data["benchmarks"]) == 30
+    # Floor, not exact count — adding a benchmark must not break this test
+    assert len(data["benchmarks"]) >= 30
     names = [b["name"] for b in data["benchmarks"]]
-    assert "HumanEval" in names
-    assert "MMLU-Pro" in names
-    assert "TruthfulQA" in names
-    assert "Tau3-Airline" in names
-    assert "BenchMax ToolCall" in names
+    for required in ("HumanEval", "MMLU-Pro", "TruthfulQA", "Tau3-Airline", "BenchMax ToolCall"):
+        assert required in names
 
 
 @pytest.mark.asyncio
@@ -56,6 +54,48 @@ async def test_runs_empty(client):
     data = resp.json()
     assert "runs" in data
     assert isinstance(data["runs"], list)
+    assert data["runs"] == []  # isolated test DB starts empty (see conftest)
+
+
+@pytest.mark.asyncio
+async def test_runs_seeded_content(client):
+    """Seed a run + result in the isolated DB and verify it surfaces via API."""
+    from backend.database import Run, Result, get_db
+    with get_db() as db:
+        run = Run(model_name="audit-model", benchmark_name="MMLU-Pro",
+                  status="COMPLETED", current_index=2, total_samples=2)
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+        rid = run.id
+        db.add(Result(run_id=rid, task_id="mmlu/0", prompt="q",
+                      raw_response="B", correct=True,
+                      elapsed_time=1.0, tps=10.0, ttft=0.2,
+                      thinking_tokens=0, response_tokens=5, prompt_tokens=10))
+        db.commit()
+    resp = await client.get("/api/runs")
+    assert resp.status_code == 200
+    runs = resp.json()["runs"]
+    assert any(r.get("Model") == "audit-model" for r in runs)
+    status = await client.get(f"/api/run/{rid}/status")
+    assert status.status_code == 200
+    body = status.json()
+    assert body["model_name"] == "audit-model"
+    assert body["samples_completed"] == 1
+    assert body["samples_correct"] == 1
+
+
+@pytest.mark.asyncio
+async def test_run_status_unknown_404(client):
+    resp = await client.get("/api/run/999999999/status")
+    assert resp.status_code == 404
+    assert "not found" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_trusted_card_unknown_404(client):
+    resp = await client.get("/api/runs/999999999/card")
+    assert resp.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -69,14 +109,20 @@ async def test_leaderboard_empty(client):
 
 @pytest.mark.asyncio
 async def test_poll(client):
-    resp = await client.get("/api/poll")
+    from unittest.mock import patch
+    fake = {"cpu_percent": 10.0, "ram_used_gb": 4.0, "ram_total_gb": 16.0,
+            "ram_percent": 25.0, "gpu_available": False, "gpu_name": "none",
+            "gpu_load": 0.0, "vram_total_mb": 0, "vram_used_mb": 0, "vram_percent": 0.0}
+    with patch("backend.api.get_system_metrics", return_value=fake), \
+         patch("backend.operations.get_system_metrics", return_value=fake):
+        resp = await client.get("/api/poll")
     assert resp.status_code == 200
     data = resp.json()
     assert "telemetry" in data
     assert "run_progress" in data
     assert "batch_progress" in data
     telemetry = data["telemetry"]
-    assert "cpu_percent" in telemetry
+    assert telemetry["cpu_percent"] == 10.0
     assert "ram_used_gb" in telemetry
     assert "gpu_available" in telemetry
     run_progress = data["run_progress"]
@@ -91,18 +137,17 @@ async def test_poll(client):
 
 @pytest.mark.asyncio
 async def test_telemetry(client):
-    resp = await client.get("/api/telemetry")
+    from unittest.mock import patch
+    fake = {"cpu_percent": 10.0, "ram_used_gb": 4.0, "ram_total_gb": 16.0,
+            "ram_percent": 25.0, "gpu_available": False, "gpu_name": "none",
+            "gpu_load": 0.0, "vram_total_mb": 0, "vram_used_mb": 0, "vram_percent": 0.0}
+    with patch("backend.api.get_system_metrics", return_value=fake):
+        resp = await client.get("/api/telemetry")
     assert resp.status_code == 200
     data = resp.json()
-    assert "cpu_percent" in data
-    assert "ram_used_gb" in data
-    assert "ram_total_gb" in data
-    assert "ram_percent" in data
+    assert data["cpu_percent"] == 10.0
+    assert data["ram_total_gb"] == 16.0
     assert "gpu_available" in data
-    assert "gpu_name" in data
-    assert "gpu_load" in data
-    assert "vram_total_mb" in data
-    assert "vram_used_mb" in data
     assert "vram_percent" in data
     assert isinstance(data["cpu_percent"], (int, float))
     assert isinstance(data["ram_total_gb"], (int, float))
@@ -115,6 +160,23 @@ async def test_connect_refused(client):
     data = resp.json()
     assert "status" in data
     assert "Connection failed" in data["status"] or "Error" in data["status"] or "error" in data["status"].lower()
+
+
+@pytest.mark.asyncio
+async def test_delete_runs_empty(client):
+    resp = await client.delete("/api/leaderboard", params={"run_ids": ""})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "leaderboard" in data
+    assert "status" in data
+
+
+@pytest.mark.asyncio
+async def test_delete_runs_invalid_ids(client):
+    resp = await client.delete("/api/leaderboard", params={"run_ids": "abc,!!"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "No valid run IDs provided."
 
 
 def test_sanitize_for_json_replaces_non_finite():

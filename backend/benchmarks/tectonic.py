@@ -41,7 +41,8 @@ class BenchMaxTectonicBenchmark(BaseBenchmark):
 
             task_to_cat: Dict[str, str] = {}
             for s in self.load_dataset():
-                task_to_cat[s["task_id"]] = s.get("category", "Knowledge")
+                if s.get("task_id"):
+                    task_to_cat[s["task_id"]] = s.get("category", "Knowledge")
 
             # Fixed: dataset uses "Coding" not "Code"; sort for display
             categories = sorted(["Coding", "Logic/Reasoning", "Instruction Following", "Knowledge", "Tool Calling"])
