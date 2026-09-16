@@ -17,7 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/docs/cli-reference',
     '/docs/configuration',
     '/results',
-    '/leaderboard',
     '/about',
   ]
 

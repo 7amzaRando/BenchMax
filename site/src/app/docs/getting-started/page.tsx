@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import GradientText from '@/components/shared/GradientText'
 import Badge from '@/components/shared/Badge'
+import { DOWNLOAD_EXE_URL, LATEST_RELEASE_URL } from '@/lib/site-links'
 
 export const metadata: Metadata = {
   title: 'Getting Started',
@@ -52,11 +53,27 @@ export default function GettingStartedPage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-fg mt-3">Without Docker, 23 benchmarks run fully. The 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) return a clear error with build instructions.</p>
+        <p className="text-xs text-muted-fg mt-3">Without Docker, 25 benchmarks run fully. The 5 code benchmarks (HumanEval, BigCodeBench ×2, LiveCodeBench, Aider Polyglot) return a clear error with build instructions.</p>
       </div>
 
       <div className="space-y-8 mb-10">
         <h2 className="text-2xl font-bold tracking-tight">Installation</h2>
+
+        <div className="rounded-xl border border-primary/25 bg-primary/[0.07] p-5">
+          <h3 className="font-semibold">Option A — download the app (easiest, Windows)</h3>
+          <p className="text-sm text-muted-fg mt-1 leading-relaxed">
+            Grab <code className="text-foreground">BenchMax.exe</code> (~300 MB, no install) from the{' '}
+            <a href={LATEST_RELEASE_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">latest GitHub Release</a>{' '}
+            and run it. Then skip to <span className="text-foreground font-medium">First run</span> below.
+          </p>
+          <a
+            href={DOWNLOAD_EXE_URL}
+            className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-foreground text-background hover:bg-white transition-colors"
+          >
+            Download BenchMax.exe
+          </a>
+          <h3 className="font-semibold mt-5">Option B — build from source (all platforms)</h3>
+        </div>
 
         <Step number={1} title="Clone the repository">
           <CodeBlock>{`git clone https://github.com/7amzaRando/BenchMax.git

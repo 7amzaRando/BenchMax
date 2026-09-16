@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Zap, Shield, Terminal, Cpu, GitBranch, Container, Layers, Sparkles, ArrowRight, Check, Copy, ChevronRight } from 'lucide-react'
+import { Zap, Shield, Terminal, Cpu, GitBranch, Container, Layers, Sparkles, ArrowRight, Check, Copy, ChevronRight, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GradientText from '@/components/shared/GradientText'
 import Card from '@/components/shared/Card'
@@ -10,6 +10,7 @@ import Button from '@/components/shared/Button'
 import { benchmarks, CATEGORY_COLORS, TOTAL_BENCHMARKS, TOTAL_SAMPLES_DISPLAY } from '@/lib/benchmarks-data'
 import { providers } from '@/lib/providers-data'
 import { SITE_STATS } from '@/lib/site-stats'
+import { DOWNLOAD_EXE_URL } from '@/lib/site-links'
 import { useState } from 'react'
 
 const FEATURES = [
@@ -133,16 +134,19 @@ export default function HomeClient() {
               </motion.p>
 
               <motion.div variants={fade} transition={{ duration: 0.55, delay: 0.18 }} className="mt-7 flex flex-wrap items-center gap-3">
+                <a href={DOWNLOAD_EXE_URL}>
+                  <Button variant="glow" size="lg"><Download className="w-4 h-4" /> Download for Windows <ArrowRight className="w-4 h-4 opacity-70" /></Button>
+                </a>
                 <Link href="/docs/getting-started/">
-                  <Button variant="glow" size="lg"><Zap className="w-4 h-4" /> Get Started <ArrowRight className="w-4 h-4 opacity-70" /></Button>
-                </Link>
-                <Link href="/benchmarks/">
-                  <Button variant="outline" size="lg">View Benchmarks <ChevronRight className="w-4 h-4" /></Button>
+                  <Button variant="outline" size="lg"><Zap className="w-4 h-4" /> Get Started <ChevronRight className="w-4 h-4" /></Button>
                 </Link>
                 <a href="https://github.com/7amzaRando/BenchMax" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-muted-fg hover:text-foreground transition-colors px-2">
                   GitHub <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </motion.div>
+              <motion.p variants={fade} transition={{ duration: 0.55, delay: 0.2 }} className="mt-3 text-xs text-muted-fg">
+                Free download from GitHub Releases (BenchMax.exe, ~300 MB, no install). Or build from source below.
+              </motion.p>
 
               <motion.div variants={fade} transition={{ duration: 0.55, delay: 0.22 }} className="mt-6 flex flex-wrap gap-2 text-xs text-muted-fg">
                 <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-success" /> Most tests work out of the box</span>

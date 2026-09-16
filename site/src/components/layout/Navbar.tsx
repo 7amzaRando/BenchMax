@@ -3,15 +3,15 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Zap, Menu, X, Github } from 'lucide-react'
+import { Zap, Menu, X, Github, Download } from 'lucide-react'
 import { clsx } from 'clsx'
+import { DOWNLOAD_EXE_URL } from '@/lib/site-links'
 
 const NAV_LINKS = [
   { href: '/benchmarks/', label: 'Benchmarks' },
   { href: '/features/', label: 'Features' },
   { href: '/docs/', label: 'Docs' },
   { href: '/results/', label: 'Results' },
-  { href: '/leaderboard/', label: 'Leaderboard' },
   { href: '/about/', label: 'About' },
 ]
 
@@ -61,10 +61,17 @@ export default function Navbar() {
             </a>
             <Link
               href="/docs/getting-started/"
-              className="inline-flex items-center justify-center px-5 py-2 rounded-full text-sm font-semibold bg-foreground text-background hover:bg-white transition-colors shadow-[0_2px_10px_rgba(0,0,0,0.25)]"
+              className="inline-flex items-center px-3.5 py-2 rounded-full text-sm font-medium text-muted-fg hover:text-foreground transition-colors"
             >
               Get Started
             </Link>
+            <a
+              href={DOWNLOAD_EXE_URL}
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-semibold bg-foreground text-background hover:bg-white transition-colors shadow-[0_2px_10px_rgba(0,0,0,0.25)]"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </a>
           </div>
 
           <button
@@ -97,7 +104,10 @@ export default function Navbar() {
               <a href="https://github.com/7amzaRando/BenchMax" target="_blank" rel="noopener noreferrer" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium bg-white/[0.07] text-foreground border border-white/[0.08]">
                 <Github className="w-4 h-4" /> GitHub
               </a>
-              <Link href="/docs/getting-started/" onClick={() => setOpen(false)} className="flex-1 inline-flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-semibold bg-foreground text-background">
+              <a href={DOWNLOAD_EXE_URL} onClick={() => setOpen(false)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold bg-foreground text-background">
+                <Download className="w-4 h-4" /> Download
+              </a>
+              <Link href="/docs/getting-started/" onClick={() => setOpen(false)} className="flex-1 inline-flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium bg-white/[0.07] text-foreground border border-white/[0.08]">
                 Get Started
               </Link>
             </div>

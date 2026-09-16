@@ -6,7 +6,6 @@ const FOOTER_LINKS: Record<string, { href: string; label: string; external?: boo
     { href: '/benchmarks/', label: '30 Benchmarks' },
     { href: '/features/', label: 'Features' },
     { href: '/results/', label: 'Results' },
-    { href: '/leaderboard/', label: 'Leaderboard' },
   ],
   Resources: [
     { href: '/docs/', label: 'Documentation' },
