@@ -2,7 +2,7 @@
 
 export default function AnimatedBackground() {
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-background" aria-hidden>
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-background" aria-hidden="true">
       {/* base vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-5%,rgba(99,102,241,0.14),transparent_55%),radial-gradient(ellipse_70%_45%_at_85%_75%,rgba(45,212,191,0.07),transparent_50%),radial-gradient(ellipse_50%_35%_at_15%_85%,rgba(99,102,241,0.06),transparent_50%)]" />
 

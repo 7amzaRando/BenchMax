@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Container, ExternalLink, Sparkles } from 'lucide-react'
+import { ArrowLeft, Container, Sparkles } from 'lucide-react'
 import Card from '@/components/shared/Card'
 import Badge from '@/components/shared/Badge'
 import GradientText from '@/components/shared/GradientText'
@@ -42,10 +42,12 @@ export default async function BenchmarkDetailPage({ params }: PageProps) {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.07] via-transparent to-secondary/[0.05] pointer-events-none" />
           <div className="relative">
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge variant={(CATEGORY_COLORS[bench.category] as any) || 'default'}>{CATEGORY_LABELS[bench.category]}</Badge>
+              <Badge variant={CATEGORY_COLORS[bench.category]}>{CATEGORY_LABELS[bench.category]}</Badge>
               <span className="text-sm text-muted-fg">{bench.samples.toLocaleString()} samples</span>
               {bench.docker ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary"><Container className="w-3.5 h-3.5" /> Needs sandbox setup</span>
+              ) : bench.dockerPartial ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-warning/10 border border-warning/20 text-amber-300"><Container className="w-3.5 h-3.5" /> Sandbox for coding only</span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-success/10 border border-success/20 text-success"><Sparkles className="w-3.5 h-3.5" /> No setup needed</span>
               )}
@@ -84,6 +86,9 @@ export default async function BenchmarkDetailPage({ params }: PageProps) {
             {bench.docker && (
               <p className="text-xs text-muted-fg mt-3">This test runs code, so it needs the safe sandbox first. <Link href="/docs/getting-started/" className="text-primary hover:underline">Setup takes a few minutes.</Link></p>
             )}
+            {bench.dockerPartial && (
+              <p className="text-xs text-muted-fg mt-3">Mostly runs as-is; only the coding questions need the safe sandbox. <Link href="/docs/configuration/" className="text-primary hover:underline">See Docker setup.</Link></p>
+            )}
           </div>
         </Card>
 
@@ -94,7 +99,7 @@ export default async function BenchmarkDetailPage({ params }: PageProps) {
               {related.map(rb => (
                 <Link key={rb.slug} href={`/benchmarks/${rb.slug}/`}>
                   <Card variant="default" className="p-5 h-full group">
-                    <Badge variant={(CATEGORY_COLORS[rb.category] as any) || 'default'} className="mb-2">{CATEGORY_LABELS[rb.category]}</Badge>
+                    <Badge variant={CATEGORY_COLORS[rb.category]} className="mb-2">{CATEGORY_LABELS[rb.category]}</Badge>
                     <h3 className="font-semibold group-hover:text-primary transition-colors">{rb.name}</h3>
                     <p className="text-xs text-muted-fg mt-1">{rb.subtitle}</p>
                     <p className="text-xs text-muted-fg/70 mt-1">{rb.samples.toLocaleString()} samples</p>

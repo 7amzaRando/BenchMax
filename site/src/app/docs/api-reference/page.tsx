@@ -3,9 +3,10 @@ import GradientText from '@/components/shared/GradientText'
 import Badge from '@/components/shared/Badge'
 import { endpointCategories, type Endpoint } from '@/lib/endpoints-data'
 
+// backend truth: 46 @router.* in backend/api.py + GET /api/health & POST /api/shutdown in backend/main.py = 48
 export const metadata: Metadata = {
   title: 'API Reference',
-  description: 'Full REST API reference for BenchMax: 43 endpoints (45 including /health & /shutdown) across connection, runs, batch, model queue, export, leaderboard, datasets and telemetry.',
+  description: 'Full REST API reference for BenchMax: 48 endpoints (46 in api.py + /health & /shutdown in main.py) across connection, runs, batch, model queue, export, leaderboard, datasets, Docker and telemetry.',
 }
 
 const METHOD_BADGES: Record<string, 'success' | 'primary' | 'danger' | 'warning'> = {
@@ -39,12 +40,12 @@ function EndpointRow({ endpoint }: { endpoint: Endpoint }) {
 }
 
 export default function ApiReferencePage() {
-  const totalEndpoints = endpointCategories.reduce((sum, cat) => sum + cat.endpoints.length, 0)
+  // backend truth: 46 @router.* in backend/api.py + 2 in backend/main.py = 48 (hardcoded; data file mirrors it)
   return (
     <div>
       <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4"><GradientText as="span">API Reference</GradientText></h1>
       <p className="text-lg text-muted-fg max-w-2xl">
-        {totalEndpoints} REST endpoints (43 via <code className="text-foreground">api.py</code> + <code className="text-foreground">GET /api/health</code> & <code className="text-foreground">POST /api/shutdown</code> in <code className="text-foreground">main.py</code>). Served by FastAPI at <code className="text-primary">http://localhost:8000</code>. Swagger at <code className="text-primary">/docs</code>.
+        48 REST endpoints (46 via <code className="text-foreground">api.py</code> + <code className="text-foreground">GET /api/health</code> & <code className="text-foreground">POST /api/shutdown</code> in <code className="text-foreground">main.py</code>). Served by FastAPI at <code className="text-primary">http://localhost:8000</code>. Swagger at <code className="text-primary">/docs</code>.
       </p>
       <p className="text-sm text-muted-fg mt-3 mb-10">Use the <Badge variant="primary">CLI</Badge> (<code className="text-foreground">cli.py</code>, 38 commands) or call the REST API directly.</p>
       <div className="space-y-10">

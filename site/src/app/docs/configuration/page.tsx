@@ -78,7 +78,7 @@ export default function ConfigurationPage() {
       <section className="mb-10">
         <h2 className="text-2xl font-bold tracking-tight mb-4">Docker sandbox</h2>
         <p className="text-sm text-muted-fg mb-4">
-          5 benchmarks require Docker. 23 run without it. The image is <code className="text-foreground">benchmax-sandbox</code> (Python 3.11 + Node 20 + GCC + Java 17 + Go 1.22 + Rust 1.75, ~6.14 GB, <code className="text-foreground">--cap-drop ALL --network none</code>). Clear error if Docker is unavailable.
+          5 benchmarks require Docker. 25 run without it. (LiveBench is mixed: only its coding subset needs the sandbox.) The image is <code className="text-foreground">benchmax-sandbox</code> (Python 3.11 + Node 20 + GCC + Java 17 + Go 1.22 + Rust 1.75, ~6.14 GB, <code className="text-foreground">--cap-drop ALL --network none</code>). Clear error if Docker is unavailable.
         </p>
         <div className="space-y-3">
           <div className="rounded-xl bg-card border border-border p-4">
@@ -104,7 +104,7 @@ GET  /api/docker/status  → { docker_available, image_built }
         <div className="rounded-xl bg-card border border-border p-4">
           <ul className="text-sm text-muted-fg space-y-1.5 list-disc list-inside">
             <li>WAL via <code className="text-foreground">engine.connect()</code> (autocommit).</li>
-            <li>Results batched every 50 samples; DB refresh at batch boundaries; in-memory halt check every sample.</li>
+            <li>Adaptive write batching: every 5 samples (25 for 500+ sample suites); DB refresh at batch boundaries; in-memory halt check every sample.</li>
             <li>Dataset caching via <code className="text-foreground">BaseBenchmark._dataset_cache</code> (class-level).</li>
             <li>Run statuses: PENDING → RUNNING → PAUSED → COMPLETED / FAILED / HALTED.</li>
           </ul>

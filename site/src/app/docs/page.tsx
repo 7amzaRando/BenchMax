@@ -20,7 +20,7 @@ const SECTIONS = [
     href: '/docs/api-reference/',
     icon: Code,
     title: 'API Reference',
-    description: '43 REST endpoints (45 with /health & /shutdown): runs, batch, model queue, export, leaderboard, datasets, telemetry.',
+    description: '48 REST endpoints (46 + /health & /shutdown): runs, batch, model queue, export, leaderboard, datasets, Docker, telemetry.',
   },
   {
     href: '/docs/cli-reference/',

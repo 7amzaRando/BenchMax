@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { HTMLAttributes } from 'react'
 
-type BadgeVariant = 'default' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | 'outline' | 'muted'
+export type BadgeVariant = 'default' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | 'outline' | 'muted'
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant

@@ -229,9 +229,14 @@ export const commandCategories: CommandCategory[] = [
         example: 'py cli.py hf-token --token hf_xxx',
       },
       {
-        name: 'download-runtimes',
-        description: 'Download portable runtimes for Aider Polyglot (Go, Rust, GCC, Java, Node).',
-        example: 'py cli.py download-runtimes',
+        name: 'build-docker',
+        description: 'Build the benchmax-sandbox Docker image.',
+        example: 'py cli.py build-docker',
+      },
+      {
+        name: 'docker-status',
+        description: 'Check Docker availability and image status.',
+        example: 'py cli.py docker-status',
       },
       {
         name: 'version',

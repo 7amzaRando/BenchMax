@@ -1,6 +1,6 @@
 # BenchMax REST API
 
-45 REST endpoints under `/api/` — 43 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py`. Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running.
+48 REST endpoints under `/api/` — 46 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py`. Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running.
 
 ## Core Endpoints
 
@@ -14,7 +14,8 @@
 | `POST` | `/api/model-queue/halt` | Halt the active model queue | — | `{status}` |
 | `POST` | `/api/model-queue/skip` | Skip current model in queue | — | `{status}` |
 | `GET` | `/api/run/{id}/status` | Live run status | — | `{run_id, status, accuracy, avg_tps, ...}` |
-| `GET` | `/api/poll` | Combined telemetry + progress | `?active_run_id=N` | `{telemetry, run_progress, batch_progress}` |
+| `GET` | `/api/poll` | Combined telemetry + progress | `?active_run_id=N` | `{telemetry, run_progress, batch_progress, live_turn}` |
+| `GET` | `/api/poll/stream` | Same as `/poll` as SSE stream (3s heartbeat) | `?active_run_id=N` | `text/event-stream` |
 | `POST` | `/api/run/{id}/pause` | Pause a run | — | `{status}` |
 | `POST` | `/api/run/{id}/resume` | Resume a run | `ResumeRequest` | `{status}` |
 | `POST` | `/api/run/{id}/halt` | Halt a run (cannot resume) | — | `{status}` |
@@ -47,13 +48,16 @@ All three share a `BaseRunParams` base:
 |--------|----------|-------------|
 | `GET` | `/api/runs` | List all runs (supports `?offset=N&limit=N`) |
 | `GET` | `/api/runs/{id}` | Full run details + per-sample results |
+| `GET` | `/api/runs/{id}/card` | Copy-paste Trusted Card block for a run |
 | `GET` | `/api/runs/{id}/diff/{task_id}` | Side-by-side diff for a task |
+| `GET` | `/api/runs/{id}/depth-results` | Per-depth results for NIAHS runs |
 | `PATCH` | `/api/runs/{id}/notes` | Update run notes/annotations |
 | `GET` | `/api/batch/{id}` | Batch summary + charts |
 | `GET` | `/api/comparison` | Cross-run comparison (`?run_ids=1,2,3`) |
 | `GET` | `/api/export/runs/{id}` | Export run as CSV/JSON/Excel |
 | `GET` | `/api/export/batch/{id}` | Export batch as CSV/JSON/Excel |
 | `GET` | `/api/export/history` | Export all history as CSV/JSON/Excel |
+| `GET` | `/api/export/selected` | Export selected runs (`?run_ids=1,2&format=CSV`) |
 | `GET` | `/api/export/history/markdown` | Export history as Markdown table |
 | `GET` | `/api/export/leaderboard` | Export leaderboard as CSV/JSON/Excel |
 | `GET` | `/api/export/comparison` | Export comparison as CSV/JSON/Excel |
@@ -64,6 +68,7 @@ All three share a `BaseRunParams` base:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/leaderboard` | Get local leaderboard |
+| `DELETE` | `/api/leaderboard` | Delete multiple runs (`?run_ids=1,2`) |
 | `DELETE` | `/api/leaderboard/{id}` | Delete leaderboard entry |
 | `POST` | `/api/leaderboard/clear` | Clear all history + leaderboard |
 | `POST` | `/api/leaderboard/sync` | Sync to online leaderboard |
@@ -80,6 +85,8 @@ All three share a `BaseRunParams` base:
 | `GET` | `/api/hf-token` | Get HuggingFace token (masked) |
 | `POST` | `/api/hf-token` | Set HuggingFace token |
 | `POST` | `/api/docker/build` | Build Docker sandbox image (`benchmax-sandbox`) |
+| `GET` | `/api/docker/status` | Docker availability + image status |
+| `GET` | `/api/health` | Health check |
 | `GET` | `/api/telemetry` | System telemetry snapshot |
 | `GET` | `/api/benchmarks` | List all benchmarks |
 | `POST` | `/api/run/check` | Pre-flight dataset/runtime check |

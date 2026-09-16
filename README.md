@@ -70,7 +70,7 @@ Full list with sample counts and scoring methods: **[docs/BENCHMARKS.md](docs/BE
 | **History & Results** | Past runs, answer diffs, exports, comparison and latency charts |
 | **Leaderboard** | Local rankings plus optional online sync |
 
-Scripting and agents: a 38-command CLI (`py cli.py run --model M --benchmark HumanEval --wait`) and a 45-endpoint REST API with Swagger UI at `/docs`. Details: **[docs/API.md](docs/API.md)**.
+Scripting and agents: a 38-command CLI (`py cli.py run --model M --benchmark HumanEval --wait`) and a 48-endpoint REST API with Swagger UI at `/docs`. Details: **[docs/API.md](docs/API.md)**.
 
 ---
 

@@ -22,6 +22,8 @@ export interface Benchmark {
   source: string
   tags: string[]
   docker: boolean
+  /** Partial sandbox need: only a subset (e.g. LiveBench coding) requires Docker. Backend truth: config.py BENCHMARK_META "docker_partial". */
+  dockerPartial?: boolean
   // enriched display fields
   subtitle: string
 }
@@ -41,7 +43,9 @@ export const CATEGORY_LABELS: Record<BenchmarkCategory, string> = {
   composite: 'Composite',
 }
 
-export const CATEGORY_COLORS: Record<BenchmarkCategory, string> = {
+import type { BadgeVariant } from '@/components/shared/Badge'
+
+export const CATEGORY_COLORS: Record<BenchmarkCategory, BadgeVariant> = {
   code: 'primary',
   knowledge: 'secondary',
   math: 'accent',
@@ -200,6 +204,7 @@ export const benchmarks: Benchmark[] = [
     source: 'LiveBench',
     tags: ['meta-benchmark', 'multi-category'],
     docker: false,
+    dockerPartial: true,
   },
   {
     slug: 'livecodebench',
@@ -434,8 +439,10 @@ export const ALL_CATEGORIES: BenchmarkCategory[] = [
 ]
 
 // factual aggregates: use these across the site
-export const TOTAL_BENCHMARKS = benchmarks.length // 30
+export const TOTAL_BENCHMARKS = benchmarks.length // 30 (backend truth: BENCHMARKS in backend/config.py)
 export const TOTAL_SAMPLES = benchmarks.reduce((s, b) => s + b.samples, 0) // 39,539 exact
-// Rounded for display ("40k" reads better than "39,439")
+// Rounded for display ("40k" reads better than "39,539")
 export const TOTAL_SAMPLES_DISPLAY = `${Math.round(TOTAL_SAMPLES / 10000) * 10}k` // "40k"
-export const DOCKER_BENCHMARKS = benchmarks.filter(b => b.docker).length // 5
+export const DOCKER_BENCHMARKS = benchmarks.filter(b => b.docker).length // 5 (backend truth: DOCKER_BENCHMARKS)
+// Backend truth: LiveBench coding subset needs Docker (config.py "docker_partial")
+export const DOCKER_PARTIAL = benchmarks.filter(b => b.dockerPartial)

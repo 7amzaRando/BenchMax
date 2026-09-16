@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import GradientText from '@/components/shared/GradientText'
 import Card, { CardTitle, CardDescription, CardContent } from '@/components/shared/Card'
 import Badge from '@/components/shared/Badge'
@@ -153,12 +154,12 @@ export default function ResultsPage() {
               <p className="text-muted-fg mb-4">
                 Connect to any model and run 30 standardized benchmarks locally.
               </p>
-              <a
+              <Link
                 href="/docs/getting-started/"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg hover:shadow-primary/25 transition-all"
               >
                 Get Started
-              </a>
+              </Link>
             </CardContent>
           </Card>
         </div>

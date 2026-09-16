@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Container, Shield, BarChart3, Cpu, Zap, GitBranch, Terminal, Trophy, Search, ArrowUpRight, Layers, Gauge } from 'lucide-react'
+import { Container, Shield, BarChart3, Cpu, Zap, GitBranch, Terminal, Trophy, ArrowUpRight, Layers, Gauge } from 'lucide-react'
 import Card from '@/components/shared/Card'
 import Badge from '@/components/shared/Badge'
 import GradientText from '@/components/shared/GradientText'

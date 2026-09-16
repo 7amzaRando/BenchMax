@@ -10,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://7amzaRando.github.io/BenchMax/sitemap.xml',
+    sitemap: 'https://7amzarando.github.io/BenchMax/sitemap.xml',
   }
 }

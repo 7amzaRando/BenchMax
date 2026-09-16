@@ -61,9 +61,9 @@ export const endpointCategories: EndpointCategory[] = [
       {
         method: 'POST',
         path: '/api/run/check',
-        description: 'Pre-flight check for missing datasets or runtimes before starting a run.',
+        description: 'Pre-flight check for missing datasets or Docker sandbox before starting a run.',
         request: '{ benchmarks: string[], ... }',
-        response: '{ ok, issues[] }',
+        response: '{ ok, issues[], warnings[] }',
       },
       {
         method: 'PATCH',
@@ -139,6 +139,12 @@ export const endpointCategories: EndpointCategory[] = [
       },
       {
         method: 'GET',
+        path: '/api/runs/{id}/card',
+        description: 'Build a copy-paste Trusted Card block for a single run.',
+        response: '{ run_id, text, display_name, model_id, hardware, accuracy, ... }',
+      },
+      {
+        method: 'GET',
         path: '/api/runs/{id}/diff/{task_id}',
         description: 'Generate a diff between expected and actual code output.',
         response: '{ html }',
@@ -159,7 +165,13 @@ export const endpointCategories: EndpointCategory[] = [
         method: 'GET',
         path: '/api/poll',
         description: 'Lightweight polling endpoint for live progress + telemetry.',
-        response: '{ telemetry, run_progress, batch_progress, active_run_override }',
+        response: '{ telemetry, run_progress, batch_progress, active_run_override, live_turn }',
+      },
+      {
+        method: 'GET',
+        path: '/api/poll/stream',
+        description: 'SSE stream alternative to GET /poll. Pushes the same JSON every 3s.',
+        response: 'text/event-stream (retry: 3000)',
       },
     ],
   },
@@ -192,6 +204,12 @@ export const endpointCategories: EndpointCategory[] = [
       },
       {
         method: 'GET',
+        path: '/api/export/selected',
+        description: 'Export per-run summaries for selected run IDs (?run_ids=1,2&format=CSV).',
+        response: 'File download (CSV/JSON/XLSX)',
+      },
+      {
+        method: 'GET',
         path: '/api/export/history/markdown',
         description: 'Export the full history as a Markdown report.',
         response: 'Markdown file',
@@ -218,6 +236,12 @@ export const endpointCategories: EndpointCategory[] = [
         path: '/api/leaderboard',
         description: 'Get the local leaderboard.',
         response: '{ leaderboard[] }',
+      },
+      {
+        method: 'DELETE',
+        path: '/api/leaderboard',
+        description: 'Delete multiple runs by comma-separated IDs (?run_ids=1,2).',
+        response: '{ leaderboard[], status }',
       },
       {
         method: 'DELETE',
@@ -278,9 +302,15 @@ export const endpointCategories: EndpointCategory[] = [
       },
       {
         method: 'POST',
-        path: '/api/runtimes/download',
-        description: 'Download portable runtimes for Aider Polyglot (Go, Rust, GCC, Java, Node).',
+        path: '/api/docker/build',
+        description: 'Build the benchmax-sandbox Docker image with all runtimes.',
         response: '{ status }',
+      },
+      {
+        method: 'GET',
+        path: '/api/docker/status',
+        description: 'Check Docker availability and image status.',
+        response: '{ available, image_exists }',
       },
     ],
   },
@@ -322,6 +352,12 @@ export const endpointCategories: EndpointCategory[] = [
         path: '/api/health',
         description: 'Health check endpoint.',
         response: '{ status: "healthy", app: "BenchMax", database: "connected" }',
+      },
+      {
+        method: 'POST',
+        path: '/api/shutdown',
+        description: 'Shut down the server (requires admin token).',
+        response: '{ status }',
       },
     ],
   },
