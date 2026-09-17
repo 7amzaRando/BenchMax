@@ -11,6 +11,9 @@ from backend.config import ROOT
 logger = logging.getLogger(__name__)
 
 # Absolute database path — works regardless of CWD
+# makedirs here (not just in init_db) so the import-time WAL setup below
+# works on fresh checkouts where records/ doesn't exist yet (e.g. CI).
+os.makedirs(ROOT / "records", exist_ok=True)
 DATABASE_URL = f"sqlite:///{ROOT / 'records' / 'benchmax.db'}"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 15})

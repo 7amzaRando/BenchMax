@@ -162,6 +162,15 @@ class TestPollBuilder:
 
 
 class TestDockerProbes:
+    def test_records_dir_created_before_import_time_connect(self):
+        """Fresh checkouts have no records/ — importing backend.database must
+        create it instead of raising 'unable to open database file' (CI red)."""
+        import inspect
+        import backend.database as dbmod
+        src = inspect.getsource(dbmod)
+        head = src.split("DATABASE_URL")[0]
+        assert "makedirs" in head
+
     def test_public_probes_exist(self):
         from backend.sandbox.docker_executor import (
             is_docker_available, is_sandbox_usable)
