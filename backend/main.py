@@ -34,7 +34,7 @@ else:
 app = FastAPI(
     title="BenchMax Core Engine",
     description="Backend coordinator for local LLM performance and correctness evaluations",
-    version="2.0.1",
+    version="2.0.2",
     default_response_class=SafeJSONResponse,
 )
 

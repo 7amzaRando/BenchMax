@@ -13,7 +13,7 @@ import argparse, json, sys, time, os, subprocess
 from pathlib import Path
 
 CLI_CONFIG = Path(__file__).parent / ".cli_config.json"
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 
 try:
     import httpx
