@@ -4,6 +4,7 @@ import difflib
 import logging
 import sys
 import threading
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Dict, Any, List
@@ -45,6 +46,11 @@ _BATCH_SIZE_LARGE_THRESHOLD = 500
 # Abort a run after this many consecutive sample failures (points at a
 # systemic problem rather than isolated bad samples).
 _MAX_CONSECUTIVE_FAILURES = 10
+# DB status refresh cadence: every N samples (cheap for huge suites) ...
+_STATUS_CHECK_INTERVAL = 50
+# ... or when the last check is older than this (slow long-context samples
+# where N iterations could take an hour — pause/halt UI feedback stays fresh).
+_STATUS_STALE_SECS = 5.0
 
 
 def resolve_data_file(caller_file: str, filename: str) -> str | None:
@@ -222,23 +228,18 @@ class BaseBenchmark(ABC):
         """Override to release resources after benchmark finishes."""
         pass
 
-    async def run_evaluation(self, run_id: int, params: Dict[str, Any]) -> None:
+    def _open_run(self, run_id: int, params: Dict[str, Any]):
+        """Load the Run row, mark RUNNING, load the dataset, purge stale resume results.
+
+        Returns (run, dataset, start_index, model_name, run_logger) or None
+        when the run row is missing or the dataset is empty (status is set
+        to FAILED in the latter case).
         """
-        Main runner loop. Executes the benchmark sequentially, handles
-        database state tracking, and listens for pause/halt commands.
-        """
-        halt_ev = params.get("_halt_event")
         run_logger = logging.LoggerAdapter(logger, {"run_id": run_id})
-
-        def _is_halted() -> bool:
-            if halt_ev and halt_ev.is_set():
-                return True
-            return False
-
         run = self.db.query(Run).filter(Run.id == run_id).first()
         if not run:
             run_logger.error("Run ID not found in database.")
-            return
+            return None
 
         run.status = "RUNNING"
         self.db.commit()
@@ -251,7 +252,7 @@ class BaseBenchmark(ABC):
             run_logger.error(f"Benchmark {run.benchmark_name} loaded empty dataset — marking FAILED.")
             run.status = "FAILED"
             self.db.commit()
-            return
+            return None
 
         start_index = run.current_index
         model_name = run.model_name
@@ -285,10 +286,167 @@ class BaseBenchmark(ABC):
                     self.db.commit()
 
         logger.info(f"Starting benchmark {run.benchmark_name} for model {model_name} from index {start_index}/{len(dataset)}")
+        return run, dataset, start_index, model_name, run_logger
+
+    def _poll_run_status(self, run, run_logger, i: int, total: int,
+                         last_check: float) -> tuple[str, float]:
+        """Periodic pause/halt check (DB refresh, at most every 5s or 50 samples).
+
+        Returns (action, new_last_check) where action is "ok", "paused",
+        "halted", or "deleted".
+        """
+        # Check for pause / abort periodically (not every iteration) to avoid
+        # excessive DB round-trips for large datasets. Halt is checked via the
+        # in-memory event in the caller; the DB refresh is only needed for PAUSED status.
+        # Time-based arm covers slow long-context samples where 50 iterations
+        # could take an hour — pause/halt UI feedback stays within ~5s.
+        stale = (time.monotonic() - last_check) > _STATUS_STALE_SECS
+        if not (i % _STATUS_CHECK_INTERVAL == 0 or i == total - 1 or stale):
+            return "ok", last_check
+        last_check = time.monotonic()
+        try:
+            self.db.refresh(run)
+        except Exception:
+            # Run row deleted mid-run (e.g. cleared history) — abort quietly.
+            run_logger.warning("Deleted during execution — aborting loop.")
+            return "deleted", last_check
+        if run.status == "PAUSED":
+            run_logger.info("Paused at index %d.", i)
+            run.current_index = i
+            self.db.commit()
+            return "paused", last_check
+        if run.status in ("HALTED", "FAILED"):
+            run_logger.info("Halted/aborted at index %d.", i)
+            return "halted", last_check
+        return "ok", last_check
+
+    def _store_repetition(self, run_id: int, run, sample: Dict[str, Any],
+                          i: int, result_data: Dict[str, Any], run_logger) -> None:
+        """Record a repetition-skipped sample and advance the index."""
+        run_logger.warning("Repetition detected at index %d, skipping sample.", i)
+        rep_result = Result(
+            run_id=run_id,
+            task_id=sample.get("task_id", f"sample_{i}"),
+            prompt=result_data.get("prompt"),
+            raw_response=result_data.get("raw_response", ""),
+            extracted_code="",
+            correct=False,
+            error_message="Repetition detected — model output is looping (sample skipped)",
+            elapsed_time=result_data.get("elapsed_time", 0.0),
+            tps=result_data.get("tps", 0.0),
+            ttft=result_data.get("ttft", 0.0),
+            thinking_tokens=result_data.get("thinking_tokens", 0),
+            response_tokens=result_data.get("response_tokens", 0),
+        )
+        self.db.add(rep_result)
+        run.current_index = i + 1
+        self.db.commit()
+        set_live_progress(run_id, i + 1)
+
+    @staticmethod
+    def _result_to_record(run_id: int, sample: Dict[str, Any], i: int,
+                          result_data: Dict[str, Any]) -> Result:
+        """Build a Result row from a sample's result dict (incl. scoring_details)."""
+        if result_data.get("stream_timed_out"):
+            if not result_data.get("error_message"):
+                result_data["error_message"] = "Stream timed out — no tokens received for 60s (sample skipped)"
+            result_data["correct"] = False
+
+        standard_keys = {"prompt", "raw_response", "extracted_code",
+                         "correct", "error_message", "elapsed_time",
+                         "tps", "ttft", "thinking_tokens", "response_tokens",
+                         "thinking_content", "answer_content",
+                         "prompt_tokens", "stream_timed_out"}
+        extra = {k: v for k, v in result_data.items() if k not in standard_keys}
+        if "scoring_details" in result_data:
+            sd = result_data["scoring_details"]
+            scoring_details = json.dumps(sd) if not isinstance(sd, str) else sd
+        elif extra:
+            scoring_details = json.dumps(extra)
+        else:
+            scoring_details = None
+        return Result(
+            run_id=run_id,
+            task_id=sample.get("task_id", f"sample_{i}"),
+            prompt=result_data.get("prompt"),
+            raw_response=result_data.get("raw_response"),
+            extracted_code=result_data.get("extracted_code"),
+            correct=result_data.get("correct", False),
+            error_message=result_data.get("error_message"),
+            elapsed_time=result_data.get("elapsed_time", 0.0),
+            tps=result_data.get("tps", 0.0),
+            ttft=result_data.get("ttft", 0.0),
+            thinking_tokens=result_data.get("thinking_tokens", 0),
+            response_tokens=result_data.get("response_tokens", 0),
+            prompt_tokens=result_data.get("prompt_tokens", 0),
+            scoring_details=scoring_details
+        )
+
+    def _store_sample_failure(self, run_id: int, run, sample: Dict[str, Any], i: int,
+                              exc: Exception, run_logger, flush_fn) -> str:
+        """Record a failed sample; returns "aborted" when the loop must stop, else "continue".
+
+        A single bad sample (transient HTTP error, parse failure, LM Studio
+        hiccup) is recorded and skipped; the flushed batch + failure counter
+        bookkeeping happens in the caller via consecutive_failures.
+        """
+        # A single bad sample (transient HTTP error, parse failure,
+        # LM Studio hiccup) should NOT kill the whole run. Record a
+        # failed result and keep going; only abort the run if many
+        # samples fail in a row (pointing at a systemic problem).
+        run_logger.error("Error evaluating sample %d: %s", i, exc)
+        try:
+            flush_fn(i)
+            fail_result = Result(
+                run_id=run_id,
+                task_id=sample.get("task_id", f"sample_{i}"),
+                prompt=sample.get("prompt", ""),
+                raw_response="",
+                extracted_code="",
+                correct=False,
+                error_message=str(exc),
+                elapsed_time=0.0, tps=0.0, ttft=0.0,
+                thinking_tokens=0, response_tokens=0,
+            )
+            self.db.add(fail_result)
+            run.current_index = i + 1
+            self.db.commit()
+        except Exception as commit_exc:
+            # The Run row was deleted mid-run (e.g. user deleted it
+            # from history while this thread was still writing).
+            # The session is poisoned — roll back and abort quietly.
+            run_logger.warning("Aborting loop — cannot record failure: %s", commit_exc)
+            try:
+                self.db.rollback()
+            except Exception:
+                pass
+            return "aborted"
+        set_live_progress(run_id, i + 1)
+        return "continue"
+
+    async def run_evaluation(self, run_id: int, params: Dict[str, Any]) -> None:
+        """
+        Main runner loop. Executes the benchmark sequentially, handles
+        database state tracking, and listens for pause/halt commands.
+        """
+        halt_ev = params.get("_halt_event")
+
+        def _is_halted() -> bool:
+            if halt_ev and halt_ev.is_set():
+                return True
+            return False
+
+        opened = self._open_run(run_id, params)
+        if opened is None:
+            return
+        run, dataset, start_index, model_name, run_logger = opened
 
         _batch_count = 0
         result_buffer = []
         consecutive_failures = 0
+        # Time-based status refresh: the % 50 cadence below can lag for an
+        # hour on slow long-context samples, so also refresh when >5s stale.
+        _last_status_check = time.monotonic()
 
         def _flush_batch(final_index):
             nonlocal _batch_count, result_buffer
@@ -308,24 +466,10 @@ class BaseBenchmark(ABC):
                     self.db.commit()
                     return
 
-                # Check for pause / abort periodically (not every iteration) to avoid
-                # excessive DB round-trips for large datasets. Halt is checked via the
-                # in-memory event above; the DB refresh is only needed for PAUSED status.
-                if i % 50 == 0 or i == len(dataset) - 1:
-                    try:
-                        self.db.refresh(run)
-                    except Exception:
-                        # Run row deleted mid-run (e.g. cleared history) — abort quietly.
-                        run_logger.warning("Deleted during execution — aborting loop.")
-                        return
-                    if run.status == "PAUSED":
-                        run_logger.info("Paused at index %d.", i)
-                        run.current_index = i
-                        self.db.commit()
-                        return
-                    elif run.status in ("HALTED", "FAILED"):
-                        run_logger.info("Halted/aborted at index %d.", i)
-                        return
+                action, _last_status_check = self._poll_run_status(
+                    run, run_logger, i, len(dataset), _last_status_check)
+                if action != "ok":
+                    return
 
                 sample = dataset[i]
 
@@ -352,61 +496,10 @@ class BaseBenchmark(ABC):
 
                     rep_detected = not getattr(self.client, '_rep_disabled', False) and getattr(self.client, '_repetition_detected', False)
                     if rep_detected:
-                        run_logger.warning("Repetition detected at index %d, skipping sample.", i)
-                        rep_result = Result(
-                            run_id=run_id,
-                            task_id=sample.get("task_id", f"sample_{i}"),
-                            prompt=result_data.get("prompt"),
-                            raw_response=result_data.get("raw_response", ""),
-                            extracted_code="",
-                            correct=False,
-                            error_message="Repetition detected — model output is looping (sample skipped)",
-                            elapsed_time=result_data.get("elapsed_time", 0.0),
-                            tps=result_data.get("tps", 0.0),
-                            ttft=result_data.get("ttft", 0.0),
-                            thinking_tokens=result_data.get("thinking_tokens", 0),
-                            response_tokens=result_data.get("response_tokens", 0),
-                        )
-                        self.db.add(rep_result)
-                        run.current_index = i + 1
-                        self.db.commit()
-                        set_live_progress(run_id, i + 1)
+                        self._store_repetition(run_id, run, sample, i, result_data, run_logger)
                         continue
 
-                    if result_data.get("stream_timed_out"):
-                        if not result_data.get("error_message"):
-                            result_data["error_message"] = "Stream timed out — no tokens received for 60s (sample skipped)"
-                        result_data["correct"] = False
-
-                    standard_keys = {"prompt", "raw_response", "extracted_code",
-                                     "correct", "error_message", "elapsed_time",
-                                     "tps", "ttft", "thinking_tokens", "response_tokens",
-                                     "thinking_content", "answer_content",
-                                     "prompt_tokens", "stream_timed_out"}
-                    extra = {k: v for k, v in result_data.items() if k not in standard_keys}
-                    if "scoring_details" in result_data:
-                        sd = result_data["scoring_details"]
-                        scoring_details = json.dumps(sd) if not isinstance(sd, str) else sd
-                    elif extra:
-                        scoring_details = json.dumps(extra)
-                    else:
-                        scoring_details = None
-                    result_record = Result(
-                        run_id=run_id,
-                        task_id=sample.get("task_id", f"sample_{i}"),
-                        prompt=result_data.get("prompt"),
-                        raw_response=result_data.get("raw_response"),
-                        extracted_code=result_data.get("extracted_code"),
-                        correct=result_data.get("correct", False),
-                        error_message=result_data.get("error_message"),
-                        elapsed_time=result_data.get("elapsed_time", 0.0),
-                        tps=result_data.get("tps", 0.0),
-                        ttft=result_data.get("ttft", 0.0),
-                        thinking_tokens=result_data.get("thinking_tokens", 0),
-                        response_tokens=result_data.get("response_tokens", 0),
-                        prompt_tokens=result_data.get("prompt_tokens", 0),
-                        scoring_details=scoring_details
-                    )
+                    result_record = self._result_to_record(run_id, sample, i, result_data)
                     result_buffer.append(result_record)
                     _batch_count += 1
                     consecutive_failures = 0
@@ -425,38 +518,10 @@ class BaseBenchmark(ABC):
                 except (SystemExit, KeyboardInterrupt):
                     raise
                 except Exception as exc:
-                    # A single bad sample (transient HTTP error, parse failure,
-                    # LM Studio hiccup) should NOT kill the whole run. Record a
-                    # failed result and keep going; only abort the run if many
-                    # samples fail in a row (pointing at a systemic problem).
-                    run_logger.error("Error evaluating sample %d: %s", i, exc)
-                    try:
-                        _flush_batch(i)
-                        fail_result = Result(
-                            run_id=run_id,
-                            task_id=sample.get("task_id", f"sample_{i}"),
-                            prompt=sample.get("prompt", ""),
-                            raw_response="",
-                            extracted_code="",
-                            correct=False,
-                            error_message=str(exc),
-                            elapsed_time=0.0, tps=0.0, ttft=0.0,
-                            thinking_tokens=0, response_tokens=0,
-                        )
-                        self.db.add(fail_result)
-                        run.current_index = i + 1
-                        self.db.commit()
-                    except Exception as commit_exc:
-                        # The Run row was deleted mid-run (e.g. user deleted it
-                        # from history while this thread was still writing).
-                        # The session is poisoned — roll back and abort quietly.
-                        run_logger.warning("Aborting loop — cannot record failure: %s", commit_exc)
-                        try:
-                            self.db.rollback()
-                        except Exception:
-                            pass
+                    outcome = self._store_sample_failure(
+                        run_id, run, sample, i, exc, run_logger, _flush_batch)
+                    if outcome == "aborted":
                         return
-                    set_live_progress(run_id, i + 1)
                     consecutive_failures += 1
                     if consecutive_failures >= _MAX_CONSECUTIVE_FAILURES:
                         run_logger.error("Aborted — %d consecutive sample failures.", consecutive_failures)

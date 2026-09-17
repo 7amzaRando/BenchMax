@@ -29,27 +29,55 @@ from backend.benchmarks.base import BaseBenchmark
 
 logger = logging.getLogger(__name__)
 
-# Live turn tracking for poll/status — updated per turn, read by operations.poll()
-_live_turn_state: Dict[str, Any] = {}
+# Live turn tracking for poll/status — updated per turn, read by operations.poll().
+# Keyed by run_id so two concurrent multi-turn runs (e.g. GAIA + Tau3) can't
+# overwrite each other's Turn N/M display (previously a single global slot).
+_live_turn_states: Dict[Any, Dict[str, Any]] = {}
 _live_turn_lock = threading.Lock()
+_DEFAULT_LIVE_TURN_KEY = "default"
+# Back-compat alias: historical imports may reference _live_turn_state.
+_live_turn_state: Dict[str, Any] = {}
 
-def get_live_turn_state() -> Dict[str, Any]:
-    """Return a snapshot of the current multi-turn progress for live polling."""
+
+def _live_key(run_id: int | None) -> Any:
+    return run_id if run_id is not None else _DEFAULT_LIVE_TURN_KEY
+
+
+def get_live_turn_state(run_id: int | None = None) -> Dict[str, Any]:
+    """Return a snapshot of multi-turn progress for live polling.
+
+    With a run_id, returns that run's state (``{}`` when absent). Without
+    one, returns the most recently updated run's state (``{}`` when idle) —
+    preserving the previous single-slot call contract.
+    """
     with _live_turn_lock:
-        return dict(_live_turn_state)
+        if run_id is not None:
+            return dict(_live_turn_states.get(_live_key(run_id), {}))
+        if not _live_turn_states:
+            return {}
+        latest = max(_live_turn_states.values(), key=lambda s: s.get("ts", 0))
+        return dict(latest)
+
 
 def _set_live_turn(run_id: int | None, turn: int, max_turns: int, elapsed: float) -> None:
     with _live_turn_lock:
-        if run_id is not None:
-            _live_turn_state["run_id"] = run_id
-        _live_turn_state["turn"] = turn
-        _live_turn_state["max_turns"] = max_turns
-        _live_turn_state["elapsed"] = elapsed
-        _live_turn_state["ts"] = time.time()
+        _live_turn_states[_live_key(run_id)] = {
+            "run_id": run_id,
+            "turn": turn,
+            "max_turns": max_turns,
+            "elapsed": elapsed,
+            "ts": time.time(),
+        }
 
-def _clear_live_turn() -> None:
+
+def _clear_live_turn(run_id: int | None = None) -> None:
+    """Clear live-turn state. ``None`` (default) clears all runs — kept so
+    existing no-arg callers and tests keep their contract."""
     with _live_turn_lock:
-        _live_turn_state.clear()
+        if run_id is None:
+            _live_turn_states.clear()
+        else:
+            _live_turn_states.pop(_live_key(run_id), None)
 
 # Default limits for multi-turn conversations
 _DEFAULT_MAX_CONTEXT_TOKENS = 32768  # Fallback if model metadata unavailable
@@ -358,7 +386,7 @@ class MultiTurnBenchmark(BaseBenchmark):
             if not any(m.get("role") == "user" and (m.get("content") or "").strip()
                        for m in conversation):
                 logger.error("No user message left after truncation at turn %d", turn_idx)
-                _clear_live_turn()
+                _clear_live_turn(run_id)
                 return self._result(
                     initial_prompt,
                     {"elapsed_time": total_elapsed, "tps": last_tps, "ttft": last_ttft,
@@ -375,7 +403,7 @@ class MultiTurnBenchmark(BaseBenchmark):
                 )
             except Exception as e:
                 logger.error(f"evaluate_turn failed at turn {turn_idx}: {e}")
-                _clear_live_turn()
+                _clear_live_turn(run_id)
                 return self._result(
                     initial_prompt,
                     {"elapsed_time": total_elapsed, "tps": last_tps, "ttft": last_ttft,
@@ -451,7 +479,7 @@ class MultiTurnBenchmark(BaseBenchmark):
             if done:
                 break
 
-        _clear_live_turn()
+        _clear_live_turn(run_id)
 
         # Score the conversation
         try:

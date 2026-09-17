@@ -43,6 +43,10 @@ _telemetry_cache_ttl = 5.0  # seconds — covers 1-2 frontend poll intervals (3s
 import threading  # noqa: E402
 _telemetry_cache_lock = threading.Lock()
 
+# Static GPU identity cache (name + VRAM total) for _get_wmi_gpu_static.
+# None = not resolved yet; dict (possibly empty) = resolved, return a copy.
+_wmi_static_cache: dict | None = None
+
 
 def _get_gpu_counters_typeperf() -> dict:
     """
@@ -140,36 +144,45 @@ def _get_wmi_gpu_static() -> dict:
 
     Note: WMI AdapterRAM is a UInt32 (max ~4 GB). For >4 GB cards,
     the driver registry fallback in _get_vram_total_from_registry is used.
-    
+
     If wmic is unavailable, falls back to reading GPU name from registry DriverDesc.
+
+    The result is cached process-wide: GPU identity never changes at runtime,
+    and without caching, machines without wmic.exe (removed from Windows 11
+    24H2+ by default) would spawn a failing subprocess and log a DEBUG line
+    on every telemetry tick.
     """
+    global _wmi_static_cache
+    if _wmi_static_cache is not None:
+        return dict(_wmi_static_cache)
     result = {}
-    try:
-        res = subprocess.run(
-            ["wmic", "path", "Win32_VideoController", "get", "Name,AdapterRAM", "/format:csv"],
-            capture_output=True, text=True, timeout=3.0
-        )
-        if res.returncode == 0:
-            for line in res.stdout.strip().splitlines():
-                line = line.strip()
-                if not line or "Node" in line:
-                    continue
-                parts = [p.strip() for p in line.split(",")]
-                if len(parts) >= 3:
-                    name = parts[2]
-                    if any(kw in name.upper() for kw in ["AMD", "RADEON", "RX ", "NVIDIA", "GEFORCE", "QUADRO", "INTEL", "ARC"]):
-                        result["gpu_name"] = name
-                        # Prefer registry key (supports >4 GB, unlike WMI AdapterRAM UInt32)
-                        vram_bytes = _get_vram_total_from_registry(name)
-                        if vram_bytes is not None:
-                            result["vram_total_mb"] = round(vram_bytes / (1024 * 1024), 0)
-                        else:
-                            vram_str = parts[1]
-                            if vram_str.isdigit():
-                                result["vram_total_mb"] = round(int(vram_str) / (1024 * 1024), 0)
-                        break
-    except Exception as e:
-        logger.debug(f"WMI static GPU query failed: {e}")
+    if shutil.which("wmic"):
+        try:
+            res = subprocess.run(
+                ["wmic", "path", "Win32_VideoController", "get", "Name,AdapterRAM", "/format:csv"],
+                capture_output=True, text=True, timeout=3.0
+            )
+            if res.returncode == 0:
+                for line in res.stdout.strip().splitlines():
+                    line = line.strip()
+                    if not line or "Node" in line:
+                        continue
+                    parts = [p.strip() for p in line.split(",")]
+                    if len(parts) >= 3:
+                        name = parts[2]
+                        if any(kw in name.upper() for kw in ["AMD", "RADEON", "RX ", "NVIDIA", "GEFORCE", "QUADRO", "INTEL", "ARC"]):
+                            result["gpu_name"] = name
+                            # Prefer registry key (supports >4 GB, unlike WMI AdapterRAM UInt32)
+                            vram_bytes = _get_vram_total_from_registry(name)
+                            if vram_bytes is not None:
+                                result["vram_total_mb"] = round(vram_bytes / (1024 * 1024), 0)
+                            else:
+                                vram_str = parts[1]
+                                if vram_str.isdigit():
+                                    result["vram_total_mb"] = round(int(vram_str) / (1024 * 1024), 0)
+                            break
+        except Exception as e:
+            logger.debug(f"WMI static GPU query failed: {e}")
 
     # Fallback: if wmic is unavailable, try registry to get GPU name
     if not result.get("gpu_name") and WINREG_AVAILABLE:
@@ -193,6 +206,7 @@ def _get_wmi_gpu_static() -> dict:
         except Exception as e:
             logger.debug(f"Registry GPU name fallback failed: {e}")
 
+    _wmi_static_cache = dict(result)
     return result
 
 

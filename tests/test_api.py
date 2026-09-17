@@ -114,7 +114,7 @@ async def test_poll(client):
             "ram_percent": 25.0, "gpu_available": False, "gpu_name": "none",
             "gpu_load": 0.0, "vram_total_mb": 0, "vram_used_mb": 0, "vram_percent": 0.0}
     with patch("backend.api.get_system_metrics", return_value=fake), \
-         patch("backend.operations.get_system_metrics", return_value=fake):
+         patch("backend.ops.stats.get_system_metrics", return_value=fake):
         resp = await client.get("/api/poll")
     assert resp.status_code == 200
     data = resp.json()
@@ -164,19 +164,19 @@ async def test_connect_refused(client):
 
 @pytest.mark.asyncio
 async def test_delete_runs_empty(client):
-    resp = await client.delete("/api/leaderboard", params={"run_ids": ""})
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "leaderboard" in data
-    assert "status" in data
+    # Empty / unparseable bulk deletes are client errors (400), not 200s.
+    for path in ("/api/runs", "/api/leaderboard"):
+        resp = await client.delete(path, params={"run_ids": ""})
+        assert resp.status_code == 400
+        assert "No valid run IDs" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
 async def test_delete_runs_invalid_ids(client):
-    resp = await client.delete("/api/leaderboard", params={"run_ids": "abc,!!"})
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["status"] == "No valid run IDs provided."
+    for path in ("/api/runs", "/api/leaderboard"):
+        resp = await client.delete(path, params={"run_ids": "abc,!!"})
+        assert resp.status_code == 400
+        assert resp.json()["detail"] == "No valid run IDs provided."
 
 
 def test_sanitize_for_json_replaces_non_finite():

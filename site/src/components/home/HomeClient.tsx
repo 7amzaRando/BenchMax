@@ -145,7 +145,7 @@ export default function HomeClient() {
                 </a>
               </motion.div>
               <motion.p variants={fade} transition={{ duration: 0.55, delay: 0.2 }} className="mt-3 text-xs text-muted-fg">
-                Free download from GitHub Releases (BenchMax.exe, ~300 MB, no install). Or build from source below.
+                Free download from GitHub Releases (BenchMax.exe, ~170 MB, no install). Or build from source below.
               </motion.p>
 
               <motion.div variants={fade} transition={{ duration: 0.55, delay: 0.22 }} className="mt-6 flex flex-wrap gap-2 text-xs text-muted-fg">

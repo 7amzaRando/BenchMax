@@ -3,7 +3,7 @@ import os
 import sys
 import secrets as _secrets
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -46,6 +46,61 @@ app.add_middleware(
     allow_credentials=False,
 )
 
+from starlette.middleware.base import BaseHTTPMiddleware  # noqa: E402
+from starlette.responses import JSONResponse as _JSONResponse  # noqa: E402
+
+
+class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Defense-in-depth headers on every response (localhost app, no cookies
+    to steal — still worth having if ever bound to LAN)."""
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        return response
+
+
+class _LanAuthMiddleware(BaseHTTPMiddleware):
+    """Un-skippable LAN gate: loopback clients pass freely; any client
+    arriving over the network must present a valid Bearer token issued
+    via POST /api/auth/login. Health + auth endpoints stay open so the
+    login screen can detect state and authenticate."""
+
+    _OPEN_PREFIXES = ("/api/health", "/api/auth/")
+
+    async def dispatch(self, request, call_next):
+        from backend import auth as lan_auth
+        path = request.url.path
+        if path.startswith(self._OPEN_PREFIXES):
+            return await call_next(request)
+        # The SPA shell (HTML/JS/CSS) must load so the login screen can
+        # render — it carries no data. All data flows through /api/*,
+        # which is gated below.
+        if not path.startswith("/api/"):
+            return await call_next(request)
+        if not lan_auth.lan_request_allowed(request):
+            return _JSONResponse({"detail": "LAN login required."}, status_code=401)
+        return await call_next(request)
+
+
+app.add_middleware(_SecurityHeadersMiddleware)
+app.add_middleware(_LanAuthMiddleware)
+
+# BenchMax is a single-process app: batch/queue/halt/progress state lives in
+# process-local memory (backend/ops/state.py) with a bounded run-slot
+# semaphore (MAX_CONCURRENT_RUNS). Do NOT serve with multiple workers
+# (e.g. ``uvicorn --workers 4``) — each worker would split that state and
+# pause/halt/queue commands would only reach one worker's runs.
+if os.environ.get("BENCHMAX_WORKERS", "") not in ("", "1"):
+    logger.warning(
+        "BENCHMAX_WORKERS=%s — BenchMax requires a single worker; "
+        "batch/queue/halt state will split across workers.",
+        os.environ.get("BENCHMAX_WORKERS"),
+    )
+
 try:
     logger.info("Initializing BenchMax SQLite database...")
     init_db()
@@ -68,9 +123,25 @@ def health_check():
     return {"status": "healthy", "app": "BenchMax", "database": "connected"}
 
 import threading  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
+
+
+class _ShutdownBody(BaseModel):
+    token: str = ""
+
+
 @app.post("/api/shutdown")
-def shutdown(token: str = ""):
-    """Shut down the server. Token optional for localhost; wrong token is rejected."""
+async def shutdown(request: Request, body: _ShutdownBody | None = None):
+    """Shut down the server. The token travels in the JSON body (never the
+    URL, so it stays out of logs). Empty token is accepted from localhost
+    only; LAN callers already passed the Bearer gate above, and a wrong
+    non-empty token is always rejected."""
+    token = ""
+    if body is not None:
+        token = body.token or ""
+    if not token:
+        # Back-compat: older CLI/frontend versions send ?token= in the URL.
+        token = request.query_params.get("token", "")
     if token and token != _admin_token:
         from fastapi.responses import JSONResponse
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
@@ -99,6 +170,11 @@ def shutdown(token: str = ""):
 # Register all REST API routes from api.py
 from backend.api import router as api_router  # noqa: E402
 app.include_router(api_router, prefix="/api")
+# API versioning: /api/* is frozen (back-compat). /api/v1/* serves the same
+# router so new clients can pin a versioned base path; new breaking
+# endpoints go under /api/v2. Excluded from OpenAPI schema to avoid
+# duplicate operation IDs in /docs.
+app.include_router(api_router, prefix="/api/v1", include_in_schema=False)
 
 # Diagnostic endpoints
 if ENABLE_DIAG:

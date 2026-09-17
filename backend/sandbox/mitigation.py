@@ -5,7 +5,6 @@ restricted process tokens to limit what child processes can do.
 """
 
 import ctypes
-import ctypes.wintypes
 import logging
 import sys
 from typing import List

@@ -1,15 +1,60 @@
 const BASE = '/api';
 
+const LAN_TOKEN_KEY = 'bm_lan_token';
+
+export function getLanToken(): string | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage.getItem(LAN_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = getLanToken();
   const res = await fetch(`${BASE}${url}`, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
   });
   if (!res.ok) {
     const err = await res.text().catch(() => 'Unknown error');
     throw new Error(`HTTP ${res.status}: ${err}`);
   }
   return res.json();
+}
+
+export function isLanUnauthorized(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  return err.message.includes('HTTP 401') && err.message.includes('LAN login required');
+}
+
+export interface AuthStatus {
+  lan_required: boolean;
+  password_set: boolean;
+  authenticated: boolean;
+}
+
+export function authStatus() {
+  return fetchJson<AuthStatus>('/auth/status');
+}
+
+export function authLogin(password: string) {
+  return fetchJson<{ token: string }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  });
+}
+
+export function authSetup(password: string) {
+  return fetchJson<{ status: string }>('/auth/setup', {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  });
 }
 
 export interface ModelMetadata {
@@ -256,6 +301,9 @@ export interface RunDetails {
   benchmark_name?: string;
   context_length?: number | null;
   samples: any[];
+  samples_total?: number;
+  sample_offset?: number;
+  sample_limit?: number;
   failed_tasks: string[];
   selected_failed: string | null;
   token_chart: any[];
@@ -428,7 +476,7 @@ export function deleteLeaderboardEntry(runId: number) {
 
 export function deleteRuns(runIds: number[]) {
   const ids = [...runIds].sort((a, b) => a - b).join(',');
-  return fetchJson<{ leaderboard: LeaderboardEntry[]; status: string }>(`/leaderboard?run_ids=${encodeURIComponent(ids)}`, {
+  return fetchJson<{ leaderboard: LeaderboardEntry[]; status: string }>(`/runs?run_ids=${encodeURIComponent(ids)}`, {
     method: 'DELETE',
   });
 }

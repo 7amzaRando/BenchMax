@@ -1,15 +1,13 @@
 import asyncio
-import json
+import functools
+import inspect
 import logging
 import math
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Request
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
-from sqlalchemy.orm import load_only
-
-from backend.database import Run, Result, get_db
 
 _EXPORT_MIME = {
     "CSV": "text/csv",
@@ -28,12 +26,13 @@ from backend.operations import (  # noqa: E402
     _scan_datasets, install_dataset, install_all_missing,
     _load_hf_token, _save_hf_token,
     save_lb_api_key, load_lb_settings, sync_to_online_leaderboard,
-    _compute_result_stats,
     poll,
     start_model_queue, get_model_queue_state, halt_model_queue, skip_current_model,
     check_benchmark_readiness,
     build_docker_image, get_docker_status,
     build_trusted_card, export_selected_runs,
+    get_run_status, get_run_meta, update_run_notes, get_depth_results,
+    build_poll_payload,
 )
 from backend.config import BENCHMARKS  # noqa: E402
 logger = logging.getLogger(__name__)
@@ -128,72 +127,152 @@ def _handle_api_error(msg: str):
     raise HTTPException(status_code=500, detail="Internal server error")
 
 
+def _map_service_error(exc: Exception):
+    """Map typed service-layer errors (backend/ops/errors.py) to HTTP codes.
+
+    RunNotFoundError/NothingToExportError → 404, RunStateError → 409,
+    NoValidIdsError → 400. Returns None when the exception is unmapped.
+    """
+    from backend.ops.errors import (
+        NoValidIdsError,
+        NothingToExportError,
+        RunNotFoundError,
+        RunStateError,
+    )
+
+    if isinstance(exc, (RunNotFoundError, NothingToExportError)):
+        raise HTTPException(status_code=404, detail=str(exc))
+    if isinstance(exc, RunStateError):
+        raise HTTPException(status_code=409, detail=str(exc))
+    if isinstance(exc, NoValidIdsError):
+        raise HTTPException(status_code=400, detail=str(exc))
+    return None
+
+
+def handle_api_errors(_func=None, *, operation=None):
+    """Decorator replacing per-endpoint try/except _handle_api_error blocks.
+
+    Wraps sync and async handlers: HTTPException passes through untouched,
+    typed service errors map to 404/409/400 via _map_service_error(), and
+    any other exception is logged (with traceback) and converted to a
+    generic 500 via _handle_api_error(). The operation label defaults to
+    "<func_name> failed" so call sites no longer hand-maintain strings.
+    """
+    def decorator(func):
+        op = operation or f"{func.__name__} failed"
+        if inspect.iscoroutinefunction(func):
+            @functools.wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                try:
+                    return await func(*args, **kwargs)
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    _map_service_error(e)
+                    _handle_api_error(op)
+            return async_wrapper
+
+        @functools.wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except HTTPException:
+                raise
+            except Exception as e:
+                _map_service_error(e)
+                _handle_api_error(op)
+        return sync_wrapper
+
+    if _func is not None and callable(_func):
+        return decorator(_func)
+    return decorator
+
+
+def _run_control_error(status: str, run_id: int):
+    """Map legacy string-returning control-plane results to HTTP codes.
+
+    ``pause_run``/``halt_run``/``resume_run`` return status strings for
+    back-compat (tests + CLI pin them). "Run not found." → 404,
+    "Cannot …" refusals → 409 Conflict, anything else starting with a
+    failure → 500. Success strings pass through untouched.
+    """
+    if status == "Run not found.":
+        raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+    if status.startswith("Cannot ") or "could not resume" in status:
+        raise HTTPException(status_code=409, detail=status)
+    return status
+
+
+def _export_file_or_404(file_path, status: str, export_format: str, markdown: bool = False):
+    """Shared export responder: file download on success, 404 otherwise.
+
+    Previously each of the 8 export endpoints inlined its own
+    ``if file_path: FileResponse … else: 200-JSON`` branch, so an empty
+    export downloaded a bogus ``{"status": …, "file": null}`` JSON file.
+    """
+    if file_path:
+        media = "text/markdown" if markdown else _EXPORT_MIME.get(export_format, "application/octet-stream")
+        return FileResponse(file_path, filename=Path(file_path).name, media_type=media)
+    raise HTTPException(status_code=404, detail=status or "Nothing to export")
+
+
 @router.post("/connect")
+@handle_api_errors
 async def api_connect(req: ConnectRequest):
     """Connect to an LM Studio instance and list available models."""
-    try:
-        status_str, models_df, model_choices, metadata = await connect_lm_studio(req.api_url, req.api_key)
-        models = _df_to_dict(models_df)
-        choices = model_choices if isinstance(model_choices, list) else []
-        selected = choices[0] if choices else None
-        # metadata/models come straight from LM Studio's JSON — sanitize
-        # external floats (NaN context lengths etc.) before returning.
-        return sanitize_for_json({
-            "status": status_str,
-            "models": models,
-            "choices": choices,
-            "selected": selected,
-            "metadata": metadata,
-        })
-    except Exception:
-        _handle_api_error("api_connect failed")
+    status_str, models_df, model_choices, metadata = await connect_lm_studio(req.api_url, req.api_key)
+    models = _df_to_dict(models_df)
+    choices = model_choices if isinstance(model_choices, list) else []
+    selected = choices[0] if choices else None
+    # metadata/models come straight from LM Studio's JSON — sanitize
+    # external floats (NaN context lengths etc.) before returning.
+    return sanitize_for_json({
+        "status": status_str,
+        "models": models,
+        "choices": choices,
+        "selected": selected,
+        "metadata": metadata,
+    })
 
 @router.get("/datasets")
+@handle_api_errors
 def api_scan_datasets():
     """Scan the data/ directory and report which datasets are installed."""
-    try:
-        df = _scan_datasets()
-        return {"datasets": _df_to_dict(df)}
-    except Exception:
-        _handle_api_error("api_scan_datasets failed")
+    df = _scan_datasets()
+    return {"datasets": _df_to_dict(df)}
 
 @router.post("/datasets/install/{bench_name}")
+@handle_api_errors
 async def api_install_dataset(bench_name: str, req: InstallRequest = Body(default=InstallRequest())):
     """Download and install the full dataset for a given benchmark."""
-    try:
-        status = await install_dataset(bench_name, req.hf_token)
-        return {"status": status}
-    except Exception:
-        _handle_api_error(f"api_install_dataset({bench_name}) failed")
+    status = await install_dataset(bench_name, req.hf_token)
+    return {"status": status}
 
 @router.post("/datasets/install-all")
+@handle_api_errors
 async def api_install_all(req: InstallRequest = Body(default=InstallRequest())):
     """Install all missing datasets at once."""
-    try:
-        result = await install_all_missing(req.hf_token)
-        return {"status": result}
-    except Exception:
-        _handle_api_error("api_install_all failed")
+    result = await install_all_missing(req.hf_token)
+    return {"status": result}
 
 @router.get("/hf-token")
+@handle_api_errors
 def api_get_hf_token():
     """Return the stored HuggingFace API token (masked for UI display)."""
-    try:
-        token = _load_hf_token()
-        masked = token[:4] + "****" + token[-4:] if len(token) > 8 else "****" if token else ""
-        return {"token": masked}
-    except Exception:
-        _handle_api_error("api_get_hf_token failed")
+    token = _load_hf_token()
+    masked = token[:4] + "****" + token[-4:] if len(token) > 8 else "****" if token else ""
+    return {"token": masked}
+
 
 @router.post("/hf-token")
+@handle_api_errors
 def api_set_hf_token(req: HfTokenRequest):
     """Save a HuggingFace API token for dataset downloads."""
-    try:
-        return {"status": _save_hf_token(req.token)}
-    except Exception:
-        _handle_api_error("api_set_hf_token failed")
+    return {"status": _save_hf_token(req.token)}
 
-@router.post("/run/start")
+
+@router.post("/run/start", status_code=201)
+@handle_api_errors
 def api_trigger_run(req: RunRequest):
     """Start a single benchmark run with the given model and parameters.
 
@@ -206,120 +285,124 @@ def api_trigger_run(req: RunRequest):
     Raises:
         HTTPException: 500 if the run cannot be started.
     """
-    try:
-        run_id, msg = trigger_run(
-            req.model, req.benchmark, req.api_url, req.api_key,
-            req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            req.disable_repetition_detection, req.context_length,
+    run_id, msg = trigger_run(
+        req.model, req.benchmark, req.api_url, req.api_key,
+        req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
+        req.disable_repetition_detection, req.context_length,
+    )
+    if msg.startswith("Server busy"):
+        raise HTTPException(
+            status_code=429,
+            detail={"message": msg, "run_id": run_id},
         )
-        return {"run_id": run_id, "message": msg}
-    except Exception:
-        _handle_api_error("api_trigger_run failed")
+    return {"run_id": run_id, "message": msg}
 
-@router.post("/batch/start")
+
+@router.post("/batch/start", status_code=201)
+@handle_api_errors
 def api_start_batch(req: BatchRequest):
     """Start a batch of benchmarks (multiple benchmarks, single model)."""
-    try:
-        first_run_id, batch_id, msg, summary_df, batch_id_display = start_batch(
-            req.model, req.benchmarks, req.api_url, req.api_key,
-            req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            req.disable_repetition_detection, req.context_length,
+    first_run_id, batch_id, msg, summary_df, batch_id_display = start_batch(
+        req.model, req.benchmarks, req.api_url, req.api_key,
+        req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
+        req.disable_repetition_detection, req.context_length,
+    )
+    if msg.startswith("Server busy"):
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "message": msg,
+                "run_id": first_run_id,
+                "batch_id": batch_id,
+            },
         )
-        return {
-            "run_id": first_run_id,
-            "batch_id": batch_id,
-            "message": msg,
-            "summary": _df_to_dict(summary_df),
-            "batch_id_display": batch_id_display,
-        }
-    except Exception:
-        _handle_api_error("api_start_batch failed")
+    return {
+        "run_id": first_run_id,
+        "batch_id": batch_id,
+        "message": msg,
+        "summary": _df_to_dict(summary_df),
+        "batch_id_display": batch_id_display,
+    }
 
-@router.post("/model-queue/start")
+
+@router.post("/model-queue/start", status_code=201)
+@handle_api_errors
 def api_start_model_queue(req: ModelQueueRequest):
     """Start a model queue run (multiple models, multiple benchmarks, sequential)."""
-    try:
-        model_benchmarks = [(m, req.benchmarks) for m in req.models]
-        queue_id, msg = start_model_queue(
-            model_benchmarks, req.api_url, req.api_key,
-            req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
-            req.disable_repetition_detection, req.context_length,
-        )
-        return {"queue_id": queue_id, "message": msg}
-    except Exception:
-        _handle_api_error("api_start_model_queue failed")
+    model_benchmarks = [(m, req.benchmarks) for m in req.models]
+    queue_id, msg = start_model_queue(
+        model_benchmarks, req.api_url, req.api_key,
+        req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
+        req.disable_repetition_detection, req.context_length,
+    )
+    return {"queue_id": queue_id, "message": msg}
+
 
 class RunCheckRequest(BaseRunParams):
     benchmarks: list[str]
 
 @router.post("/run/check")
+@handle_api_errors
 def api_check_run_readiness(req: RunCheckRequest):
     """Check whether the selected benchmark(s) are ready to run (datasets/runtime installed)."""
-    try:
-        issues = []
-        for bn in req.benchmarks:
-            issues.extend(check_benchmark_readiness(bn, req.quick_test))
-        blocking = [i for i in issues if i.get("severity", "blocking") == "blocking"]
-        warnings = [i for i in issues if i.get("severity") == "warning"]
-        return {"ok": len(blocking) == 0, "issues": blocking, "warnings": warnings}
-    except Exception:
-        _handle_api_error("api_check_run_readiness failed")
+    issues = []
+    for bn in req.benchmarks:
+        issues.extend(check_benchmark_readiness(bn, req.quick_test))
+    blocking = [i for i in issues if i.get("severity", "blocking") == "blocking"]
+    warnings = [i for i in issues if i.get("severity") == "warning"]
+    return {"ok": len(blocking) == 0, "issues": blocking, "warnings": warnings}
+
 
 @router.get("/model-queue/active")
+@handle_api_errors
 def api_active_model_queue():
     """Get the current state of the model queue (if active)."""
-    try:
-        state = get_model_queue_state()
-        return state
-    except Exception:
-        _handle_api_error("api_active_model_queue failed")
+    state = get_model_queue_state()
+    return state
+
 
 @router.post("/model-queue/halt")
+@handle_api_errors
 def api_halt_model_queue():
     """Halt the currently running model queue and unload the active model."""
-    try:
-        status = halt_model_queue()
-        return {"status": status}
-    except Exception:
-        _handle_api_error("api_halt_model_queue failed")
+    status = halt_model_queue()
+    return {"status": status}
+
 
 @router.post("/model-queue/skip")
+@handle_api_errors
 def api_skip_model_queue():
     """Skip the currently running model and advance to the next in the queue."""
-    try:
-        status = skip_current_model()
-        return {"status": status}
-    except Exception:
-        _handle_api_error("api_skip_model_queue failed")
+    status = skip_current_model()
+    return {"status": status}
+
 
 @router.post("/run/{run_id}/pause")
+@handle_api_errors
 def api_pause_run(run_id: int):
     """Pause an active benchmark run. Can be resumed later."""
-    try:
-        status = pause_run(run_id)
-        return {"status": status}
-    except Exception:
-        _handle_api_error(f"api_pause_run({run_id}) failed")
+    status = pause_run(run_id)
+    return {"status": _run_control_error(status, run_id)}
+
 
 @router.post("/run/{run_id}/resume")
+@handle_api_errors
 def api_resume_run(run_id: int, req: ResumeRequest):
     """Resume a paused/halted/failed (or shutdown-interrupted) benchmark run from its saved position. Uses the run's stored settings when present."""
-    try:
-        status = resume_run(run_id, req.api_url, req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test, req.disable_repetition_detection, req.context_length)
-        return {"status": status}
-    except Exception:
-        _handle_api_error(f"api_resume_run({run_id}) failed")
+    status = resume_run(run_id, req.api_url, req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test, req.disable_repetition_detection, req.context_length)
+    return {"status": _run_control_error(status, run_id)}
+
 
 @router.post("/run/{run_id}/halt")
+@handle_api_errors
 def api_halt_run(run_id: int):
     """Halt (terminate) a benchmark run. Cannot be resumed."""
-    try:
-        status = halt_run(run_id)
-        return {"status": status}
-    except Exception:
-        _handle_api_error(f"api_halt_run({run_id}) failed")
+    status = halt_run(run_id)
+    return {"status": _run_control_error(status, run_id)}
+
 
 @router.get("/run/{run_id}/status")
+@handle_api_errors
 def api_run_status(run_id: int):
     """Get live status and aggregated metrics for a benchmark run.
 
@@ -330,371 +413,272 @@ def api_run_status(run_id: int):
         dict: run_id, model_name, benchmark_name, status, current_index,
               total_samples, avg_tps, avg_ttft, accuracy, token stats, etc.
     """
-    try:
-        with get_db() as db:
-            run = db.query(Run).filter(Run.id == run_id).first()
-            if not run:
-                raise HTTPException(status_code=404, detail="Run not found")
-            results = db.query(Result).options(
-                load_only(
-                    Result.correct, Result.tps, Result.ttft,
-                    Result.thinking_tokens, Result.response_tokens, Result.prompt_tokens,
-                    Result.error_message,
-                )
-            ).filter(Result.run_id == run_id).all()
-            stats = _compute_result_stats(results)
-            rep_warnings = [r.error_message or "" for r in results if "Repetition" in (r.error_message or "")]
-            safety_metrics = None
-            if run.benchmark_name == "UncensorBench":
-                params_dict = run.get_parameters()
-                safety_metrics = params_dict.get("_safety_metrics")
-            return {
-                "run_id": run.id,
-                "model_name": run.model_name,
-                "benchmark_name": run.benchmark_name,
-                "status": run.status,
-                "current_index": run.current_index,
-                "total_samples": run.total_samples,
-                "samples_completed": stats["total"],
-                "samples_correct": stats["correct"],
-                "accuracy": stats["accuracy"],
-                "accuracy_display": f"{stats['accuracy']}%",
-                "avg_tps": stats["avg_tps"],
-                "avg_ttft": stats["avg_ttft"],
-                "avg_prompt_tps": stats["avg_prompt_tps"],
-                "total_tokens": stats["total_tk"],
-                "thinking_tokens": stats["think_tk"],
-                "response_tokens": stats["resp_tk"],
-                "repetition_warnings": len(rep_warnings),
-                "safety_metrics": safety_metrics,
-                "notes": run.notes or "",
-                "created_at": run.created_at.isoformat() if run.created_at else None,
-            }
-    except HTTPException:
-        raise
-    except Exception:
-        _handle_api_error(f"api_run_status({run_id}) failed")
+    return get_run_status(run_id)
+
 
 @router.get("/runs")
-def api_load_history(offset: int = Query(0, ge=0), limit: int = Query(0, ge=0)):
-    """Load the full history of all completed/in-progress runs."""
-    try:
-        df, total = load_history(offset=offset, limit=limit)
-        return {"runs": _df_to_dict(df), "total": total, "offset": offset, "limit": limit}
-    except Exception:
-        _handle_api_error("api_load_history failed")
+@handle_api_errors
+def api_load_history(offset: int = Query(0, ge=0), limit: int = Query(0, ge=0, le=500)):
+    """Load the run history (paginated; ``limit=0`` returns all, capped at 500 per page)."""
+    df, total = load_history(offset=offset, limit=limit)
+    return {"runs": _df_to_dict(df), "total": total, "offset": offset, "limit": limit}
+
 
 @router.get("/runs/{run_id}")
-def api_load_run_details(run_id: int):
-    """Load detailed results, token charts, and histograms for a single run."""
-    try:
-        summary, samples_df, failed_choices, token_df, ttft_hist, tps_hist, cat_chart = load_run_details(str(run_id))
-        benchmark_name = ""
-        context_length = None
-        try:
-            with get_db() as db:
-                run = db.query(Run).filter(Run.id == run_id).first()
-                if run:
-                    benchmark_name = run.benchmark_name or ""
-                    params = run.get_parameters()
-                    context_length = params.get("context_length")
-                    if context_length is None and benchmark_name == "NIAHS":
-                        context_length = 65536
-        except Exception:
-            pass
-        return {
-            "summary": summary,
-            "benchmark_name": benchmark_name,
-            "context_length": context_length,
-            "samples": _df_to_dict(samples_df),
-            "failed_tasks": failed_choices if isinstance(failed_choices, list) else [],
-            "selected_failed": failed_choices[0] if (isinstance(failed_choices, list) and failed_choices) else None,
-            "token_chart": _df_to_dict(token_df),
-            "ttft_histogram": _df_to_dict(ttft_hist),
-            "tps_histogram": _df_to_dict(tps_hist),
-            "category_chart": _df_to_dict(cat_chart),
-        }
-    except Exception:
-        _handle_api_error(f"api_load_run_details({run_id}) failed")
+@handle_api_errors
+def api_load_run_details(
+    run_id: int,
+    sample_offset: int = Query(0, ge=0),
+    sample_limit: int = Query(0, ge=0, le=2000),
+):
+    """Load detailed results, token charts, and histograms for a single run.
+
+    ``sample_offset``/``sample_limit`` paginate the per-sample table only
+    (``sample_limit=0`` returns all samples — the previous default, kept for
+    back-compat with the History tab and CLI).
+    """
+    summary, samples_df, failed_choices, token_df, ttft_hist, tps_hist, cat_chart = load_run_details(str(run_id))
+    meta = get_run_meta(run_id)
+    samples = _df_to_dict(samples_df)
+    total_samples = len(samples)
+    if sample_limit > 0:
+        samples = samples[sample_offset:sample_offset + sample_limit]
+    return {
+        "summary": summary,
+        "benchmark_name": meta["benchmark_name"],
+        "context_length": meta["context_length"],
+        "samples": samples,
+        "samples_total": total_samples,
+        "sample_offset": sample_offset,
+        "sample_limit": sample_limit,
+        "failed_tasks": failed_choices if isinstance(failed_choices, list) else [],
+        "selected_failed": failed_choices[0] if (isinstance(failed_choices, list) and failed_choices) else None,
+        "token_chart": _df_to_dict(token_df),
+        "ttft_histogram": _df_to_dict(ttft_hist),
+        "tps_histogram": _df_to_dict(tps_hist),
+        "category_chart": _df_to_dict(cat_chart),
+    }
+
 
 @router.get("/runs/{run_id}/card")
+@handle_api_errors
 def api_trusted_card(run_id: int):
     """Build a copy-paste Trusted Card block for a single run."""
-    try:
-        return sanitize_for_json(build_trusted_card(run_id))
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception:
-        _handle_api_error(f"api_trusted_card({run_id}) failed")
+    return sanitize_for_json(build_trusted_card(run_id))
+
 
 
 @router.get("/runs/{run_id}/diff/{task_id:path}")
+@handle_api_errors
 def api_generate_diff(run_id: int, task_id: str):
     """Generate a unified diff between the expected answer and model output for a specific task."""
-    try:
-        html = generate_diff(str(run_id), task_id)
-        return {"html": html}
-    except Exception:
-        _handle_api_error(f"api_generate_diff({run_id}, {task_id}) failed")
+    html = generate_diff(str(run_id), task_id)
+    return {"html": html}
+
+
+class NotesBody(BaseModel):
+    notes: str = ""
+
 
 @router.patch("/runs/{run_id}/notes")
-def api_update_notes(run_id: int, body: dict = Body(...)):
+@handle_api_errors
+def api_update_notes(run_id: int, body: NotesBody = Body(...)):
     """Update the notes field for a run."""
-    try:
-        with get_db() as db:
-            run = db.query(Run).filter(Run.id == run_id).first()
-            if not run:
-                raise HTTPException(status_code=404, detail="Run not found")
-            run.notes = body.get("notes", "")
-            db.commit()
-            return {"status": "ok", "notes": run.notes}
-    except HTTPException:
-        raise
-    except Exception:
-        _handle_api_error(f"api_update_notes({run_id}) failed")
+    notes = update_run_notes(run_id, body.notes)
+    return {"status": "ok", "notes": notes}
+
 
 @router.get("/runs/{run_id}/depth-results")
+@handle_api_errors
 def api_depth_results(run_id: int):
     """Get per-sample correctness and depth for NIAHS depth analysis chart.
 
     Supports both legacy single-needle schema (one depth per Result) and the
     new multi-needle schema (5 depths per Result via per_depth_correct).
     """
-    try:
-        with get_db() as db:
-            results = db.query(Result).filter(Result.run_id == run_id).all()
-            depth_data = []
-            for r in results:
-                sd = {}
-                if r.scoring_details:
-                    try:
-                        sd = json.loads(r.scoring_details)
-                    except Exception:
-                        logger.debug("Failed to parse scoring_details for task %s", r.task_id)
-                ctx_len = sd.get("context_length", 0)
-                per = sd.get("per_depth_correct")
-                if isinstance(per, dict) and per:
-                    # Multi-needle: expand one Result into 5 depth points
-                    for depth_str, ok in per.items():
-                        try:
-                            dval = float(depth_str)
-                        except Exception:
-                            dval = 0
-                        depth_data.append({
-                            "task_id": f"{r.task_id}@{int(dval * 100)}%",
-                            "correct": bool(ok),
-                            "depth": dval,
-                            "context_length": ctx_len,
-                        })
-                else:
-                    depth_data.append({
-                        "task_id": r.task_id,
-                        "correct": r.correct,
-                        "depth": sd.get("depth", 0),
-                        "context_length": ctx_len,
-                    })
-            return {"results": depth_data}
-    except Exception:
-        _handle_api_error(f"api_depth_results({run_id}) failed")
+    return {"results": get_depth_results(run_id)}
+
 
 @router.get("/batch/{batch_id}")
+@handle_api_errors
 def api_batch_summary(batch_id: str):
     """Get the summary, accuracy chart, and latency chart for a batch."""
-    try:
-        summary_df, chart_df, latency_df = load_batch_summary(batch_id)
-        return {
-            "summary": _df_to_dict(summary_df),
-            "chart": _df_to_dict(chart_df),
-            "latency_chart": _df_to_dict(latency_df),
-        }
-    except Exception:
-        _handle_api_error(f"api_batch_summary({batch_id}) failed")
+    summary_df, chart_df, latency_df = load_batch_summary(batch_id)
+    return {
+        "summary": _df_to_dict(summary_df),
+        "chart": _df_to_dict(chart_df),
+        "latency_chart": _df_to_dict(latency_df),
+    }
+
 
 @router.get("/export/runs/{run_id}")
+@handle_api_errors
 def api_export_results(run_id: int, export_format: str = Query("CSV", alias="format")):
     """Export a single run's results as CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_results(str(run_id), export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error(f"api_export_results({run_id}) failed")
+    file_path, status = export_results(str(run_id), export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/batch/{batch_id}")
+@handle_api_errors
 def api_export_batch(batch_id: str, export_format: str = Query("CSV", alias="format")):
     """Export results for an entire batch as CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_batch_results(batch_id, export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error(f"api_export_batch({batch_id}) failed")
+    file_path, status = export_batch_results(batch_id, export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/history")
+@handle_api_errors
 def api_export_history(export_format: str = Query("CSV", alias="format")):
     """Export all run history as a CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_all_history(export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error("api_export_history failed")
+    file_path, status = export_all_history(export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/selected")
+@handle_api_errors
 def api_export_selected(run_ids: str = Query(""), export_format: str = Query("CSV", alias="format")):
     """Export per-run summaries for selected run IDs as CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_selected_runs(run_ids, export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error("api_export_selected failed")
+    file_path, status = export_selected_runs(run_ids, export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/history/markdown")
+@handle_api_errors
 def api_export_history_markdown():
     """Export all run history as a Markdown summary table."""
-    try:
-        file_path, status = export_all_history_markdown()
-        if file_path:
-            return FileResponse(file_path, filename=Path(file_path).name, media_type="text/markdown")
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error("api_export_history_markdown failed")
+    file_path, status = export_all_history_markdown()
+    return _export_file_or_404(file_path, status, "", markdown=True)
+
 
 @router.get("/export/leaderboard")
+@handle_api_errors
 def api_export_leaderboard(export_format: str = Query("CSV", alias="format")):
     """Export the leaderboard as CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_leaderboard(export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error("api_export_leaderboard failed")
+    file_path, status = export_leaderboard(export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/comparison")
+@handle_api_errors
 def api_export_comparison(run_ids: str = Query(""), export_format: str = Query("CSV", alias="format")):
     """Export cross-run comparison as CSV, JSON, or Excel file download."""
-    try:
-        file_path, status = export_comparison(run_ids, export_format)
-        if file_path:
-            mime = _EXPORT_MIME.get(export_format, "application/octet-stream")
-            return FileResponse(file_path, filename=Path(file_path).name, media_type=mime)
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error("api_export_comparison failed")
+    file_path, status = export_comparison(run_ids, export_format)
+    return _export_file_or_404(file_path, status, export_format)
+
 
 @router.get("/export/runs/{run_id}/markdown")
+@handle_api_errors
 def api_export_run_markdown(run_id: int):
     """Export a single run as a Markdown report."""
-    try:
-        file_path, status = export_run_markdown(str(run_id))
-        if file_path:
-            return FileResponse(file_path, filename=Path(file_path).name, media_type="text/markdown")
-        return {"status": status, "file": None}
-    except Exception:
-        _handle_api_error(f"api_export_run_markdown({run_id}) failed")
+    file_path, status = export_run_markdown(str(run_id))
+    return _export_file_or_404(file_path, status, "", markdown=True)
+
 
 @router.get("/comparison")
+@handle_api_errors
 def api_comparison(run_ids: str = Query("")):
     """Compare accuracy, latency, and tokens across multiple runs by comma-separated IDs."""
-    try:
-        acc_df, latency_df, token_df = load_cross_comparison(run_ids)
-        return {
-            "accuracy": _df_to_dict(acc_df),
-            "latency": _df_to_dict(latency_df),
-            "tokens": _df_to_dict(token_df),
-        }
-    except Exception:
-        _handle_api_error("api_comparison failed")
+    acc_df, latency_df, token_df = load_cross_comparison(run_ids)
+    return {
+        "accuracy": _df_to_dict(acc_df),
+        "latency": _df_to_dict(latency_df),
+        "tokens": _df_to_dict(token_df),
+    }
+
 
 @router.get("/leaderboard")
+@handle_api_errors
 def api_leaderboard():
     """Get the local leaderboard with all completed runs."""
-    try:
-        df = load_leaderboard()
-        return {"leaderboard": _df_to_dict(df)}
-    except Exception:
-        _handle_api_error("api_leaderboard failed")
+    df = load_leaderboard()
+    return {"leaderboard": _df_to_dict(df)}
+
+
+@router.delete("/runs")
+@handle_api_errors
+def api_delete_runs_canonical(run_ids: str = Query("")):
+    """Delete multiple runs by comma-separated IDs (canonical resource path)."""
+    if not run_ids.strip():
+        raise HTTPException(status_code=400, detail="No valid run IDs provided.")
+    lb_df, status = delete_runs(run_ids)
+    if status == "No valid run IDs provided.":
+        raise HTTPException(status_code=400, detail=status)
+    return {"leaderboard": _df_to_dict(lb_df), "status": status}
 
 @router.delete("/leaderboard")
+@handle_api_errors
 def api_delete_runs(run_ids: str = Query("")):
-    """Delete multiple runs by comma-separated IDs."""
-    try:
-        lb_df, status = delete_runs(run_ids)
-        return {"leaderboard": _df_to_dict(lb_df), "status": status}
-    except Exception:
-        _handle_api_error("api_delete_runs failed")
+    """Delete multiple runs by comma-separated IDs.
+
+    Deprecated alias of ``DELETE /api/runs`` — kept so the History tab,
+    CLI, and existing scripts keep working.
+    """
+    if not run_ids.strip():
+        raise HTTPException(status_code=400, detail="No valid run IDs provided.")
+    lb_df, status = delete_runs(run_ids)
+    if status == "No valid run IDs provided.":
+        raise HTTPException(status_code=400, detail=status)
+    return {"leaderboard": _df_to_dict(lb_df), "status": status}
 
 @router.delete("/leaderboard/{run_id}")
+@handle_api_errors
 def api_delete_leaderboard(run_id: int):
-    """Delete a single entry from the leaderboard by run ID."""
-    try:
-        lb_df, status = delete_leaderboard_entry(str(run_id))
-        return {"leaderboard": _df_to_dict(lb_df), "status": status}
-    except Exception:
-        _handle_api_error(f"api_delete_leaderboard({run_id}) failed")
+    """Delete a single entry from the leaderboard by run ID.
+
+    Deprecated alias of ``DELETE /api/runs?run_ids={id}`` — kept for back-compat.
+    """
+    lb_df, status = delete_leaderboard_entry(str(run_id))
+    return {"leaderboard": _df_to_dict(lb_df), "status": status}
+
 
 @router.post("/leaderboard/clear")
+@handle_api_errors
 def api_clear_leaderboard(req: ConfirmClear):
     """Clear the entire run history and leaderboard (requires confirmation text)."""
-    try:
-        history_df, lb_df, status = clear_all_history(req.confirm_text)
-        return {
-            "history": _df_to_dict(history_df),
-            "leaderboard": _df_to_dict(lb_df),
-            "status": status,
-        }
-    except Exception:
-        _handle_api_error("api_clear_leaderboard failed")
+    history_df, lb_df, status = clear_all_history(req.confirm_text)
+    return {
+        "history": _df_to_dict(history_df),
+        "leaderboard": _df_to_dict(lb_df),
+        "status": status,
+    }
+
 
 @router.get("/leaderboard/settings")
+@handle_api_errors
 def api_lb_settings():
     """Get the stored online leaderboard sync API key (masked for UI display)."""
-    try:
-        key = load_lb_settings()
-        masked = key[:4] + "****" + key[-4:] if len(key) > 8 else "****" if key else ""
-        return {"api_key": masked}
-    except Exception:
-        _handle_api_error("api_lb_settings failed")
+    key = load_lb_settings()
+    masked = key[:4] + "****" + key[-4:] if len(key) > 8 else "****" if key else ""
+    return {"api_key": masked}
+
 
 @router.post("/leaderboard/settings")
+@handle_api_errors
 def api_save_lb_settings(req: ApiKeyRequest):
     """Save the online leaderboard sync API key."""
-    try:
-        return {"status": save_lb_api_key(req.api_key)}
-    except Exception:
-        _handle_api_error("api_save_lb_settings failed")
+    return {"status": save_lb_api_key(req.api_key)}
+
 
 @router.post("/leaderboard/sync")
+@handle_api_errors
 async def api_sync_leaderboard(req: ApiKeyRequest = Body(default=ApiKeyRequest(api_key=""))):
     """Sync the local leaderboard to the configured online endpoint."""
-    try:
-        status = await sync_to_online_leaderboard(1, api_key=req.api_key)
-        return {"status": status}
-    except Exception:
-        _handle_api_error("api_sync_leaderboard failed")
+    status = await sync_to_online_leaderboard(1, api_key=req.api_key)
+    return {"status": status}
+
 
 @router.get("/telemetry")
+@handle_api_errors
 def api_telemetry():
     """Get the latest system telemetry snapshot (CPU, RAM, GPU, VRAM). Used by HardwareTab for live monitoring."""
-    try:
-        metrics = get_system_metrics()
-        return metrics
-    except Exception:
-        _handle_api_error("api_telemetry failed")
+    metrics = get_system_metrics()
+    return metrics
+
 
 
 @router.get("/poll")
+@handle_api_errors
 def api_poll(active_run_id: int = Query(default=0)):
     """Combined polling endpoint: returns telemetry, run progress, and batch progress in one call.
 
@@ -705,65 +689,8 @@ def api_poll(active_run_id: int = Query(default=0)):
         dict: telemetry (cpu/ram/gpu), run_progress (accuracy, tps, ttft, tokens),
               batch_progress (summary, ETA, per-benchmark chart data).
     """
-    try:
-        result = poll(active_run_id or None)
-        metrics = result["metrics"]
-        prog_val = result["prog_val"]
-        status_md = result["status_md"]
-        active_task = result["active_task"]
-        avg_tps = result["avg_tps"]
-        avg_ttft = result["avg_ttft"]
-        accuracy = result["accuracy"]
-        token_stats = result["token_stats"]
-        batch_prog_val = result["batch_prog_val"]
-        batch_status_md = result["batch_status_md"]
-        batch_eta_str = result["batch_eta_str"]
-        batch_summary_df = result["batch_summary_df"]
-        batch_id_val = result["batch_id_val"]
-        batch_done = result["batch_done"]
-        batch_total = result["batch_total"]
-        batch_current_name = result["batch_current_name"]
-        active_run_override = result["active_run_override"]
-        live_turn = result.get("live_turn")
+    return build_poll_payload(poll(active_run_id or None))
 
-        return {
-            "telemetry": {
-                "cpu_percent": metrics["cpu_percent"],
-                "ram_used_gb": metrics["ram_used_gb"],
-                "ram_total_gb": metrics["ram_total_gb"],
-                "ram_percent": metrics["ram_percent"],
-                "gpu_available": metrics["gpu_available"],
-                "gpu_name": metrics["gpu_name"],
-                "gpu_load": metrics["gpu_load"],
-                "vram_total_mb": metrics["vram_total_mb"],
-                "vram_used_mb": metrics["vram_used_mb"],
-                "vram_percent": metrics["vram_percent"],
-            },
-            "run_progress": {
-                "progress": prog_val,
-                "status_md": status_md,
-                "active_task": active_task,
-                "avg_tps": avg_tps,
-                "avg_ttft": avg_ttft,
-                "accuracy": accuracy,
-                "token_stats": token_stats,
-            },
-            "batch_progress": {
-                "progress": batch_prog_val,
-                "status_md": batch_status_md,
-                "eta": batch_eta_str,
-                "summary": _df_to_dict(batch_summary_df),
-                "batch_id": batch_id_val,
-                "completed": batch_done,
-                "total": batch_total,
-                "current_benchmark": batch_current_name,
-            },
-            "active_run_override": active_run_override,
-            "live_turn": live_turn,
-        }
-    except Exception:
-        logger.error("Poll error", exc_info=True)
-        _handle_api_error("api_poll failed")
 
 @router.get("/poll/stream")
 async def api_poll_stream(active_run_id: int = Query(default=0)):
@@ -775,42 +702,7 @@ async def api_poll_stream(active_run_id: int = Query(default=0)):
         while True:
             try:
                 result = await asyncio.to_thread(poll, active_run_id or None)
-                metrics = result["metrics"]
-                payload = {
-                    "telemetry": {
-                        "cpu_percent": metrics["cpu_percent"],
-                        "ram_used_gb": metrics["ram_used_gb"],
-                        "ram_total_gb": metrics["ram_total_gb"],
-                        "ram_percent": metrics["ram_percent"],
-                        "gpu_available": metrics["gpu_available"],
-                        "gpu_name": metrics["gpu_name"],
-                        "gpu_load": metrics["gpu_load"],
-                        "vram_total_mb": metrics["vram_total_mb"],
-                        "vram_used_mb": metrics["vram_used_mb"],
-                        "vram_percent": metrics["vram_percent"],
-                    },
-                    "run_progress": {
-                        "progress": result["prog_val"],
-                        "status_md": result["status_md"],
-                        "active_task": result["active_task"],
-                        "avg_tps": result["avg_tps"],
-                        "avg_ttft": result["avg_ttft"],
-                        "accuracy": result["accuracy"],
-                        "token_stats": result["token_stats"],
-                    },
-                    "batch_progress": {
-                        "progress": result["batch_prog_val"],
-                        "status_md": result["batch_status_md"],
-                        "eta": result["batch_eta_str"],
-                        "summary": _df_to_dict(result["batch_summary_df"]),
-                        "batch_id": result["batch_id_val"],
-                        "completed": result["batch_done"],
-                        "total": result["batch_total"],
-                        "current_benchmark": result["batch_current_name"],
-                    },
-                    "active_run_override": result["active_run_override"],
-                    "live_turn": result.get("live_turn"),
-                }
+                payload = build_poll_payload(result)
                 data = orjson.dumps(payload).decode()
                 yield f"data: {data}\n\n"
             except asyncio.CancelledError:
@@ -828,40 +720,80 @@ async def api_poll_stream(active_run_id: int = Query(default=0)):
 
 
 @router.get("/benchmarks")
+@handle_api_errors
 def api_benchmarks():
     """Return the list of all available benchmarks with display labels and internal names."""
-    try:
-        from backend.config import BENCHMARK_META
-        benchmarks = []
-        for label, name in BENCHMARKS:
-            meta = BENCHMARK_META.get(name, {})
-            benchmarks.append({
-                "label": label,
-                "name": name,
-                "category": meta.get("category", "Other"),
-                "docker": bool(meta.get("docker")),
-                "docker_partial": bool(meta.get("docker_partial", False)),
-                "samples": meta.get("samples", 0),
-                "short": meta.get("short", ""),
-            })
-        return {"benchmarks": benchmarks}
-    except Exception:
-        _handle_api_error("api_benchmarks failed")
+    from backend.config import BENCHMARK_META
+    benchmarks = []
+    for label, name in BENCHMARKS:
+        meta = BENCHMARK_META.get(name, {})
+        benchmarks.append({
+            "label": label,
+            "name": name,
+            "category": meta.get("category", "Other"),
+            "docker": bool(meta.get("docker")),
+            "docker_partial": bool(meta.get("docker_partial", False)),
+            "samples": meta.get("samples", 0),
+            "short": meta.get("short", ""),
+        })
+    return {"benchmarks": benchmarks}
+
 
 @router.post("/docker/build")
+@handle_api_errors
 async def api_build_docker():
     """Build the benchmax-sandbox Docker image with all runtimes."""
-    try:
-        status = await build_docker_image()
-        return {"status": status}
-    except Exception:
-        _handle_api_error("api_build_docker failed")
+    status = await build_docker_image()
+    return {"status": status}
+
 
 
 @router.get("/docker/status")
+@handle_api_errors
 async def api_docker_status():
     """Check Docker availability and image status."""
+    return await get_docker_status()
+
+
+
+class LanPasswordBody(BaseModel):
+    password: str = ""
+
+
+@router.get("/auth/status")
+def api_auth_status(request: Request):
+    """LAN gate state for the login screen. Never requires auth itself."""
+    from backend import auth as lan_auth
+    loopback = lan_auth.is_loopback_request(request)
+    authed = lan_auth.lan_request_allowed(request)
+    return {
+        "lan_required": not loopback,
+        "password_set": lan_auth.password_is_set(),
+        "authenticated": authed,
+    }
+
+
+@router.post("/auth/setup")
+async def api_auth_setup(request: Request, body: LanPasswordBody):
+    """Set (or replace) the LAN password. Localhost only — LAN callers
+    can never set the password, so a stranger can't claim an unset server."""
+    from backend import auth as lan_auth
+    if not lan_auth.is_loopback_request(request):
+        raise HTTPException(status_code=403, detail="Set the password from the server machine first.")
     try:
-        return await get_docker_status()
-    except Exception:
-        _handle_api_error("api_docker_status failed")
+        lan_auth.set_password(body.password)
+        return {"status": "saved"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/auth/login")
+async def api_auth_login(body: LanPasswordBody):
+    """Verify the LAN password and issue a Bearer token."""
+    from backend import auth as lan_auth
+    if not lan_auth.password_is_set():
+        raise HTTPException(status_code=409, detail="No LAN password set yet — ask the server owner to set one.")
+    if not lan_auth.verify_password(body.password or ""):
+        raise HTTPException(status_code=401, detail="Wrong password.")
+    token, _ = lan_auth.issue_token()
+    return {"token": token}

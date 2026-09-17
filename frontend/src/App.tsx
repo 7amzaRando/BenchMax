@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import TopBar from '@/components/TopBar'
 import ShortcutsDialog from '@/components/ShortcutsDialog'
 import ServerStatusBanner from '@/components/ServerStatusBanner'
+import LanLoginGate from '@/components/LanLoginGate'
 import Background from '@/components/ui/background'
 import * as api from '@/lib/api'
 import { ToastProvider, useToast } from '@/components/ui/toast-provider'
@@ -53,7 +54,7 @@ export default function App() {
     <ToastProvider>
       <ErrorBoundary>
         <BenchMaxProvider>
-          <AppContent />
+          <LanLoginGate><AppContent /></LanLoginGate>
         </BenchMaxProvider>
       </ErrorBoundary>
     </ToastProvider>

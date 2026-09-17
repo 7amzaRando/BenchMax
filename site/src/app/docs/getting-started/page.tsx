@@ -62,7 +62,7 @@ export default function GettingStartedPage() {
         <div className="rounded-xl border border-primary/25 bg-primary/[0.07] p-5">
           <h3 className="font-semibold">Option A — download the app (easiest, Windows)</h3>
           <p className="text-sm text-muted-fg mt-1 leading-relaxed">
-            Grab <code className="text-foreground">BenchMax.exe</code> (~300 MB, no install) from the{' '}
+            Grab <code className="text-foreground">BenchMax.exe</code> (~170 MB, no install) from the{' '}
             <a href={LATEST_RELEASE_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">latest GitHub Release</a>{' '}
             and run it. Then skip to <span className="text-foreground font-medium">First run</span> below.
           </p>

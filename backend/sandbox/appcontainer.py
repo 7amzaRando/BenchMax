@@ -19,7 +19,6 @@ Requirements:
 """
 
 import ctypes
-import ctypes.wintypes
 import json
 import logging
 import os

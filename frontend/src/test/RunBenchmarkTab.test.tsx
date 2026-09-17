@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import RunBenchmarkTab from '@/pages/RunBenchmarkTab'
 import { BenchMaxProvider } from '@/lib/context'
@@ -53,5 +53,16 @@ describe('RunBenchmarkTab', () => {
     renderWithProvider(<RunBenchmarkTab />)
     expect(await screen.findByText('Docker · coding only')).toBeInTheDocument()
     expect(await screen.findByText('◐ Docker for coding')).toBeInTheDocument()
+  })
+  it('switches selection to the first benchmark when the category pill changes', async () => {
+    vi.mocked(getBenchmarks).mockResolvedValueOnce({ benchmarks: [
+      { label: 'HumanEval', name: 'HumanEval', category: 'Coding', docker: true, samples: 164, short: 'Code tests' },
+      { label: 'AIME', name: 'AIME', category: 'Reasoning', docker: false, samples: 90, short: 'Math' },
+    ] } as any)
+    renderWithProvider(<RunBenchmarkTab />)
+    const select = await screen.findByRole('combobox', { name: 'Benchmark' }) as HTMLSelectElement
+    expect(select.value).toBe('HumanEval')
+    fireEvent.click(screen.getByRole('button', { name: 'Reasoning' }))
+    await waitFor(() => expect((screen.getByRole('combobox', { name: 'Benchmark' }) as HTMLSelectElement).value).toBe('AIME'))
   })
 })

@@ -5,10 +5,33 @@ import re
 import orjson as _orjson
 import logging
 from difflib import SequenceMatcher
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, TypedDict
 import httpx
 
 logger = logging.getLogger(__name__)
+
+# Default per-call stream timeouts: no overall cap (long-context prompts
+# need minutes before the first token), bounded connect/write phases.
+_STREAM_TIMEOUT = httpx.Timeout(None, connect=30.0, read=600.0, write=60.0, pool=30.0)
+# Rough chars-per-token heuristic for prompt/token estimates when the API
+# omits usage counts (accurate enough for rate display, not for billing).
+_TOKEN_CHARS_ESTIMATE = 4
+
+
+class GenerationResult(TypedDict):
+    """Typed return value for generate_completion()/generate_chat_completion()."""
+
+    model_name: str
+    raw_response: str
+    thinking_content: str
+    answer_content: str
+    elapsed_time: float
+    ttft: float
+    tps: float
+    prompt_tokens: int
+    response_tokens: int
+    thinking_tokens: int
+    answer_tokens: int
 
 class LMStudioClient:
     async def aclose(self):
@@ -235,6 +258,208 @@ class LMStudioClient:
         
         return thinking, answer
 
+    def _reset_rep_state(self) -> None:
+        """Clear repetition-detection state for a new generation call."""
+        self._rep_buffer = ""
+        self._repetition_detected = False
+        self._rep_consecutive_count = 0
+        self._rep_chunk_count = 0
+
+    @staticmethod
+    def _build_stream_payload(
+        model_name: str,
+        messages: List[Dict[str, Any]],
+        temperature: Optional[float],
+        max_tokens: Optional[int],
+        stop_tokens: Optional[List[str]],
+    ) -> Dict[str, Any]:
+        """Build the POST body shared by both completion entry points."""
+        payload: Dict[str, Any] = {
+            "model": model_name,
+            "messages": messages,
+            "stream": True,
+        }
+        if temperature is not None:
+            payload["temperature"] = temperature
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
+        if stop_tokens:
+            payload["stop"] = stop_tokens
+        return payload
+
+    def _accumulate_delta_text(
+        self,
+        delta: Dict[str, Any],
+        thinking_parts: List[str],
+        full_text_parts: List[str],
+    ) -> Tuple[bool, bool]:
+        """Fold one SSE delta into the accumulators.
+
+        Returns (got_content, aborted): got_content is True when this delta
+        carried non-empty content/reasoning (for TTFT); aborted is True when
+        repetition detection confirmed a loop and the stream was closed.
+        """
+        got_content = False
+        rc = delta.get("reasoning_content")
+        if rc is not None:
+            if rc != "":
+                got_content = True
+            thinking_parts.append(rc)
+            self._ingest_rep_text(rc)
+        content = delta.get("content")
+        if content is not None:
+            if content != "":
+                got_content = True
+            full_text_parts.append(content)
+            self._ingest_rep_text(content)
+        return got_content, self._repetition_detected
+
+    def _ingest_rep_text(self, text: str) -> None:
+        """Feed streamed text through repetition detection (rate-limited)."""
+        if self._rep_disabled:
+            return
+        self._rep_buffer += text
+        if len(self._rep_buffer) > self._rep_max_len:
+            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
+        self._rep_chunk_count += 1
+        if (
+            self._rep_chunk_count % self._rep_check_interval == 0
+            and self._check_repetition()
+        ):
+            logger.warning("Repetition detected — model may be looping.")
+            self._repetition_detected = True
+
+    async def _stream_chat(
+        self, url: str, payload: Dict[str, Any], prompt_tokens_est: int, model_name: str
+    ) -> Tuple[str, str, int, int, float, bool, float]:
+        """Run the SSE stream loop shared by both completion entry points.
+
+        Returns (full_text, thinking_content, prompt_tokens, completion_tokens,
+        ttft, first_chunk_received, total_time). Closes the stream early when
+        repetition detection confirms a loop.
+        """
+        full_text_parts: list[str] = []
+        thinking_parts: list[str] = []
+        completion_tokens_est = 0
+        ttft = 0.0
+        start_time = time.time()
+        first_chunk_received = False
+
+        try:
+            logger.debug("Starting streaming request to %s", url)
+            async with self._get_client().stream(
+                "POST", url, json=payload, timeout=_STREAM_TIMEOUT
+            ) as response:
+                logger.debug("Response status: %d", response.status_code)
+                if response.status_code != 200:
+                    error_body = await response.aread()
+                    logger.error("Error body: %s", error_body.decode("utf-8", errors="ignore"))
+                    raise RuntimeError(
+                        f"LM Studio returned status {response.status_code}: "
+                        f"{error_body.decode('utf-8', errors='ignore')}"
+                    )
+                aborted = False
+                async for line in response.aiter_lines():
+                    if not line.strip():
+                        continue
+                    if not line.startswith("data: "):
+                        continue
+                    data_str = line[6:]
+                    if data_str.strip() == "[DONE]":
+                        break
+                    try:
+                        chunk_json = _orjson.loads(data_str)
+                    except Exception as parse_err:
+                        logger.debug(f"Chunk parsing warning: {parse_err}")
+                        continue
+                    choices = chunk_json.get("choices", [])
+                    if choices:
+                        delta = choices[0].get("delta", {})
+                        got_content, aborted = self._accumulate_delta_text(
+                            delta, thinking_parts, full_text_parts
+                        )
+                        if got_content and not first_chunk_received:
+                            ttft = time.time() - start_time
+                            first_chunk_received = True
+                        if aborted:
+                            # Close the stream while the loop is alive so the
+                            # response generator isn't destroyed pending at shutdown.
+                            await response.aclose()
+                            break
+                    if "usage" in chunk_json:
+                        usage = chunk_json["usage"]
+                        prompt_tokens_est = usage.get("prompt_tokens", prompt_tokens_est)
+                        completion_tokens_est = usage.get("completion_tokens", completion_tokens_est)
+        except Exception as e:
+            logger.error(f"Inference calling error: {e}", exc_info=True)
+            raise
+
+        total_time = time.time() - start_time
+        return (
+            "".join(full_text_parts),
+            "".join(thinking_parts),
+            prompt_tokens_est,
+            completion_tokens_est,
+            ttft,
+            first_chunk_received,
+            total_time,
+        )
+
+    @staticmethod
+    def _assemble_result(
+        model_name: str,
+        full_text: str,
+        thinking_content: str,
+        prompt_tokens_est: int,
+        completion_tokens_est: int,
+        ttft: float,
+        first_chunk_received: bool,
+        total_time: float,
+        parse_fn,
+    ) -> GenerationResult:
+        """Split thinking/answer, estimate tokens, compute TPS, build the result dict."""
+        if not thinking_content:
+            thinking_content, answer_content = parse_fn(full_text)
+        else:
+            answer_content = full_text
+
+        if completion_tokens_est == 0:
+            thinking_tokens = int(len(thinking_content) / _TOKEN_CHARS_ESTIMATE)
+            answer_tokens = int(len(answer_content) / _TOKEN_CHARS_ESTIMATE)
+            completion_tokens_est = thinking_tokens + answer_tokens
+        elif thinking_content:
+            thinking_ratio = len(thinking_content) / (len(thinking_content) + len(answer_content) + 1)
+            thinking_tokens = max(1, int(completion_tokens_est * thinking_ratio))
+            answer_tokens = max(1, completion_tokens_est - thinking_tokens)
+        else:
+            thinking_tokens = 0
+            answer_tokens = completion_tokens_est
+
+        generation_time = total_time - ttft
+        if generation_time > 0.01 and completion_tokens_est > 0:
+            tps = completion_tokens_est / generation_time
+        else:
+            tps = 0.0
+
+        logger.debug(
+            "Generation complete: model=%s tps=%.1f ttft=%.3f tokens=%d elapsed=%.2fs",
+            model_name, tps, ttft if first_chunk_received else total_time,
+            completion_tokens_est, total_time,
+        )
+        return GenerationResult(
+            model_name=model_name,
+            raw_response=full_text if not thinking_content else f"<think>\n{thinking_content}\n</think>\n{answer_content}",
+            thinking_content=thinking_content,
+            answer_content=answer_content,
+            elapsed_time=total_time,
+            ttft=ttft if first_chunk_received else total_time,
+            tps=tps,
+            prompt_tokens=prompt_tokens_est,
+            response_tokens=completion_tokens_est,
+            thinking_tokens=thinking_tokens,
+            answer_tokens=answer_tokens,
+        )
+
     async def _native_api_url(self, path: str) -> str:
         """Builds a native API URL from the given path (e.g. '/api/v1/models/load')."""
         base = self.base_url.rsplit('/v1', 1)[0] if '/v1' in self.base_url else self.base_url
@@ -395,7 +620,7 @@ class LMStudioClient:
         stop_tokens: Optional[List[str]] = None,
         model_name: Optional[str] = None,
         images: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+    ) -> GenerationResult:
         """Send a completions request to LM Studio.
 
         Uses stream=True to measure accurate TTFT and TPS.
@@ -455,165 +680,35 @@ class LMStudioClient:
         else:
             messages.append({"role": "user", "content": prompt})
 
-        payload = {
-            "model": model_name,
-            "messages": messages,
-            "stream": True
-        }
-        if temperature is not None:
-            payload["temperature"] = temperature
-
-        if max_tokens is not None:
-            payload["max_tokens"] = max_tokens
-
-        if stop_tokens:
-            payload["stop"] = stop_tokens
+        payload = self._build_stream_payload(model_name, messages, temperature, max_tokens, stop_tokens)
 
         # Reset repetition detection for this generation call
-        self._rep_buffer = ""
-        self._repetition_detected = False
-        self._rep_consecutive_count = 0
-        self._rep_chunk_count = 0
+        self._reset_rep_state()
 
-        full_text_parts: list[str] = []
-        ttft = 0.0
-        start_time = time.time()
-        first_chunk_received = False
-        _last_token_time = time.time()
-        _stream_timed_out = False
-        
         # We will parse usage info if sent at the end of the stream, or estimate it
-        prompt_tokens_est = int(len(prompt) / 4)
-        completion_tokens_est = 0
-        thinking_parts: list[str] = []
-        answer_content = ""
-        
-        try:
-            logger.debug("Starting streaming request to %s", url)
-            async with self._get_client().stream("POST", url, json=payload, timeout=httpx.Timeout(None, connect=30.0, read=600.0, write=60.0, pool=30.0)) as response:
-                logger.debug("Response status: %d", response.status_code)
+        prompt_tokens_est = int(len(prompt) / _TOKEN_CHARS_ESTIMATE)
 
-                if response.status_code != 200:
-                    error_body = await response.aread()
-                    logger.error(f"Error body: {error_body.decode('utf-8', errors='ignore')}")
-                    raise RuntimeError(f"LM Studio returned status {response.status_code}: {error_body.decode('utf-8', errors='ignore')}")
+        (
+            full_text,
+            thinking_content,
+            prompt_tokens_est,
+            completion_tokens_est,
+            ttft,
+            first_chunk_received,
+            total_time,
+        ) = await self._stream_chat(url, payload, prompt_tokens_est, model_name)
 
-                async for line in response.aiter_lines():
-                    if not line.strip():
-                        continue
-                    
-                    if line.startswith("data: "):
-                        data_str = line[6:]
-                        if data_str.strip() == "[DONE]":
-                            break
-                        
-                        try:
-                            chunk_json = _orjson.loads(data_str)
-                            choices = chunk_json.get("choices", [])
-                            if choices:
-                                delta = choices[0].get("delta", {})
-                                
-                                if not first_chunk_received:
-                                    has_content = delta.get("content") is not None and delta["content"] != ""
-                                    has_reasoning = delta.get("reasoning_content") is not None and delta["reasoning_content"] != ""
-                                    if has_content or has_reasoning:
-                                        ttft = time.time() - start_time
-                                        first_chunk_received = True
-                                
-                                rc = delta.get("reasoning_content")
-                                if rc is not None:
-                                    thinking_parts.append(rc)
-                                    if not self._rep_disabled:
-                                        self._rep_buffer += rc
-                                        if len(self._rep_buffer) > self._rep_max_len:
-                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    _last_token_time = time.time()
-                                    self._rep_chunk_count += 1
-                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
-                                        logger.warning("Repetition detected in reasoning — model may be looping.")
-                                        self._repetition_detected = True
-                                        # Close the stream while the loop is alive so the
-                                        # response generator isn't destroyed pending at shutdown.
-                                        await response.aclose()
-                                        break
-                                content = delta.get("content")
-                                if content is not None:
-                                    _last_token_time = time.time()
-                                    full_text_parts.append(content)
-                                    if not self._rep_disabled:
-                                        self._rep_buffer += content
-                                        if len(self._rep_buffer) > self._rep_max_len:
-                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    self._rep_chunk_count += 1
-                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
-                                        logger.warning("Repetition detected — model may be looping.")
-                                        self._repetition_detected = True
-                                        # Close the stream while the loop is alive so the
-                                        # response generator isn't destroyed pending at shutdown.
-                                        await response.aclose()
-                                        break
-                                
-                            if "usage" in chunk_json:
-                                usage = chunk_json["usage"]
-                                prompt_tokens_est = usage.get("prompt_tokens", prompt_tokens_est)
-                                completion_tokens_est = usage.get("completion_tokens", completion_tokens_est)
-                        except Exception as parse_err:
-                            logger.debug(f"Chunk parsing warning: {parse_err}")
-
-        except Exception as e:
-            logger.error(f"Inference calling error: {e}", exc_info=True)
-            raise
-
-        end_time = time.time()
-        total_time = end_time - start_time
-
-        full_text = "".join(full_text_parts)
-        thinking_content = "".join(thinking_parts)
-
-        # If not streamed via reasoning_content, parse full_text for <think> tags
-        if not thinking_content:
-            thinking_content, answer_content = self._parse_reasoning_and_answer(full_text)
-        else:
-            answer_content = full_text
-
-        # Estimate tokens if API didn't return usage dict
-        if completion_tokens_est == 0:
-            thinking_tokens = int(len(thinking_content) / 4)
-            answer_tokens = int(len(answer_content) / 4)
-            completion_tokens_est = thinking_tokens + answer_tokens
-        elif thinking_content:
-            thinking_ratio = len(thinking_content) / (len(thinking_content) + len(answer_content) + 1)
-            thinking_tokens = max(1, int(completion_tokens_est * thinking_ratio))
-            answer_tokens = max(1, completion_tokens_est - thinking_tokens)
-        else:
-            thinking_tokens = 0
-            answer_tokens = completion_tokens_est
-
-        generation_time = total_time - ttft
-        if generation_time > 0.01 and completion_tokens_est > 0:
-            tps = completion_tokens_est / generation_time
-        else:
-            tps = 0.0
-
-        logger.debug(
-            "Generation complete: model=%s tps=%.1f ttft=%.3f tokens=%d elapsed=%.2fs",
-            model_name, tps, ttft if first_chunk_received else total_time,
-            completion_tokens_est, total_time,
+        return self._assemble_result(
+            model_name,
+            full_text,
+            thinking_content,
+            prompt_tokens_est,
+            completion_tokens_est,
+            ttft,
+            first_chunk_received,
+            total_time,
+            self._parse_reasoning_and_answer,
         )
-
-        return {
-            "model_name": model_name,
-            "raw_response": full_text if not thinking_content else f"<think>\n{thinking_content}\n</think>\n{answer_content}",
-            "thinking_content": thinking_content,
-            "answer_content": answer_content,
-            "elapsed_time": total_time,
-            "ttft": ttft if first_chunk_received else total_time,
-            "tps": tps,
-            "prompt_tokens": prompt_tokens_est,
-            "response_tokens": completion_tokens_est,
-            "thinking_tokens": thinking_tokens,
-            "answer_tokens": answer_tokens,
-        }
 
     async def generate_chat_completion(
         self,
@@ -624,7 +719,7 @@ class LMStudioClient:
         stop_tokens: Optional[List[str]] = None,
         model_name: Optional[str] = None,
         images: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+    ) -> GenerationResult:
         """Send a chat completion request with a pre-built messages array.
 
         Unlike generate_completion(), this accepts a full conversation history
@@ -676,133 +771,34 @@ class LMStudioClient:
             m.get("content", "") if isinstance(m.get("content"), str) else ""
             for m in final_messages
         )
-        prompt_tokens_est = int(len(prompt_text) / 4)
+        prompt_tokens_est = int(len(prompt_text) / _TOKEN_CHARS_ESTIMATE)
 
-        payload = {
-            "model": model_name,
-            "messages": final_messages,
-            "stream": True,
-        }
-        if temperature is not None:
-            payload["temperature"] = temperature
-        if max_tokens is not None:
-            payload["max_tokens"] = max_tokens
-        if stop_tokens:
-            payload["stop"] = stop_tokens
+        payload = self._build_stream_payload(
+            model_name, final_messages, temperature, max_tokens, stop_tokens
+        )
 
         # Reset repetition detection
-        self._rep_buffer = ""
-        self._repetition_detected = False
-        self._rep_consecutive_count = 0
-        self._rep_chunk_count = 0
+        self._reset_rep_state()
 
-        full_text_parts: list[str] = []
-        ttft = 0.0
-        start_time = time.time()
-        first_chunk_received = False
-        _last_token_time = time.time()
-        thinking_parts: list[str] = []
-        completion_tokens_est = 0
+        (
+            full_text,
+            thinking_content,
+            prompt_tokens_est,
+            completion_tokens_est,
+            ttft,
+            first_chunk_received,
+            total_time,
+        ) = await self._stream_chat(url, payload, prompt_tokens_est, model_name)
 
-        try:
-            async with self._get_client().stream("POST", url, json=payload, timeout=httpx.Timeout(None, connect=30.0, read=600.0, write=60.0, pool=30.0)) as response:
-                if response.status_code != 200:
-                    error_body = await response.aread()
-                    raise RuntimeError(f"LM Studio returned status {response.status_code}: {error_body.decode('utf-8', errors='ignore')}")
-
-                async for line in response.aiter_lines():
-                    if not line.strip():
-                        continue
-                    if line.startswith("data: "):
-                        data_str = line[6:]
-                        if data_str.strip() == "[DONE]":
-                            break
-                        try:
-                            chunk_json = _orjson.loads(data_str)
-                            choices = chunk_json.get("choices", [])
-                            if choices:
-                                delta = choices[0].get("delta", {})
-                                if not first_chunk_received:
-                                    has_content = delta.get("content") is not None and delta["content"] != ""
-                                    has_reasoning = delta.get("reasoning_content") is not None and delta["reasoning_content"] != ""
-                                    if has_content or has_reasoning:
-                                        ttft = time.time() - start_time
-                                        first_chunk_received = True
-                                rc = delta.get("reasoning_content")
-                                if rc is not None:
-                                    thinking_parts.append(rc)
-                                    if not self._rep_disabled:
-                                        self._rep_buffer += rc
-                                        if len(self._rep_buffer) > self._rep_max_len:
-                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    _last_token_time = time.time()
-                                    self._rep_chunk_count += 1
-                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
-                                        self._repetition_detected = True
-                                        await response.aclose()
-                                        break
-                                content = delta.get("content")
-                                if content is not None:
-                                    _last_token_time = time.time()
-                                    full_text_parts.append(content)
-                                    if not self._rep_disabled:
-                                        self._rep_buffer += content
-                                        if len(self._rep_buffer) > self._rep_max_len:
-                                            self._rep_buffer = self._rep_buffer[-self._rep_max_len:]
-                                    self._rep_chunk_count += 1
-                                    if not self._rep_disabled and self._rep_chunk_count % self._rep_check_interval == 0 and self._check_repetition():
-                                        self._repetition_detected = True
-                                        await response.aclose()
-                                        break
-                            if "usage" in chunk_json:
-                                usage = chunk_json["usage"]
-                                prompt_tokens_est = usage.get("prompt_tokens", prompt_tokens_est)
-                                completion_tokens_est = usage.get("completion_tokens", completion_tokens_est)
-                        except Exception as parse_err:
-                            logger.debug(f"Chunk parsing warning: {parse_err}")
-        except Exception as e:
-            logger.error(f"Inference calling error: {e}", exc_info=True)
-            raise
-
-        end_time = time.time()
-        total_time = end_time - start_time
-        full_text = "".join(full_text_parts)
-        thinking_content = "".join(thinking_parts)
-
-        if not thinking_content:
-            thinking_content, answer_content = self._parse_reasoning_and_answer(full_text)
-        else:
-            answer_content = full_text
-
-        if completion_tokens_est == 0:
-            thinking_tokens = int(len(thinking_content) / 4)
-            answer_tokens = int(len(answer_content) / 4)
-            completion_tokens_est = thinking_tokens + answer_tokens
-        elif thinking_content:
-            thinking_ratio = len(thinking_content) / (len(thinking_content) + len(answer_content) + 1)
-            thinking_tokens = max(1, int(completion_tokens_est * thinking_ratio))
-            answer_tokens = max(1, completion_tokens_est - thinking_tokens)
-        else:
-            thinking_tokens = 0
-            answer_tokens = completion_tokens_est
-
-        generation_time = total_time - ttft
-        if generation_time > 0.01 and completion_tokens_est > 0:
-            tps = completion_tokens_est / generation_time
-        else:
-            tps = 0.0
-
-        return {
-            "model_name": model_name,
-            "raw_response": full_text if not thinking_content else f"<think>\n{thinking_content}\n</think>\n{answer_content}",
-            "thinking_content": thinking_content,
-            "answer_content": answer_content,
-            "elapsed_time": total_time,
-            "ttft": ttft if first_chunk_received else total_time,
-            "tps": tps,
-            "prompt_tokens": prompt_tokens_est,
-            "response_tokens": completion_tokens_est,
-            "thinking_tokens": thinking_tokens,
-            "answer_tokens": answer_tokens,
-        }
+        return self._assemble_result(
+            model_name,
+            full_text,
+            thinking_content,
+            prompt_tokens_est,
+            completion_tokens_est,
+            ttft,
+            first_chunk_received,
+            total_time,
+            self._parse_reasoning_and_answer,
+        )
 

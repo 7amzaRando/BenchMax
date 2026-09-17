@@ -53,12 +53,15 @@ opencode.json
 # ── Env / Secrets ───────────────────────────────────────────────────
 .env
 .env.*
+*.env
 !.env.example
 # Tokens / secrets (all locations)
 data/.hf_token
 data/.lb_settings
 records/.hf_token
 records/.lb_settings
+records/.lan_password
+.lan_password
 .hf_token
 .lb_settings
 .cli_config.json

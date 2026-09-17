@@ -73,7 +73,7 @@ class TestResumeGuards:
         from backend.operations import resume_run
         from backend.database import Run, get_db
         rid = _seed_run(status="PAUSED", benchmark="MMLU-Pro")
-        with patch("backend.operations._start_benchmark_thread", return_value=MagicMock()) as starter:
+        with patch("backend.ops.lifecycle._start_benchmark_thread", return_value=MagicMock()) as starter:
             msg = resume_run(rid)
             assert "resumed" in msg.lower()
             assert starter.called

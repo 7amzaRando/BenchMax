@@ -180,6 +180,14 @@ def _run_cpp_test(src_name: str, tmpdir: str, test_rel: str | None = None) -> Di
 
 
 def _write_temp_workspace(sample: Dict[str, Any], edited_code: str, tmpdir: str) -> None:
+    """Write the grading workspace (source + tests + toolchain files).
+
+    MIRROR: backend/sandbox/container_runner.py::_write_workspace implements
+    the same layout for the Docker path. The container copy is stdlib-only
+    (baked into the benchmax-sandbox image, no backend imports allowed), so
+    the two cannot share code — keep them in sync. tests/test_aider_workspace_sync.py
+    fails if their outputs diverge.
+    """
     lang = sample.get("language", "")
 
     def write_file(rel_path: str, content: str):

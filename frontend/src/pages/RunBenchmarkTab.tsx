@@ -51,6 +51,10 @@ export default function RunBenchmarkTab() {
   useEffect(() => {
     if (pendingRerun) {
       setSelectedBenchmark(pendingRerun.benchmark)
+      // Reveal the rerun target: a stale category pill or search text could
+      // otherwise leave the dropdown showing a benchmark that isn't visible.
+      setCategoryFilter('All')
+      setBenchSearch('')
       dispatch({ type: 'SET_CONNECTION', payload: { selectedModel: pendingRerun.model } })
       dispatch({ type: 'SET_PENDING_RERUN', payload: null })
     }
@@ -134,6 +138,18 @@ export default function RunBenchmarkTab() {
     }
     return list
   }, [benchmarks, benchSearch, categoryFilter])
+
+  // Keep the single-run selection visible: category pills and search only
+  // filter the dropdown list, so without this the select keeps a stale value
+  // (e.g. HumanEval) while showing another category (e.g. Reasoning/AIME)
+  // and Start would run the hidden benchmark. Fall back to the first visible
+  // benchmark whenever the current one is filtered out.
+  useEffect(() => {
+    if (filteredBenches.length === 0) return
+    if (!filteredBenches.some(b => b.name === selectedBenchmark)) {
+      setSelectedBenchmark(filteredBenches[0].name)
+    }
+  }, [filteredBenches, selectedBenchmark])
 
   const needsDocker = useMemo(() => {
     const names = mode === 'single' ? [selectedBenchmark] : selectedBatchBenches
@@ -283,7 +299,7 @@ export default function RunBenchmarkTab() {
               <Input placeholder="Search benchmarks…" value={benchSearch} onChange={e=>setBenchSearch(e.target.value)} className="h-8 text-xs" />
               {mode==='single' ? (
                 <div className="space-y-2">
-                  <select className="flex h-9 w-full rounded-lg border bg-card px-3 text-sm" value={selectedBenchmark} onChange={e=>setSelectedBenchmark(e.target.value)}>
+                  <select aria-label="Benchmark" className="flex h-9 w-full rounded-lg border bg-card px-3 text-sm" value={selectedBenchmark} onChange={e=>setSelectedBenchmark(e.target.value)}>
                     {filteredBenches.map(b=><option key={b.name} value={b.name}>{b.name} — {b.short} · {b.samples.toLocaleString()} {b.docker ? '🐳':(b.docker_partial ? '◐':'')}</option>)}
                   </select>
                   {selBenchMeta && (

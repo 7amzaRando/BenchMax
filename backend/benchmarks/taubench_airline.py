@@ -55,6 +55,9 @@ GREETING = "Hi! How can I help you today?"
 AGENT_STOP = "###STOP###"
 USER_STOP_TOKENS = ("###STOP###", "###TRANSFER###", "###OUT-OF-SCOPE###")
 MAX_CONSECUTIVE_TOOL_ERRORS = 10
+# Stored-trajectory truncation limits (display/DB size, not grading).
+_TURN_CONTENT_MAX_CHARS = 4000
+_TOOL_CONTENT_MAX_CHARS = 2000
 
 AGENT_INSTRUCTION = (
     "You are a customer service agent that helps the user according to the "
@@ -551,6 +554,49 @@ WRITE_TOOLS = frozenset({
 })
 
 
+class _TurnTracker:
+    """Accumulates per-turn token/timing totals and the turn-details log.
+
+    Extracted from evaluate_sample()'s _accumulate/_record closures so the
+    conversation loop reads as orchestration, not bookkeeping.
+    """
+
+    def __init__(self) -> None:
+        self.total = {"thinking": 0, "response": 0, "prompt": 0}
+        self.total_elapsed = 0.0
+        self.last_tps = 0.0
+        self.last_ttft = 0.0
+        self.turn_details: List[Dict[str, Any]] = []
+
+    def accumulate(self, gen: Optional[Dict[str, Any]]) -> None:
+        if not gen:
+            return
+        self.total["thinking"] += gen.get("thinking_tokens", 0)
+        self.total["response"] += gen.get("response_tokens", 0)
+        self.total["prompt"] += gen.get("prompt_tokens", 0)
+        self.total_elapsed += gen.get("elapsed_time", 0.0)
+        self.last_tps = gen.get("tps", 0.0)
+        self.last_ttft = gen.get("ttft", 0.0)
+
+    def record(self, turn: int, role: str, content: str,
+               gen: Optional[Dict[str, Any]],
+               tool_calls: Optional[List[Dict[str, Any]]] = None) -> None:
+        entry: Dict[str, Any] = {
+            "turn": turn, "role": role, "content": (content or "")[:_TURN_CONTENT_MAX_CHARS],
+        }
+        if gen:
+            entry.update({
+                "tps": gen.get("tps", 0.0), "ttft": gen.get("ttft", 0.0),
+                "thinking_tokens": gen.get("thinking_tokens", 0),
+                "response_tokens": gen.get("response_tokens", 0),
+                "prompt_tokens": gen.get("prompt_tokens", 0),
+                "elapsed_time": gen.get("elapsed_time", 0.0),
+            })
+        if tool_calls:
+            entry["tool_calls"] = tool_calls
+        self.turn_details.append(entry)
+
+
 class Tau3AirlineBenchmark(MultiTurnBenchmark):
     """tau3-bench airline domain: multi-turn customer-service tool use."""
 
@@ -889,43 +935,10 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
         conversation: List[Dict[str, str]] = [
             {"role": "assistant", "content": GREETING}
         ]
-        turn_details: List[Dict[str, Any]] = [
+        tracker = _TurnTracker()
+        tracker.turn_details.append(
             {"turn": -1, "role": "assistant", "content": GREETING}
-        ]
-
-        total = {"thinking": 0, "response": 0, "prompt": 0}
-        total_elapsed = 0.0
-        last_tps = 0.0
-        last_ttft = 0.0
-
-        def _accumulate(gen: Optional[Dict[str, Any]]) -> None:
-            nonlocal total_elapsed, last_tps, last_ttft
-            if not gen:
-                return
-            total["thinking"] += gen.get("thinking_tokens", 0)
-            total["response"] += gen.get("response_tokens", 0)
-            total["prompt"] += gen.get("prompt_tokens", 0)
-            total_elapsed += gen.get("elapsed_time", 0.0)
-            last_tps = gen.get("tps", 0.0)
-            last_ttft = gen.get("ttft", 0.0)
-
-        def _record(turn: int, role: str, content: str,
-                    gen: Optional[Dict[str, Any]],
-                    tool_calls: Optional[List[Dict[str, Any]]] = None) -> None:
-            entry: Dict[str, Any] = {
-                "turn": turn, "role": role, "content": (content or "")[:4000],
-            }
-            if gen:
-                entry.update({
-                    "tps": gen.get("tps", 0.0), "ttft": gen.get("ttft", 0.0),
-                    "thinking_tokens": gen.get("thinking_tokens", 0),
-                    "response_tokens": gen.get("response_tokens", 0),
-                    "prompt_tokens": gen.get("prompt_tokens", 0),
-                    "elapsed_time": gen.get("elapsed_time", 0.0),
-                })
-            if tool_calls:
-                entry["tool_calls"] = tool_calls
-            turn_details.append(entry)
+        )
 
         sample_start = time.time()
         run_id = params.get("_run_id") or params.get("run_id")
@@ -937,11 +950,11 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
             # First user turn answers the greeting.
             user_first = await self._user_turn(
                 conversation, sample, params, model_name)
-            _accumulate(user_first.get("gen"))
+            tracker.accumulate(user_first.get("gen"))
             if (user_first.get("response") or "").strip():
                 conversation.append({"role": "user",
                                      "content": user_first["response"]})
-                _record(0, "user", user_first["response"], user_first.get("gen"))
+                tracker.record(0, "user", user_first["response"], user_first.get("gen"))
             if user_first.get("done"):
                 termination = "user_stop"
 
@@ -954,60 +967,24 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
                 _set_live_turn(run_id, agent_turns, max_turns,
                                time.time() - sample_start)
 
-                try:
-                    turn = await self.evaluate_turn(
-                        agent_turns - 1, conversation, sample, params, model_name)
-                except Exception as e:
-                    logger.error("Tau3-Airline %s agent turn %d failed: %s",
-                                 task_id, agent_turns, e)
+                outcome = await self._run_agent_turn(
+                    agent_turns, conversation, sample, params, model_name,
+                    tracker, task_id)
+                if outcome == "agent_error":
                     termination = "agent_error"
-                    turn_details.append({"turn": agent_turns, "role": "assistant",
-                                         "content": f"[agent turn failed: {e}]"})
                     break
-
-                gen = turn.get("gen")
-                _accumulate(gen)
-                response = turn.get("response", "") or ""
-                tool_calls = turn.get("tool_calls")
-                agent_stop = turn.get("done", False)
-
-                if not response.strip() and not tool_calls:
-                    logger.info("Tau3-Airline %s: empty agent response, stopping",
-                                task_id)
-                    _record(agent_turns, "assistant", "[empty response]", gen)
+                if outcome == "empty_response":
                     termination = "empty_response"
                     break
-
-                if response.strip():
-                    conversation.append({"role": "assistant", "content": response})
-                _record(agent_turns, "assistant", response, gen, tool_calls)
-
-                transferred = False
-                if tool_calls:
-                    tool_results = await self.execute_tools(tool_calls, sample)
-                    conversation.extend(tool_results)
-                    for tr in tool_results:
-                        turn_details.append({
-                            "turn": agent_turns, "role": "tool",
-                            "content": tr.get("content", "")[:2000],
-                            "tool": tr.get("tool", ""),
-                        })
-                        if (tr.get("content", "") or "").startswith("Error:"):
-                            consecutive_errors += 1
-                        else:
-                            consecutive_errors = 0
-                    transferred = any(
-                        c.get("name") == "transfer_to_human_agents"
-                        for c in tool_calls
-                    )
-                    if consecutive_errors >= MAX_CONSECUTIVE_TOOL_ERRORS:
-                        logger.warning("Tau3-Airline %s: %d consecutive tool errors",
-                                       task_id, consecutive_errors)
-                        termination = "too_many_tool_errors"
-                        break
-                else:
-                    # A clean text turn breaks the error chain ("consecutive").
-                    consecutive_errors = 0
+                response, tool_calls, agent_stop, transferred = outcome
+                consecutive_errors = await self._run_tool_calls(
+                    agent_turns, tool_calls, sample, conversation,
+                    tracker, task_id, consecutive_errors)
+                if consecutive_errors >= MAX_CONSECUTIVE_TOOL_ERRORS:
+                    logger.warning("Tau3-Airline %s: %d consecutive tool errors",
+                                   task_id, consecutive_errors)
+                    termination = "too_many_tool_errors"
+                    break
 
                 if agent_stop:
                     termination = "agent_stop"
@@ -1018,29 +995,109 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
 
                 # User answers the agent's text (tool traffic stays hidden).
                 if response.strip():
-                    try:
-                        user_turn = await self._user_turn(
-                            conversation, sample, params, model_name)
-                    except Exception as e:
-                        logger.error("Tau3-Airline %s user turn failed: %s",
-                                     task_id, e)
-                        termination = "user_error"
-                        break
-                    _accumulate(user_turn.get("gen"))
-                    user_response = user_turn.get("response") or ""
-                    if user_response.strip():
-                        conversation.append({"role": "user", "content": user_response})
-                    _record(agent_turns, "user", user_response or "[empty response]",
-                            user_turn.get("gen"))
-                    if user_turn.get("done"):
-                        termination = "user_stop"
-                        break
-                    if not user_response.strip():
-                        termination = "empty_response"
+                    user_outcome = await self._run_user_reply(
+                        agent_turns, conversation, sample, params,
+                        model_name, tracker, task_id)
+                    if user_outcome != "continue":
+                        termination = user_outcome
                         break
         finally:
             _clear_live_turn()
 
+        return self._finish_sample(
+            sample, task_id, conversation, tracker, agent_turns,
+            max_turns, termination)
+
+    async def _run_agent_turn(self, agent_turns: int, conversation: List[Dict[str, str]],
+                              sample: Dict[str, Any], params: Dict[str, Any],
+                              model_name: str, tracker: "_TurnTracker", task_id: str):
+        """Run one agent turn. Returns "agent_error"/"empty_response" or
+        (response, tool_calls, agent_stop, transferred) on success."""
+        try:
+            turn = await self.evaluate_turn(
+                agent_turns - 1, conversation, sample, params, model_name)
+        except Exception as e:
+            logger.error("Tau3-Airline %s agent turn %d failed: %s",
+                         task_id, agent_turns, e)
+            tracker.turn_details.append({"turn": agent_turns, "role": "assistant",
+                                         "content": f"[agent turn failed: {e}]"})
+            return "agent_error"
+
+        gen = turn.get("gen")
+        tracker.accumulate(gen)
+        response = turn.get("response", "") or ""
+        tool_calls = turn.get("tool_calls")
+        agent_stop = turn.get("done", False)
+
+        if not response.strip() and not tool_calls:
+            logger.info("Tau3-Airline %s: empty agent response, stopping",
+                        task_id)
+            tracker.record(agent_turns, "assistant", "[empty response]", gen)
+            return "empty_response"
+
+        if response.strip():
+            conversation.append({"role": "assistant", "content": response})
+        tracker.record(agent_turns, "assistant", response, gen, tool_calls)
+        transferred = bool(tool_calls) and any(
+            c.get("name") == "transfer_to_human_agents" for c in tool_calls
+        )
+        return response, tool_calls, agent_stop, transferred
+
+    async def _run_tool_calls(self, agent_turns: int,
+                              tool_calls: Optional[List[Dict[str, Any]]],
+                              sample: Dict[str, Any],
+                              conversation: List[Dict[str, str]],
+                              tracker: "_TurnTracker", task_id: str,
+                              consecutive_errors: int) -> int:
+        """Execute tool calls, append results, update the error chain.
+
+        Returns the updated consecutive-error count (reset to 0 on a clean
+        text turn, matching the "consecutive" semantics).
+        """
+        if not tool_calls:
+            # A clean text turn breaks the error chain ("consecutive").
+            return 0
+        tool_results = await self.execute_tools(tool_calls, sample)
+        conversation.extend(tool_results)
+        for tr in tool_results:
+            tracker.turn_details.append({
+                "turn": agent_turns, "role": "tool",
+                "content": tr.get("content", "")[:_TOOL_CONTENT_MAX_CHARS],
+                "tool": tr.get("tool", ""),
+            })
+            if (tr.get("content", "") or "").startswith("Error:"):
+                consecutive_errors += 1
+            else:
+                consecutive_errors = 0
+        return consecutive_errors
+
+    async def _run_user_reply(self, agent_turns: int, conversation: List[Dict[str, str]],
+                              sample: Dict[str, Any], params: Dict[str, Any],
+                              model_name: str, tracker: "_TurnTracker", task_id: str) -> str:
+        """Run one user-sim reply. Returns "continue" or a termination reason."""
+        try:
+            user_turn = await self._user_turn(
+                conversation, sample, params, model_name)
+        except Exception as e:
+            logger.error("Tau3-Airline %s user turn failed: %s",
+                         task_id, e)
+            return "user_error"
+        tracker.accumulate(user_turn.get("gen"))
+        user_response = user_turn.get("response") or ""
+        if user_response.strip():
+            conversation.append({"role": "user", "content": user_response})
+        tracker.record(agent_turns, "user", user_response or "[empty response]",
+                       user_turn.get("gen"))
+        if user_turn.get("done"):
+            return "user_stop"
+        if not user_response.strip():
+            return "empty_response"
+        return "continue"
+
+    def _finish_sample(self, sample: Dict[str, Any], task_id: str,
+                       conversation: List[Dict[str, str]], tracker: "_TurnTracker",
+                       agent_turns: int, max_turns: int, termination: str) -> Dict[str, Any]:
+        """Score the finished conversation and build the standard result dict."""
         final_response = ""
         for m in reversed(conversation):
             if m.get("role") == "assistant" and (m.get("content") or "").strip():
@@ -1062,10 +1119,11 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
 
         return self._result(
             prompt_summary,
-            {"elapsed_time": total_elapsed, "tps": last_tps, "ttft": last_ttft,
-             "thinking_tokens": total["thinking"],
-             "response_tokens": total["response"],
-             "prompt_tokens": total["prompt"],
+            {"elapsed_time": tracker.total_elapsed, "tps": tracker.last_tps,
+             "ttft": tracker.last_ttft,
+             "thinking_tokens": tracker.total["thinking"],
+             "response_tokens": tracker.total["response"],
+             "prompt_tokens": tracker.total["prompt"],
              "raw_response": raw_response},
             correct=score_result.get("correct", False),
             error_message=None if score_result.get("correct")
@@ -1074,7 +1132,7 @@ class Tau3AirlineBenchmark(MultiTurnBenchmark):
                 "score": score_result.get("score", 0.0),
                 "turns_used": agent_turns,
                 "conversation_length": len(conversation),
-                "turns": turn_details,
+                "turns": tracker.turn_details,
                 "max_turns": max_turns,
                 "termination": termination,
                 **score_result.get("details", {}),

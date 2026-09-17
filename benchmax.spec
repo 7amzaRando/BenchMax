@@ -180,6 +180,18 @@ a = Analysis(
         'PIL.ImageQt',
         'gradio',
         'gradio_client',
+        # Heavy ML/data packages — never imported at runtime (verified via
+        # sys.modules after backend import). torch/transformers/datasets get
+        # pulled into the static graph via nltk's optional huggingface bridge
+        # (nltk.huggingface.dataset) and transitionparser (sklearn); excluding
+        # the ML trio here. bfcl-eval/sentence_transformers/faiss are guards
+        # for machines whose venv still has the old requirements installed.
+        'torch',
+        'transformers',
+        'datasets',
+        'sentence_transformers',
+        'faiss',
+        'bfcl_eval',
     ],
     noarchive=False,
 )

@@ -5,15 +5,15 @@ import { commandCategories } from '@/lib/commands-data'
 
 export const metadata: Metadata = {
   title: 'CLI Reference',
-  description: 'CLI reference for BenchMax: 38 commands covering every REST endpoint, with --json and --wait support.',
+  description: 'CLI reference for BenchMax: 40 commands covering every REST endpoint, with --json and --wait support.',
 }
 
 export default function CliReferencePage() {
-  // backend truth: 38 entries in COMMANDS (cli.py:858-875) — hardcoded; data file mirrors it
+  // backend truth: 40 entries in COMMANDS (cli.py) — hardcoded; data file mirrors it
   return (
     <div>
       <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4"><GradientText as="span">CLI Reference</GradientText></h1>
-      <p className="text-lg text-muted-fg max-w-2xl">38 commands: every REST endpoint is a CLI command. Add <code className="text-primary">--json</code> for machine output, <code className="text-primary">--wait</code> to block until done.</p>
+      <p className="text-lg text-muted-fg max-w-2xl">40 commands: every REST endpoint is a CLI command. Add <code className="text-primary">--json</code> for machine output, <code className="text-primary">--wait</code> to block until done.</p>
       <div className="rounded-xl bg-card border border-border p-4 mt-6 mb-8">
         <p className="text-sm text-muted-fg">
           <span className="font-semibold text-foreground">Usage:</span> <code className="font-mono text-foreground">py cli.py &lt;command&gt; [options]</code>

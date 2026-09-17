@@ -44,6 +44,24 @@ def _docker_available() -> bool:
         return False
 
 
+def is_docker_available() -> bool:
+    """Public probe: Docker CLI present and daemon running.
+
+    Stable wrapper around :func:`_docker_available` so callers never need
+    the private name (previously ``livebench.py`` imported ``_docker_available``
+    directly).
+    """
+    return _docker_available()
+
+
+def is_sandbox_usable() -> bool:
+    """Public probe: Docker daemon up AND the benchmax-sandbox image built."""
+    try:
+        return bool(_docker_available() and _image_exists())
+    except Exception:
+        return False
+
+
 def _image_exists() -> bool:
     """Check if the benchmax-sandbox image exists locally."""
     try:

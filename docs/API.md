@@ -1,15 +1,17 @@
 # BenchMax REST API
 
-48 REST endpoints under `/api/` — 46 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py`. Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running.
+52 route handlers under `/api/` — 50 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py` (48 unique paths: `/hf-token`, `/runs`, `/leaderboard`, and `/leaderboard/settings` each serve two methods). Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running.
+
+**Versioning:** `/api/*` is frozen for back-compat. The same router is also served under `/api/v1/*` (same paths, e.g. `GET /api/v1/poll`) so new clients can pin a versioned base path; future breaking changes go under `/api/v2`.
 
 ## Core Endpoints
 
 | Method | Endpoint | Description | Request Body | Response |
 |--------|----------|-------------|--------------|----------|
 | `POST` | `/api/connect` | Connect to API provider | `{api_url, api_key?}` | `{status, models, choices, selected, metadata}` |
-| `POST` | `/api/run/start` | Start a benchmark run | `RunRequest` (see below) | `{run_id, message}` |
-| `POST` | `/api/batch/start` | Start batch (1 model, N benchmarks) | `BatchRequest` | `{run_id, batch_id, message, summary}` |
-| `POST` | `/api/model-queue/start` | Start model queue (N models × M benchmarks) | `ModelQueueRequest` | `{queue_id, message}` |
+| `POST` | `/api/run/start` | Start a benchmark run (HTTP 201; HTTP 429 when 4 runs already active) | `RunRequest` (see below) | `{run_id, message}` |
+| `POST` | `/api/batch/start` | Start batch (1 model, N benchmarks) (HTTP 201; HTTP 429 when busy) | `BatchRequest` | `{run_id, batch_id, message, summary}` |
+| `POST` | `/api/model-queue/start` | Start model queue (N models × M benchmarks) (HTTP 201) | `ModelQueueRequest` | `{queue_id, message}` |
 | `GET` | `/api/model-queue/active` | Get active model queue status | — | `{queue_id, models, current_model_index, ...}` |
 | `POST` | `/api/model-queue/halt` | Halt the active model queue | — | `{status}` |
 | `POST` | `/api/model-queue/skip` | Skip current model in queue | — | `{status}` |
@@ -46,8 +48,9 @@ All three share a `BaseRunParams` base:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/runs` | List all runs (supports `?offset=N&limit=N`) |
-| `GET` | `/api/runs/{id}` | Full run details + per-sample results |
+| `GET` | `/api/runs` | List all runs (`?offset=N&limit=N`, limit capped at 500, `limit=0` = all) |
+| `GET` | `/api/runs/{id}` | Full run details + per-sample results (samples paginated via `?sample_offset=N&sample_limit=N`, `sample_limit=0` = all) |
+| `DELETE` | `/api/runs?run_ids=1,2` | Delete multiple runs (canonical path; empty/invalid IDs → HTTP 400) |
 | `GET` | `/api/runs/{id}/card` | Copy-paste Trusted Card block for a run |
 | `GET` | `/api/runs/{id}/diff/{task_id}` | Side-by-side diff for a task |
 | `GET` | `/api/runs/{id}/depth-results` | Per-depth results for NIAHS runs |
@@ -68,8 +71,8 @@ All three share a `BaseRunParams` base:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/leaderboard` | Get local leaderboard |
-| `DELETE` | `/api/leaderboard` | Delete multiple runs (`?run_ids=1,2`) |
-| `DELETE` | `/api/leaderboard/{id}` | Delete leaderboard entry |
+| `DELETE` | `/api/leaderboard` | Deprecated alias of `DELETE /api/runs` (kept for back-compat) |
+| `DELETE` | `/api/leaderboard/{id}` | Deprecated alias of `DELETE /api/runs?run_ids={id}` (kept for back-compat) |
 | `POST` | `/api/leaderboard/clear` | Clear all history + leaderboard |
 | `POST` | `/api/leaderboard/sync` | Sync to online leaderboard |
 | `GET` | `/api/leaderboard/settings` | Get sync settings |
@@ -91,14 +94,22 @@ All three share a `BaseRunParams` base:
 | `GET` | `/api/benchmarks` | List all benchmarks |
 | `POST` | `/api/run/check` | Pre-flight dataset/runtime check |
 | `POST` | `/api/shutdown` | Shut down server (localhost only) |
+| `GET` | `/api/auth/status` | LAN gate state (open — backing for the login screen) |
+| `POST` | `/api/auth/setup` | Set the LAN password (localhost only) |
+| `POST` | `/api/auth/login` | Verify LAN password, issue Bearer token |
 
-## Error Responses
+## Error Responses & Status Codes
 
-All endpoints return `{"detail": "Internal server error"}` with HTTP 500 on failure. Detailed error messages are logged server-side but not exposed to clients (prevents API key/path leakage).
+- `201` — `POST /api/run/start`, `/api/batch/start`, `/api/model-queue/start` on success.
+- `400` — empty/unparseable bulk delete (`DELETE /api/runs`, `/api/leaderboard` with no valid IDs).
+- `404` — unknown run (`GET /run/{id}/status`, `PATCH /runs/{id}/notes`, `GET /runs/{id}/card`), empty export (nothing to download).
+- `409` — run control refused for the current status (pause a completed run, resume a running run).
+- `429` — server busy: 4 benchmark runs already active (`MAX_CONCURRENT_RUNS`); the response names the PENDING row so it can be resumed later.
+- `500` — everything else. The body is always the generic `{"detail": "Internal server error"}`; detailed tracebacks are logged server-side only (prevents API key/path leakage).
 
 ## CLI Reference
 
-`cli.py` wraps every endpoint — 38 commands for scripting and agent automation:
+`cli.py` wraps every endpoint — 40 commands for scripting and agent automation:
 
 ```powershell
 py cli.py serve                                            # Start the server (auto-starts if not running)
@@ -111,6 +122,7 @@ py cli.py results --run-id 1 --json                        # Results as JSON
 |---------|-------------|
 | `health` | Check server status |
 | `serve --port 8000` | Start the server |
+| `set-password` | Set the LAN login password (server machine only) |
 | `shutdown` | Stop the server |
 | `version` | Show CLI version |
 | `connect --url URL` | Connect to LM Studio / API |
@@ -135,6 +147,7 @@ py cli.py results --run-id 1 --json                        # Results as JSON
 | `resume --run-id N` | Resume a run |
 | `halt --run-id N` | Halt a run |
 | `export --run-id N --format CSV` | Export results |
+| `export-selected --run-ids 1,2 --format CSV` | Export selected runs |
 | `export-batch --batch-id UUID` | Export batch results |
 | `export-history` | Export all history |
 | `batch-status --batch-id UUID` | Check batch status |

@@ -36,6 +36,7 @@ py cli.py results --run-id 1 --json
 |---------|-------------|---------|
 | `health` | Check server is running | `py cli.py health` |
 | `serve` | Start BenchMax server | `py cli.py serve --port 8000` |
+| `set-password` | Set the LAN login password (server machine only) | `py cli.py set-password` |
 | `shutdown` | Stop the server | `py cli.py shutdown` |
 | `version` | Show CLI version | `py cli.py version` |
 
@@ -121,6 +122,7 @@ py cli.py export --run-id 1 --format CSV -o results.csv
 py cli.py export --run-id 1 --format JSON -o results.json
 py cli.py export-batch --batch-id UUID -o batch.csv
 py cli.py export-history -o all.csv
+py cli.py export-selected --run-ids 1,2 -o selected.csv
 ```
 
 ### Leaderboard
@@ -274,3 +276,5 @@ Every command supports `--json`. Use this for programmatic parsing.
 10. Export to CSV for spreadsheets, JSON for code
 11. Code benchmarks use Docker sandbox (`benchmax-sandbox` — Docker-only, clear error if unavailable). Ensure Docker Desktop is running and image is built (`GET /api/docker/status`).
 12. Aider Polyglot uses Docker `benchmax-sandbox` (network-allowed container) — no separate runtime download; `py cli.py build-docker` builds the image
+13. At most 4 runs execute at once — a 5th start is rejected with HTTP 429 and saved as PENDING (resume it later); pause/halt/resume on a missing run is 404, on a wrong-state run is 409
+14. Same API under `/api/v1/*` (e.g. `GET /api/v1/poll`); bulk delete via `DELETE /api/runs?run_ids=1,2` (the `/api/leaderboard` delete paths are deprecated aliases)

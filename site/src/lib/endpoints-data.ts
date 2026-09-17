@@ -239,14 +239,20 @@ export const endpointCategories: EndpointCategory[] = [
       },
       {
         method: 'DELETE',
+        path: '/api/runs',
+        description: 'Delete multiple runs by comma-separated IDs (?run_ids=1,2). Canonical path.',
+        response: '{ leaderboard[], status }',
+      },
+      {
+        method: 'DELETE',
         path: '/api/leaderboard',
-        description: 'Delete multiple runs by comma-separated IDs (?run_ids=1,2).',
+        description: 'Deprecated alias of DELETE /api/runs.',
         response: '{ leaderboard[], status }',
       },
       {
         method: 'DELETE',
         path: '/api/leaderboard/{id}',
-        description: 'Remove an entry from the leaderboard.',
+        description: 'Deprecated alias of DELETE /api/runs?run_ids={id}.',
         response: '{ leaderboard[], status }',
       },
       {

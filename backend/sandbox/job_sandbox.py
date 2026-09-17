@@ -5,7 +5,6 @@ resource limits, network blocking, and process creation restrictions.
 """
 
 import ctypes
-import ctypes.wintypes
 import logging
 import sys
 

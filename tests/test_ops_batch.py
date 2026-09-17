@@ -44,7 +44,7 @@ class TestStartBatch:
     def test_creates_shared_batch_without_threads(self):
         from backend.operations import start_batch
         from backend.database import Run, get_db
-        with patch("backend.operations._start_benchmark_thread",
+        with patch("backend.ops.lifecycle._start_benchmark_thread",
                    return_value=MagicMock()) as starter:
             first, bid, msg, _df, disp = start_batch(
                 "m", ["MMLU-Pro", "TruthfulQA"], "http://127.0.0.1:1234/v1",
@@ -77,7 +77,7 @@ class TestModelQueue:
             def start(self):
                 captured["started"] = True
 
-        with patch("backend.operations.threading.Thread", FakeThread):
+        with patch("backend.ops.lifecycle.threading.Thread", FakeThread):
             qid, msg = start_model_queue(
                 [("m", ["MMLU-Pro"])], "http://127.0.0.1:1234/v1", quick_test=True)
         assert len(qid) == 36 and "1 model(s), 1 benchmark(s)" in msg
@@ -292,8 +292,8 @@ class TestTrustedCard:
             coro.close()  # avoid never-awaited coroutine warning
             raise RuntimeError("offline")
 
-        with patch("backend.operations._run_async", side_effect=_offline), \
-             patch("backend.operations.get_system_metrics", return_value=fake_metrics):
+        with patch("backend.ops.exports._run_async", side_effect=_offline), \
+             patch("backend.ops.exports.get_system_metrics", return_value=fake_metrics):
             card = build_trusted_card(rid)
         assert card["run_id"] == rid
         assert card["correct"] == 2 and card["total"] == 2

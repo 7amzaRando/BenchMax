@@ -79,7 +79,7 @@ class TestPollStructure:
             "ram_percent": 25.0, "gpu_available": False, "gpu_name": "none",
             "gpu_load": 0.0, "vram_total_mb": 0, "vram_used_mb": 0, "vram_percent": 0.0,
         }
-        with patch("backend.operations.get_system_metrics", return_value=fake_metrics):
+        with patch("backend.ops.stats.get_system_metrics", return_value=fake_metrics):
             result = poll(active_run_id=None)
         # operations.poll returns the FLAT internal dict (api_poll nests it
         # into telemetry/run_progress/batch_progress for the REST response).

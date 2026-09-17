@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """BenchMax CLI — command-line interface for LLM benchmarking.
 
-Wraps all 36 REST API endpoints. Requires the BenchMax server to be running
+Wraps the BenchMax REST API. Requires the BenchMax server to be running
 (run.bat or ``uvicorn backend.main:app --reload --port 8000``).
 
 Usage:
@@ -58,6 +58,10 @@ def _load_config() -> dict:
 def _save_config(data: dict):
     try:
         CLI_CONFIG.write_text(json.dumps(data, indent=2))
+        try:
+            os.chmod(CLI_CONFIG, 0o600)
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -76,9 +80,17 @@ def _client(base: str) -> httpx.Client:
     return httpx.Client(base_url=base, timeout=60.0)
 
 
+_SENSITIVE_KEYS = ("api_key", "api-key", "token", "hf_token", "password")
+
+def _redacted(body):
+    if not isinstance(body, dict):
+        return body
+    return {k: ("****" if k.lower() in _SENSITIVE_KEYS else v) for k, v in body.items()}
+
+
 def _post(c, path, body=None):
     if _verbose_mode:
-        print(_dim(f"POST {path} {json.dumps(body or {}, default=str)[:200]}"), file=sys.stderr)
+        print(_dim(f"POST {path} {json.dumps(_redacted(body or {}), default=str)[:200]}"), file=sys.stderr)
     r = c.post(path, json=body or {})
     if _verbose_mode:
         print(_dim(f"  -> {r.status_code} ({len(r.content)} bytes)"), file=sys.stderr)
@@ -561,6 +573,16 @@ def cmd_export_history(args):
         print(f"Exported {fname} ({len(r.content):,} bytes)")
 
 
+def cmd_export_selected(args):
+    fmt = args.format or "CSV"
+    with _client(args.server) as c:
+        r = c.get("/api/export/selected", params={"run_ids": args.run_ids, "format": fmt}, follow_redirects=True)
+        r.raise_for_status()
+        fname = args.output or f"selected_{args.run_ids.replace(',', '_')}.{fmt.lower()}"
+        Path(fname).write_bytes(r.content)
+        print(f"Exported {fname} ({len(r.content):,} bytes)")
+
+
 def cmd_batch_status(args):
     with _client(args.server) as c:
         _out(_get(c, f"/api/batch/{args.batch_id}"))
@@ -651,6 +673,9 @@ def cmd_halt(args):
 
 def cmd_serve(args):
     port, host = args.port or 8000, args.host or "127.0.0.1"
+    if host != "127.0.0.1" and host.lower() != "localhost":
+        print(_yellow("Note: sharing on the network — LAN visitors need the LAN password."))
+        print(_yellow("Set it first on this machine: py cli.py set-password"))
     print(f"Starting BenchMax on {host}:{port}...")
     os.execvp(sys.executable, [sys.executable, "-m", "uvicorn", "backend.main:app",
                                "--reload", "--host", host, "--port", str(port)])
@@ -669,6 +694,22 @@ def cmd_docker_status(args):
 
 def cmd_version(args):
     print(f"BenchMax CLI v{VERSION}")
+
+
+def cmd_set_password(args):
+    import getpass
+    password = args.password or getpass.getpass("New LAN password: ")
+    if not password.strip():
+        sys.exit("Error: password must not be empty.")
+    with _client(args.server) as c:
+        try:
+            d = _post(c, "/api/auth/setup", {"password": password})
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                sys.exit("Error: set the password from the server machine itself (localhost).")
+            raise
+        _out(d)
+        print("LAN password saved. Visitors on the network will now see a login screen.")
 
 
 # ── parser ───────────────────────────────────────────────────────────────────
@@ -696,8 +737,9 @@ commands:
   telemetry                     Show CPU/RAM/GPU stats
   build-docker                  Build Docker sandbox image
   docker-status                 Check Docker availability
-  serve --port 8000             Start the server
-  version                       Show CLI version
+   serve --port 8000             Start the server
+   set-password                  Set the LAN login password (server machine only)
+   version                       Show CLI version
 
 global flags:
   --json                        Machine-readable JSON output
@@ -728,7 +770,7 @@ examples:
     sd = sub.add_parser("shutdown", parents=[common], help="Stop the server")
     sv = sub.add_parser("serve", parents=[common], help="Start the server")
     sv.add_argument("--port", type=int, default=8000)
-    sv.add_argument("--host", default="0.0.0.0")
+    sv.add_argument("--host", default="127.0.0.1", help="Use 0.0.0.0 to share on the network (LAN visitors need the LAN password)")
 
     cn = sub.add_parser("connect", parents=[common], help="Connect to LM Studio / API")
     cn.add_argument("--url", required=True)
@@ -836,6 +878,11 @@ examples:
         pr.add_argument("--format", choices=["CSV", "JSON"], default="CSV")
         pr.add_argument("--output", "-o", default="")
 
+    es = sub.add_parser("export-selected", parents=[common], help="Export selected runs")
+    es.add_argument("--run-ids", required=True, help="Comma-separated run IDs")
+    es.add_argument("--format", choices=["CSV", "JSON"], default="CSV")
+    es.add_argument("--output", "-o", default="")
+
     bs = sub.add_parser("batch-status", parents=[common], help="Check batch status")
     bs.add_argument("--batch-id", required=True)
 
@@ -851,6 +898,8 @@ examples:
     sub.add_parser("telemetry", parents=[common], help="Show system telemetry")
     sub.add_parser("build-docker", parents=[common], help="Build Docker sandbox image")
     sub.add_parser("docker-status", parents=[common], help="Check Docker status")
+    spw = sub.add_parser("set-password", parents=[common], help="Set the LAN login password (run on the server machine)")
+    spw.add_argument("--password", default="", help="New password (prompted securely if omitted)")
     sub.add_parser("version", parents=[common], help="Show CLI version")
     return p
 
@@ -866,12 +915,14 @@ COMMANDS = {
     "status": cmd_status, "poll": cmd_poll, "results": cmd_results,
     "history": cmd_history, "diff": cmd_diff, "comparison": cmd_comparison,
     "export": cmd_export, "export-batch": cmd_export_batch,
-    "export-history": cmd_export_history, "batch-status": cmd_batch_status,
+    "export-history": cmd_export_history, "export-selected": cmd_export_selected,
+    "batch-status": cmd_batch_status,
     "leaderboard": cmd_leaderboard, "leaderboard-delete": cmd_leaderboard_delete,
     "leaderboard-clear": cmd_leaderboard_clear, "leaderboard-sync": cmd_leaderboard_sync,
     "leaderboard-settings": cmd_leaderboard_settings, "telemetry": cmd_telemetry,
     "pause": cmd_pause, "resume": cmd_resume, "halt": cmd_halt,
     "build-docker": cmd_build_docker, "docker-status": cmd_docker_status, "version": cmd_version,
+    "set-password": cmd_set_password,
 }
 
 

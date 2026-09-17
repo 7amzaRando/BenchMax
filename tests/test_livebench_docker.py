@@ -111,7 +111,7 @@ class TestNonCodingUnaffected:
 
 class TestReadinessSeverity:
     def _docker_down(self):
-        return (patch("backend.operations._docker_daemon_running", return_value=False),
+        return (patch("backend.ops.datasets._docker_daemon_running", return_value=False),
                 patch("backend.sandbox.docker_executor._image_exists", return_value=False))
 
     def test_livebench_warns_not_blocks(self):
@@ -127,14 +127,14 @@ class TestReadinessSeverity:
 
     def test_livebench_image_missing_warns(self):
         from backend.operations import check_benchmark_readiness
-        with patch("backend.operations._docker_daemon_running", return_value=True), \
+        with patch("backend.ops.datasets._docker_daemon_running", return_value=True), \
              patch("backend.sandbox.docker_executor._image_exists", return_value=False):
             issues = check_benchmark_readiness("LiveBench", quick_test=True)
         assert len(issues) == 1 and issues[0]["severity"] == "warning"
 
     def test_livebench_ready_when_docker_up(self):
         from backend.operations import check_benchmark_readiness
-        with patch("backend.operations._docker_daemon_running", return_value=True), \
+        with patch("backend.ops.datasets._docker_daemon_running", return_value=True), \
              patch("backend.sandbox.docker_executor._image_exists", return_value=True):
             assert check_benchmark_readiness("LiveBench", quick_test=True) == []
 
@@ -157,7 +157,7 @@ class TestRunCheckEndpoint:
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport,
                                    base_url="http://test") as c:
-                with patch("backend.operations._docker_daemon_running",
+                with patch("backend.ops.datasets._docker_daemon_running",
                            return_value=False), \
                      patch("backend.sandbox.docker_executor._image_exists",
                            return_value=False):

@@ -538,6 +538,11 @@ def _execute_aider(config):
 
 
 def _write_workspace(sample, edited_code, tmpdir):
+    # MIRROR: backend/benchmarks/aider_polyglot.py::_write_temp_workspace is
+    # the host-side twin. This copy must stay stdlib-only (it runs inside the
+    # benchmax-sandbox image with no backend package), so the logic is
+    # duplicated rather than imported. tests/test_aider_workspace_sync.py
+    # fails if their outputs diverge.
     lang = sample.get("language", "")
 
     def write_file(rel_path, content):

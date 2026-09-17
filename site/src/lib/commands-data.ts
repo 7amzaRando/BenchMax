@@ -153,6 +153,11 @@ export const commandCategories: CommandCategory[] = [
         description: 'Export the full run history.',
         example: 'py cli.py export-history --format CSV',
       },
+      {
+        name: 'export-selected',
+        description: 'Export selected runs as CSV or JSON.',
+        example: 'py cli.py export-selected --run-ids 1,2 --format CSV',
+      },
     ],
   },
   {
@@ -252,6 +257,11 @@ export const commandCategories: CommandCategory[] = [
         name: 'serve',
         description: 'Start the BenchMax server.',
         example: 'py cli.py serve --port 8000',
+      },
+      {
+        name: 'set-password',
+        description: 'Set the LAN login password (server machine only).',
+        example: 'py cli.py set-password',
       },
       {
         name: 'shutdown',

@@ -61,3 +61,29 @@ class TestCache:
                 b = monitor.get_system_metrics()
         assert a == b
         assert a is not b
+
+
+class TestWmiStaticCache:
+    def test_skips_wmic_when_binary_missing_and_caches(self):
+        from backend.telemetry import monitor
+        monitor._wmi_static_cache = None
+        try:
+            with patch.object(monitor.shutil, "which", return_value=None):
+                with patch.object(monitor.subprocess, "run") as run:
+                    first = monitor._get_wmi_gpu_static()
+                    second = monitor._get_wmi_gpu_static()
+            run.assert_not_called()
+            assert first == second
+            assert monitor._wmi_static_cache is not None
+        finally:
+            monitor._wmi_static_cache = None
+
+    def test_returns_copy_not_reference(self):
+        from backend.telemetry import monitor
+        monitor._wmi_static_cache = {"gpu_name": "Test GPU"}
+        try:
+            a = monitor._get_wmi_gpu_static()
+            a["gpu_name"] = "MUTATED"
+            assert monitor._get_wmi_gpu_static()["gpu_name"] == "Test GPU"
+        finally:
+            monitor._wmi_static_cache = None

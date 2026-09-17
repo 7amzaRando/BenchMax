@@ -20,13 +20,13 @@ const SECTIONS = [
     href: '/docs/api-reference/',
     icon: Code,
     title: 'API Reference',
-    description: '48 REST endpoints (46 + /health & /shutdown): runs, batch, model queue, export, leaderboard, datasets, Docker, telemetry.',
+    description: '49 REST endpoints (47 + /health & /shutdown): runs, batch, model queue, export, leaderboard, datasets, Docker, telemetry.',
   },
   {
     href: '/docs/cli-reference/',
     icon: Terminal,
     title: 'CLI Reference',
-    description: '38 commands: every REST endpoint as a CLI command, with --json & --wait.',
+    description: '40 commands: every REST endpoint as a CLI command, with --json & --wait.',
   },
   {
     href: '/docs/configuration/',

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { health, updateRunNotes } from '@/lib/api'
+import { deleteRuns, health, updateRunNotes } from '@/lib/api'
 
 // Tests the REAL fetchJson layer in lib/api.ts (no '@/lib/api' mock here).
 // Regression context: fetchJson must merge caller headers AFTER the default
@@ -49,6 +49,16 @@ describe('lib/api fetchJson layer', () => {
     fetchMock.mockImplementation(() => Promise.resolve(new Response('boom', { status: 500 })))
     await expect(health()).rejects.toThrow(/HTTP 500/)
     await expect(health()).rejects.toThrow(/boom/)
+  })
+
+  it('deleteRuns() hits the canonical /api/runs bulk path', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ leaderboard: [], status: 'ok' }))
+    await deleteRuns([3, 1, 2])
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/api/runs?run_ids=1%2C2%2C3')
+    expect(init.method).toBe('DELETE')
   })
 
   it('health() hits /api/health and returns parsed JSON', async () => {
