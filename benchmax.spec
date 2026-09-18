@@ -192,6 +192,14 @@ a = Analysis(
         'sentence_transformers',
         'faiss',
         'bfcl_eval',
+        # scipy/sklearn were removed from the venv (dep cleanup) but are still
+        # referenced by pandas/nltk optional imports in the static graph.
+        # PyInstaller's hooks for them assume the package is installed and
+        # crash Analysis when it isn't (hook-scipy TypeError on None path),
+        # so exclude them here. Neither is imported at runtime — the full
+        # backend suite (397 tests) passes with both absent.
+        'scipy',
+        'sklearn',
     ],
     noarchive=False,
 )
