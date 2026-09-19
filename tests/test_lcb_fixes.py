@@ -110,3 +110,36 @@ def count_chars(s):
         }
         result = check_correctness_livecodebench(code, json.dumps(io), timeout=10.0)
         assert result["passed"], f"Expected pass but got: {result}"
+
+
+@needs_docker
+class TestLCBNegative:
+    """Negative cases: wrong code must FAIL with a non-empty error message."""
+
+    def test_wrong_two_sum_fails(self):
+        code = '''
+def twoSum(nums, target):
+    return []
+'''
+        io = {
+            'inputs': ['[2,7,11,15]\\n9'],
+            'outputs': ['[0, 1]'],
+            'fn_name': 'twoSum'
+        }
+        result = check_correctness_livecodebench(code, json.dumps(io), timeout=10.0)
+        assert result["passed"] is False, f"Wrong answer must fail but got: {result}"
+        assert isinstance(result["result"], str) and result["result"].strip(), result
+
+    def test_wrong_factorial_fails(self):
+        code = '''
+def factorial(n):
+    return 0
+'''
+        io = {
+            'inputs': ['5'],
+            'outputs': ['120'],
+            'fn_name': 'factorial'
+        }
+        result = check_correctness_livecodebench(code, json.dumps(io), timeout=10.0)
+        assert result["passed"] is False, f"Wrong answer must fail but got: {result}"
+        assert isinstance(result["result"], str) and result["result"].strip(), result

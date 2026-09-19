@@ -25,6 +25,85 @@ export const endpointCategories: EndpointCategory[] = [
     ],
   },
   {
+    name: 'Provider',
+    endpoints: [
+      {
+        method: 'GET',
+        path: '/api/provider',
+        description: 'Saved default LLM provider endpoint (URL only — keys are memory-only).',
+        response: '{ url, set }',
+      },
+      {
+        method: 'POST',
+        path: '/api/provider',
+        description: 'Validate, probe, and save the default provider endpoint. Runs without api_url fall back to it.',
+        request: '{ url, api_key? (probe-only) }',
+        response: '{ url, reachable, latency_ms, models_loaded }',
+      },
+      {
+        method: 'GET',
+        path: '/api/provider/health',
+        description: 'Is the LLM backend serving? Reachability, latency, and loaded-model count without burning a run.',
+        response: '{ url, reachable, latency_ms, models_loaded, models }',
+      },
+      {
+        method: 'GET',
+        path: '/api/models',
+        description: 'Model IDs currently loaded at the provider.',
+        response: '{ url, models }',
+      },
+    ],
+  },
+  {
+    name: 'Webhooks',
+    endpoints: [
+      {
+        method: 'POST',
+        path: '/api/webhooks',
+        description: 'Register a run-completion webhook (fired on COMPLETED/FAILED/HALTED).',
+        request: '{ url }',
+        response: '{ id, url }',
+      },
+      {
+        method: 'GET',
+        path: '/api/webhooks',
+        description: 'List registered completion webhooks.',
+        response: '{ webhooks[] }',
+      },
+      {
+        method: 'DELETE',
+        path: '/api/webhooks/{id}',
+        description: 'Delete a completion webhook.',
+        response: '{ status }',
+      },
+    ],
+  },
+  {
+    name: 'Auth',
+    endpoints: [
+      {
+        method: 'GET',
+        path: '/api/auth/status',
+        description: 'LAN gate state for the login screen. Never requires auth itself.',
+        response: '{ lan_required, password_set, authenticated }',
+      },
+      {
+        method: 'POST',
+        path: '/api/auth/setup',
+        description: 'Set (or replace) the LAN password. Localhost only — LAN callers can never claim an unset server.',
+        request: '{ password }',
+        response: '{ status }',
+      },
+      {
+        method: 'POST',
+        path: '/api/auth/login',
+        description: 'Verify the LAN password and issue a Bearer token.',
+        request: '{ password }',
+        response: '{ token }',
+      },
+    ],
+  },
+  {
     name: 'Run Lifecycle',
     endpoints: [
       {
@@ -164,8 +243,8 @@ export const endpointCategories: EndpointCategory[] = [
       {
         method: 'GET',
         path: '/api/poll',
-        description: 'Lightweight polling endpoint for live progress + telemetry.',
-        response: '{ telemetry, run_progress, batch_progress, active_run_override, live_turn }',
+        description: 'Lightweight polling endpoint for live progress + telemetry. active_runs lists RUNNING/PAUSED runs started from CLI/MCP so the frontend can auto-show them.',
+        response: '{ telemetry, run_progress, batch_progress, active_run_override, live_turn, active_runs[] }',
       },
       {
         method: 'GET',
@@ -182,7 +261,7 @@ export const endpointCategories: EndpointCategory[] = [
         method: 'GET',
         path: '/api/export/runs/{id}',
         description: 'Export a single run as a file download.',
-        response: 'File download (JSON)',
+        response: 'File download (CSV/JSON/XLSX)',
       },
       {
         method: 'GET',
@@ -194,13 +273,13 @@ export const endpointCategories: EndpointCategory[] = [
         method: 'GET',
         path: '/api/export/batch/{batch_id}',
         description: 'Export batch results as a file download.',
-        response: 'File download (JSON)',
+        response: 'File download (CSV/JSON/XLSX)',
       },
       {
         method: 'GET',
         path: '/api/export/history',
         description: 'Export the full run history.',
-        response: 'File download (JSON)',
+        response: 'File download (CSV/JSON/XLSX)',
       },
       {
         method: 'GET',
@@ -316,7 +395,7 @@ export const endpointCategories: EndpointCategory[] = [
         method: 'GET',
         path: '/api/docker/status',
         description: 'Check Docker availability and image status.',
-        response: '{ available, image_exists }',
+        response: '{ available, image_exists, message }',
       },
     ],
   },
@@ -364,6 +443,25 @@ export const endpointCategories: EndpointCategory[] = [
         path: '/api/shutdown',
         description: 'Shut down the server (requires admin token).',
         response: '{ status }',
+      },
+      {
+        method: 'GET',
+        path: '/api/version',
+        description: 'App version and GitHub-release update status (?refresh bypasses cache). Never 500s.',
+        response: '{ current, latest, update_available, release_notes_url }',
+      },
+      {
+        method: 'GET',
+        path: '/api/mcp/info',
+        description: 'MCP access info: tools list, endpoint URL, stdio command, install command.',
+        response: '{ mounted, tools[], endpoint_url, stdio_command, install_command }',
+      },
+      {
+        method: 'POST',
+        path: '/api/mcp/install',
+        description: 'Write or remove the BenchMax entry in MCP client configs. Localhost only.',
+        request: '{ clients[], url?, remote?, uninstall? }',
+        response: '{ status, action, configs }',
       },
     ],
   },

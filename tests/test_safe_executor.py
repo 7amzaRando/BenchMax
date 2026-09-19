@@ -1,7 +1,8 @@
 """Tests for backend/sandbox/safe_executor.py — sandboxed code execution.
 
-These are INTEGRATION tests that spawn real child processes via multiprocessing.
-They verify the actual sandbox behavior, not mocked paths.
+These are INTEGRATION tests that run real code inside the benchmax-sandbox
+Docker container. Import-hook unit tests target the container_runner copy
+(the hooks execute in-container; safe_executor keeps no host copy).
 """
 import os
 import shutil
@@ -13,9 +14,9 @@ import pytest
 from backend.sandbox.safe_executor import (
     check_correctness_humaneval,
     check_correctness_bigcodebench,
-    _safe_humaneval_import,
     _cleanup_dir,
 )
+from backend.sandbox.container_runner import _safe_humaneval_import
 
 
 _docker_probe_cache: dict = {}

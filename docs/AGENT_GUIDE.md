@@ -39,6 +39,15 @@ py cli.py results --run-id 1 --json
 | `set-password` | Set the LAN login password (server machine only) | `py cli.py set-password` |
 | `shutdown` | Stop the server | `py cli.py shutdown` |
 | `version` | Show CLI version | `py cli.py version` |
+| `update-check` | Check GitHub releases for a newer BenchMax | `py cli.py update-check --refresh` |
+| `install-mcp` | Register BenchMax MCP in app configs | `py cli.py install-mcp --client all` |
+| `provider` | Show the saved default provider endpoint | `py cli.py provider` |
+| `provider-set` | Set the default provider endpoint | `py cli.py provider-set --url http://127.0.0.1:1234/v1` |
+| `provider-health` | Check the LLM backend is serving | `py cli.py provider-health` |
+| `models` | List loaded models (default or `--api-url`) | `py cli.py models` |
+| `webhook-add` | Notify a URL when runs finish | `py cli.py webhook-add --url https://agent.example.com/hook` |
+| `webhooks` | List completion webhooks | `py cli.py webhooks` |
+| `webhook-delete` | Delete a completion webhook | `py cli.py webhook-delete --id abc123` |
 
 ### Connection
 
@@ -221,6 +230,14 @@ py cli.py batch --model deepseek-r1 --benchmarks HumanEval MMLU-Pro IFEval AIME 
 ```bash
 py cli.py export --run-id 1 --format CSV -o model_results.csv
 py cli.py export-history --format JSON -o full_history.json
+```
+
+### Unattended agent loop (no polling)
+```bash
+py cli.py provider-set --url http://127.0.0.1:1234/v1   # once: validate + save default
+py cli.py provider-health                                # backend up before burning a run?
+py cli.py webhook-add --url https://my-agent.example.com/benchmax-hook
+py cli.py run --model MODEL --benchmark HumanEval        # returns immediately; hook fires on COMPLETED/FAILED/HALTED
 ```
 
 ---

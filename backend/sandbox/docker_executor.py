@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import subprocess
+import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -60,6 +61,56 @@ def is_sandbox_usable() -> bool:
         return bool(_docker_available() and _image_exists())
     except Exception:
         return False
+
+
+# --- Engine-wedge detection --------------------------------------------------
+# `docker info` / `docker ps` can succeed while container *start* hangs
+# forever (wedged Docker Desktop backend — observed 2026-09-19: every
+# `docker run`, even hello-world, hung; readiness stayed green). When a
+# benchmark container times out, this probe distinguishes "slow test" from
+# "engine cannot start containers" so the error names the real cause.
+_ENGINE_PROBE_TTL = 300.0
+_engine_probe_cache: Dict[str, Any] = {"at": 0.0, "ok": True}
+_engine_probe_lock = threading.Lock()
+
+
+def _engine_can_start_containers(timeout: float = 30.0) -> bool:
+    """Try starting a trivial container in the sandbox image. Cached (TTL 5 min).
+
+    Returns True when the engine starts containers, False when start hangs
+    or fails. Never raises. Only called on the container-timeout path, so
+    the happy path pays nothing.
+    """
+    now = time.monotonic()
+    with _engine_probe_lock:
+        if now - _engine_probe_cache["at"] < _ENGINE_PROBE_TTL:
+            return _engine_probe_cache["ok"]
+    try:
+        result = subprocess.run(
+            ["docker", "run", "--rm", IMAGE_NAME, "echo", "ok"],
+            capture_output=True, text=True, timeout=timeout,
+            encoding="utf-8", errors="replace",
+        )
+        ok = result.returncode == 0 and "ok" in (result.stdout or "")
+    except Exception:
+        ok = False
+    with _engine_probe_lock:
+        _engine_probe_cache["at"] = time.monotonic()
+        _engine_probe_cache["ok"] = ok
+    return ok
+
+
+def _engine_wedge_suffix(timeout: float = 30.0) -> str:
+    """Return '' when the engine starts containers, else a diagnosis suffix."""
+    if _engine_can_start_containers(timeout):
+        return ""
+    logger.warning("Docker engine wedge detected: daemon responds but containers won't start")
+    return (
+        " — Docker engine cannot start containers "
+        "(daemon responds but container start hangs). "
+        "Restart Docker Desktop and verify with: "
+        "docker run --rm benchmax-sandbox echo ok"
+    )
 
 
 def _image_exists() -> bool:
@@ -217,7 +268,7 @@ def run_in_container(
         elapsed = time.monotonic() - t0
         logger.warning("Docker container timed out after %.1fs", elapsed)
         _kill_container(name)
-        return ["timed out"]
+        return ["timed out" + _engine_wedge_suffix()]
     except Exception as e:
         logger.warning("Docker execution failed: %s", e)
         return [f"failed: {e}"]
@@ -285,7 +336,7 @@ def run_aider_in_container(
     except subprocess.TimeoutExpired:
         _kill_container(name)
         return {"success": False, "stdout": "", "stderr": "",
-                "error": f"Aider Docker timed out ({timeout}s)"}
+                "error": f"Aider Docker timed out ({timeout}s){_engine_wedge_suffix()}"}
     except Exception as e:
         return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
 

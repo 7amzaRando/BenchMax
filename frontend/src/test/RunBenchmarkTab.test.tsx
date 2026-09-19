@@ -1,8 +1,9 @@
+import { useEffect } from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import RunBenchmarkTab from '@/pages/RunBenchmarkTab'
-import { BenchMaxProvider } from '@/lib/context'
-import { getBenchmarks } from '@/lib/api'
+import { BenchMaxProvider, useApp } from '@/lib/context'
+import { getBenchmarks, startRun } from '@/lib/api'
 
 vi.mock('@/lib/api', () => ({
   getBenchmarks: vi.fn(() => Promise.resolve({ benchmarks: [] })),
@@ -27,6 +28,19 @@ vi.mock('@/components/ui/toast-provider', () => ({
 }))
 
 function renderWithProvider(ui: React.ReactElement) { return render(<BenchMaxProvider>{ui}</BenchMaxProvider>) }
+
+// Start is disabled until connected, so tests that click Start render inside
+// a wrapper that marks the connection live on mount.
+function renderConnected(ui: React.ReactElement) {
+  function Boot() {
+    const { dispatch } = useApp()
+    useEffect(() => {
+      dispatch({ type: 'SET_CONNECTION', payload: { connected: true, models: ['test-model'], selectedModel: 'test-model' } })
+    }, [dispatch])
+    return <>{ui}</>
+  }
+  return render(<BenchMaxProvider><Boot /></BenchMaxProvider>)
+}
 
 describe('RunBenchmarkTab', () => {
   beforeEach(() => { localStorage.clear() })
@@ -64,5 +78,24 @@ describe('RunBenchmarkTab', () => {
     expect(select.value).toBe('HumanEval')
     fireEvent.click(screen.getByRole('button', { name: 'Reasoning' }))
     await waitFor(() => expect((screen.getByRole('combobox', { name: 'Benchmark' }) as HTMLSelectElement).value).toBe('AIME'))
+  })
+  it('starts the VISIBLE benchmark after a category pill filter (hidden-benchmark regression)', async () => {
+    vi.mocked(startRun).mockClear()
+    vi.mocked(getBenchmarks).mockResolvedValueOnce({ benchmarks: [
+      { label: 'HumanEval', name: 'HumanEval', category: 'Coding', docker: true, samples: 164, short: 'Code tests' },
+      { label: 'AIME', name: 'AIME', category: 'Reasoning', docker: false, samples: 90, short: 'Math' },
+    ] } as any)
+    renderConnected(<RunBenchmarkTab />)
+    const select = await screen.findByRole('combobox', { name: 'Benchmark' }) as HTMLSelectElement
+    expect(select.value).toBe('HumanEval')
+    // Filter to a category that hides the current selection — the dropdown
+    // must follow to the first visible benchmark, and Start must use it.
+    fireEvent.click(screen.getByRole('button', { name: 'Reasoning' }))
+    await waitFor(() => expect((screen.getByRole('combobox', { name: 'Benchmark' }) as HTMLSelectElement).value).toBe('AIME'))
+    const startBtn = screen.getByRole('button', { name: 'Start benchmark' })
+    await waitFor(() => expect(startBtn).not.toBeDisabled())
+    fireEvent.click(startBtn)
+    await waitFor(() => expect(vi.mocked(startRun)).toHaveBeenCalledTimes(1))
+    expect(vi.mocked(startRun).mock.calls[0][0]).toMatchObject({ benchmark: 'AIME', model: 'test-model' })
   })
 })

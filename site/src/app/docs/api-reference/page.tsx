@@ -3,10 +3,10 @@ import GradientText from '@/components/shared/GradientText'
 import Badge from '@/components/shared/Badge'
 import { endpointCategories, type Endpoint } from '@/lib/endpoints-data'
 
-// backend truth: 46 @router.* in backend/api.py + GET /api/health & POST /api/shutdown in backend/main.py = 48
+  // backend truth: 60 @router.* in backend/api.py + GET /api/health & POST /api/shutdown in backend/main.py = 62
 export const metadata: Metadata = {
   title: 'API Reference',
-  description: 'Full REST API reference for BenchMax: 49 endpoints (47 in api.py + /health & /shutdown in main.py) across connection, runs, batch, model queue, export, leaderboard, datasets, Docker and telemetry.',
+  description: 'Full REST API reference for BenchMax: 62 endpoints (60 in api.py + /health & /shutdown in main.py) across auth, connection, provider, runs, batch, model queue, export, leaderboard, datasets, Docker, telemetry and webhooks.',
 }
 
 const METHOD_BADGES: Record<string, 'success' | 'primary' | 'danger' | 'warning'> = {
@@ -40,14 +40,14 @@ function EndpointRow({ endpoint }: { endpoint: Endpoint }) {
 }
 
 export default function ApiReferencePage() {
-  // backend truth: 47 unique paths in backend/api.py + 2 in backend/main.py = 49 (hardcoded; data file mirrors it)
+  // backend truth: 55 unique paths in backend/api.py + 2 in backend/main.py = 57 (hardcoded; data file mirrors it)
   return (
     <div>
       <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4"><GradientText as="span">API Reference</GradientText></h1>
       <p className="text-lg text-muted-fg max-w-2xl">
-        49 REST endpoints (47 via <code className="text-foreground">api.py</code> + <code className="text-foreground">GET /api/health</code> & <code className="text-foreground">POST /api/shutdown</code> in <code className="text-foreground">main.py</code>). Served by FastAPI at <code className="text-primary">http://localhost:8000</code>. Swagger at <code className="text-primary">/docs</code>.
+        62 REST endpoints (60 via <code className="text-foreground">api.py</code> + <code className="text-foreground">GET /api/health</code> & <code className="text-foreground">POST /api/shutdown</code> in <code className="text-foreground">main.py</code>). Served by FastAPI at <code className="text-primary">http://localhost:8000</code>. Swagger at <code className="text-primary">/docs</code>.
       </p>
-      <p className="text-sm text-muted-fg mt-3 mb-10">Use the <Badge variant="primary">CLI</Badge> (<code className="text-foreground">cli.py</code>, 40 commands) or call the REST API directly.</p>
+      <p className="text-sm text-muted-fg mt-3 mb-10">Use the <Badge variant="primary">CLI</Badge> (<code className="text-foreground">cli.py</code>, 48 commands) or call the REST API directly. MCP clients connect at <code className="text-primary">POST /mcp</code> (Streamable HTTP, 16 tools).</p>
       <div className="space-y-10">
         {endpointCategories.map(cat => (
           <section key={cat.name}>

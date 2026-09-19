@@ -33,6 +33,12 @@ from backend.operations import (  # noqa: E402
     build_trusted_card, export_selected_runs,
     get_run_status, get_run_meta, update_run_notes, get_depth_results,
     build_poll_payload,
+    get_version_info,
+    get_mcp_info,
+    install_mcp_configs,
+    get_default_provider, set_default_provider,
+    resolve_api_url, check_provider_health, list_provider_models,
+    register_webhook, list_webhooks, delete_webhook,
 )
 from backend.config import BENCHMARKS  # noqa: E402
 logger = logging.getLogger(__name__)
@@ -234,6 +240,45 @@ async def api_connect(req: ConnectRequest):
         "metadata": metadata,
     })
 
+class ProviderBody(BaseModel):
+    url: str = ""
+    api_key: str = ""  # probe-only: verifies the endpoint, never stored
+
+
+@router.get("/provider")
+@handle_api_errors
+def api_get_provider():
+    """Server-side default LLM provider (URL only — keys are memory-only)."""
+    return get_default_provider()
+
+
+@router.post("/provider")
+@handle_api_errors
+async def api_set_provider(body: ProviderBody):
+    """Set the default provider endpoint. The URL is validated (needs an
+    http(s) scheme), probed for reachability, and persisted; runs without
+    an explicit api_url fall back to it. The api_key is probe-only."""
+    try:
+        return await set_default_provider(body.url)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/provider/health")
+@handle_api_errors
+async def api_provider_health(api_url: str = ""):
+    """Is the LLM backend serving? Times GET <url>/models (explicit URL or
+    saved default) and counts loaded models. Never 500s."""
+    return await check_provider_health(api_url)
+
+
+@router.get("/models")
+@handle_api_errors
+async def api_list_models(api_url: str = ""):
+    """Model IDs currently loaded at the provider (explicit URL or default)."""
+    return await list_provider_models(api_url)
+
+
 @router.get("/datasets")
 @handle_api_errors
 def api_scan_datasets():
@@ -286,7 +331,7 @@ def api_trigger_run(req: RunRequest):
         HTTPException: 500 if the run cannot be started.
     """
     run_id, msg = trigger_run(
-        req.model, req.benchmark, req.api_url, req.api_key,
+        req.model, req.benchmark, resolve_api_url(req.api_url), req.api_key,
         req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
         req.disable_repetition_detection, req.context_length,
     )
@@ -303,7 +348,7 @@ def api_trigger_run(req: RunRequest):
 def api_start_batch(req: BatchRequest):
     """Start a batch of benchmarks (multiple benchmarks, single model)."""
     first_run_id, batch_id, msg, summary_df, batch_id_display = start_batch(
-        req.model, req.benchmarks, req.api_url, req.api_key,
+        req.model, req.benchmarks, resolve_api_url(req.api_url), req.api_key,
         req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
         req.disable_repetition_detection, req.context_length,
     )
@@ -331,7 +376,7 @@ def api_start_model_queue(req: ModelQueueRequest):
     """Start a model queue run (multiple models, multiple benchmarks, sequential)."""
     model_benchmarks = [(m, req.benchmarks) for m in req.models]
     queue_id, msg = start_model_queue(
-        model_benchmarks, req.api_url, req.api_key,
+        model_benchmarks, resolve_api_url(req.api_url), req.api_key,
         req.temperature, req.max_tokens, req.system_prompt, req.quick_test,
         req.disable_repetition_detection, req.context_length,
     )
@@ -389,7 +434,7 @@ def api_pause_run(run_id: int):
 @handle_api_errors
 def api_resume_run(run_id: int, req: ResumeRequest):
     """Resume a paused/halted/failed (or shutdown-interrupted) benchmark run from its saved position. Uses the run's stored settings when present."""
-    status = resume_run(run_id, req.api_url, req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test, req.disable_repetition_detection, req.context_length)
+    status = resume_run(run_id, resolve_api_url(req.api_url), req.api_key, req.temperature, req.max_tokens, req.system_prompt, req.quick_test, req.disable_repetition_detection, req.context_length)
     return {"status": _run_control_error(status, run_id)}
 
 
@@ -753,6 +798,74 @@ async def api_build_docker():
 async def api_docker_status():
     """Check Docker availability and image status."""
     return await get_docker_status()
+
+
+@router.get("/version")
+def api_version(refresh: bool = Query(default=False)):
+    """App version + GitHub-release update status. Never 500s: offline or
+    rate-limited checks return latest=None so the UI fails silent."""
+    return get_version_info(refresh=refresh)
+
+
+@router.get("/mcp/info")
+def api_mcp_info():
+    """MCP access info (endpoint, tools, stdio command) for the Settings
+    tab. Never 500s: a missing mcp package yields mounted=False."""
+    return get_mcp_info()
+
+
+class McpInstallBody(BaseModel):
+    clients: list[str] = ["all"]
+    url: str = ""
+    remote: bool = False
+    uninstall: bool = False
+
+
+@router.post("/mcp/install")
+async def api_mcp_install(request: Request, body: McpInstallBody):
+    """Write/remove the benchmax entry in MCP client configs on the server
+    machine. Localhost only — a LAN visitor must not rewrite the owner's
+    app configs (same rule as POST /api/auth/setup)."""
+    from backend import auth as lan_auth
+    if not lan_auth.is_loopback_request(request):
+        raise HTTPException(status_code=403, detail="Install MCP from the server machine itself.")
+    try:
+        wrote = install_mcp_configs(body.url, clients=body.clients,
+                                    remote=body.remote, uninstall=body.uninstall)
+    except (ValueError, FileNotFoundError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    action = "removed from" if body.uninstall else "written to"
+    return {"status": "ok", "action": action, "configs": wrote}
+
+
+class WebhookBody(BaseModel):
+    url: str = ""
+
+
+@router.post("/webhooks", status_code=201)
+@handle_api_errors
+def api_register_webhook(body: WebhookBody):
+    """Register a run-completion webhook (fired on COMPLETED/FAILED/HALTED)."""
+    try:
+        return register_webhook(body.url)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/webhooks")
+@handle_api_errors
+def api_list_webhooks():
+    """List registered completion webhooks."""
+    return {"webhooks": list_webhooks()}
+
+
+@router.delete("/webhooks/{hook_id}")
+@handle_api_errors
+def api_delete_webhook(hook_id: str):
+    """Remove a completion webhook."""
+    if not delete_webhook(hook_id):
+        raise HTTPException(status_code=404, detail=f"Unknown webhook {hook_id}.")
+    return {"status": "deleted"}
 
 
 

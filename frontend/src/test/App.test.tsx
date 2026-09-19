@@ -13,6 +13,7 @@ vi.mock('@/lib/api', () => {
       telemetry: { cpu_percent: 0, ram_used_gb: 0, ram_total_gb: 0, ram_percent: 0, gpu_available: false, gpu_name: null, gpu_load: 0, vram_total_mb: 0, vram_used_mb: 0, vram_percent: 0 },
       run_progress: { progress: 0, status_md: 'IDLE', active_task: '', avg_tps: '0', avg_ttft: '0', accuracy: '0%', token_stats: '0 | 0 | 0' },
       batch_progress: { progress: 0, status_md: '', eta: '', summary: [], batch_id: '', completed: 0, total: 0, current_benchmark: '' },
+      active_runs: [],
     }),
     getTelemetry: fn({ cpu_percent: 0, ram_used_gb: 0, ram_total_gb: 0, ram_percent: 0, gpu_available: false, gpu_name: null, gpu_load: 0, vram_total_mb: 0, vram_used_mb: 0, vram_percent: 0 }),
     loadHistory: fn({ runs: [] }),

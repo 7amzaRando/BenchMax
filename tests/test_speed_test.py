@@ -12,6 +12,9 @@ def test_imports():
     )
     assert WritingSpeedTestBenchmark is not None
     assert CodingSpeedTestBenchmark is not None
+    # Import-only is weak: prove both classes actually load their datasets.
+    assert len(WritingSpeedTestBenchmark(MagicMock(), MagicMock()).load_dataset()) > 0
+    assert len(CodingSpeedTestBenchmark(MagicMock(), MagicMock()).load_dataset()) > 0
 
 
 def test_dataset_structure_writing():

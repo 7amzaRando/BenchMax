@@ -85,9 +85,11 @@ class TestPollStructure:
         # into telemetry/run_progress/batch_progress for the REST response).
         assert isinstance(result, dict)
         for key in ("metrics", "prog_val", "status_md", "avg_tps",
-                    "avg_ttft", "accuracy", "batch_prog_val", "batch_done", "batch_total"):
+                    "avg_ttft", "accuracy", "batch_prog_val", "batch_done", "batch_total",
+                    "active_runs"):
             assert key in result, key
         assert result["metrics"]["cpu_percent"] == 12.5
+        assert isinstance(result["active_runs"], list)
 
 
 class TestLiveProgress:

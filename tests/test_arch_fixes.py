@@ -154,10 +154,11 @@ class TestPollBuilder:
             "batch_summary_df": pd.DataFrame(), "batch_id_val": "",
             "batch_done": 0, "batch_total": 0, "batch_current_name": "",
             "active_run_override": None, "live_turn": None,
+            "active_runs": [],
         }
         payload = build_poll_payload(result)
         assert set(payload) == {"telemetry", "run_progress", "batch_progress",
-                                "active_run_override", "live_turn"}
+                                "active_run_override", "live_turn", "active_runs"}
         assert payload["batch_progress"]["summary"] == []
 
 

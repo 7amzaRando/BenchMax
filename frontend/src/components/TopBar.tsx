@@ -8,6 +8,7 @@ const TITLES: Record<string, { title: string; desc: string }> = {
   hardware: { title: 'Hardware', desc: 'Live CPU · RAM · GPU · VRAM at 3s intervals' },
   history: { title: 'History & Results', desc: 'Runs, per-sample analysis, diffs & exports' },
   leaderboard: { title: 'Leaderboard', desc: 'Rankings, trends & online sync' },
+  settings: { title: 'Settings', desc: 'Run defaults, live updates, access & data' },
 }
 
 export default memo(function TopBar({ onMenu }: { onMenu: () => void }) {

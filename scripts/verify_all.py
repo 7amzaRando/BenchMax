@@ -48,22 +48,14 @@ def test_safe_executor():
 
 
 def test_cpp_compiler():
-    gxx = ".runtimes/w64devkit/w64devkit/bin/g++.exe"
-    env = os.environ.copy()
-    env["PATH"] = ".runtimes/w64devkit/w64devkit/bin" + os.pathsep + env.get("PATH", "")
-    cpp_code = "#ifdef EXERCISM_TEST_SUITE\n#include <catch2/catch.hpp>\n#endif\nTEST_CASE(\"t\") { REQUIRE(1==1); }\n"
-    with open("_test_catch.cpp", "w") as f:
-        f.write(cpp_code)
-    r = subprocess.run([gxx, "-std=c++20", "-DEXERCISM_RUN_ALL_TESTS", "-DEXERCISM_TEST_SUITE", "-DCATCH_CONFIG_MAIN",
-                        "-I.runtimes/w64devkit/include", "-I.runtimes/include", "-o", "_test_catch.exe", "_test_catch.cpp"],
-                       capture_output=True, text=True, timeout=30, env=env)
-    os.remove("_test_catch.cpp")
-    if r.returncode != 0:
-        check("C++ compile + Catch2", False, r.stderr[:200])
+    import shutil
+    if shutil.which("docker") is None:
+        check("benchmax-sandbox image (C++/Java/Go/Rust toolchains)", False, "docker CLI not found")
         return
-    r2 = subprocess.run(["_test_catch.exe"], capture_output=True, text=True, timeout=10, env=env)
-    os.remove("_test_catch.exe")
-    check("C++ compile + Catch2", r2.returncode == 0 and "All tests passed" in r2.stdout, r2.stdout[:100])
+    r = subprocess.run(["docker", "image", "inspect", "benchmax-sandbox:latest"],
+                       capture_output=True, text=True, timeout=30)
+    check("benchmax-sandbox image (C++/Java/Go/Rust toolchains)", r.returncode == 0,
+          "image present" if r.returncode == 0 else "image not built — POST /api/docker/build")
 
 
 def test_bfcl_data():

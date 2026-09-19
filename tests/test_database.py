@@ -35,14 +35,24 @@ class TestPersistence:
             assert db.query(Result).filter(Result.run_id == rid).count() == 0
 
     def test_get_db_closes_session(self):
-        from backend.database import get_db
+        from backend.database import Run, get_db
         with get_db() as db:
-            assert db.is_active or True
+            run = Run(model_name="m", benchmark_name="MMLU-Pro", status="COMPLETED")
+            db.add(run)
+            db.commit()
+            db.refresh(run)
+            rid = run.id
+            assert db.is_active is True
+            assert db.query(Run).filter(Run.id == rid).count() == 1
         # Exiting the context must close without raising; reuse is safe
         with get_db() as db2:
             assert db2.query is not None
 
     def test_init_db_idempotent(self):
-        from backend.database import init_db
+        from backend.database import Base, Run, get_db, init_db
         init_db()
         init_db()  # migrations must be safe to re-run
+        assert "runs" in Base.metadata.tables
+        assert "results" in Base.metadata.tables
+        with get_db() as db:
+            assert db.query(Run).count() >= 0

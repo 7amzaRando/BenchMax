@@ -8,7 +8,6 @@ samples to both writers and assert byte-identical file trees, turning silent
 drift into a test failure.
 """
 
-import filecmp
 import os
 import tempfile
 
@@ -95,5 +94,16 @@ class TestWorkspaceMirror:
         # Container inlines the same rule; pin representative outcomes here.
         assert host_cpp_rel("src/a.cpp") == "src/a_test.cpp"
         assert host_cpp_rel("a.cpp", "nested/t_test.cpp") == "nested/t_test.cpp"
-        # filecmp sanity: the writers agree on identical inputs (covered above)
-        assert filecmp.cmp.__doc__ is not None
+        # Real mirror check on the C++ header-rewrite path (not a docstring pin):
+        # both writers must produce byte-identical trees for the beer.cpp sample.
+        sample = next(s for s in _samples() if s["source_path"] == "src/beer.cpp")
+        with tempfile.TemporaryDirectory() as host_tmp, \
+                tempfile.TemporaryDirectory() as cont_tmp:
+            host_write(sample, "EDITED", host_tmp)
+            container_write(sample, "EDITED", cont_tmp)
+            host_tree, cont_tree = _tree(host_tmp), _tree(cont_tmp)
+            assert host_tree == cont_tree
+            # Header-rewrite path: #include "beer.h" must be rewritten to the source name.
+            test_rel = os.path.join("tests", "beer_test.cpp")
+            assert test_rel in host_tree, sorted(host_tree)
+            assert b'#include "beer.cpp"' in host_tree[test_rel]

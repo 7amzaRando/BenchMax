@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { deleteRuns, health, updateRunNotes } from '@/lib/api'
+import { deleteRuns, health, pollStreamUrl, updateRunNotes } from '@/lib/api'
 
 // Tests the REAL fetchJson layer in lib/api.ts (no '@/lib/api' mock here).
 // Regression context: fetchJson must merge caller headers AFTER the default
@@ -69,5 +69,11 @@ describe('lib/api fetchJson layer', () => {
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toBe('/api/health')
     expect(data).toEqual({ status: 'ok' })
+  })
+
+  it('pollStreamUrl() builds the SSE URL with optional run id (pure, no fetch)', () => {
+    expect(pollStreamUrl()).toBe('/api/poll/stream')
+    expect(pollStreamUrl(5)).toBe('/api/poll/stream?active_run_id=5')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

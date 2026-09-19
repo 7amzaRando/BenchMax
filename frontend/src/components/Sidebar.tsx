@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useApp } from '@/lib/context'
-import { Zap, Play, Activity, BarChart3, Trophy } from '@/components/ui/icons'
+import { Zap, Play, Activity, BarChart3, Trophy, Settings as SettingsIcon } from '@/components/ui/icons'
 
 type NavItem = { id: string; label: string; desc: string; icon: React.ReactNode; kbd: string }
 
@@ -10,6 +10,7 @@ const NAV: NavItem[] = [
   { id: 'hardware',   label: 'Hardware',   desc: 'Live telemetry',      icon: <Activity size={16} />, kbd: '3' },
   { id: 'history',    label: 'History',    desc: 'Results & analysis',  icon: <BarChart3 size={16} />, kbd: '4' },
   { id: 'leaderboard',label: 'Leaderboard',desc: 'Rankings & sync',     icon: <Trophy size={16} />, kbd: '5' },
+  { id: 'settings',   label: 'Settings',   desc: 'Defaults & access',   icon: <SettingsIcon size={16} />, kbd: '6' },
 ]
 
 export default memo(function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -38,7 +39,7 @@ export default memo(function Sidebar({ open, onClose }: { open: boolean; onClose
           </div>
           <div className="min-w-0">
             <div className="font-display font-bold text-[15px] leading-none tracking-tight">BenchMax</div>
-            <div className="text-[11px] text-muted-foreground font-mono leading-none mt-1">v2.0.2 · 30 benchmarks</div>
+            <div className="text-[11px] text-muted-foreground font-mono leading-none mt-1">v2.0.3 · 30 benchmarks</div>
           </div>
           <span className="ml-auto hidden lg:inline-flex text-[10px] font-mono px-1.5 py-0.5 rounded border border-border bg-muted text-muted-foreground">LOCAL</span>
           <button

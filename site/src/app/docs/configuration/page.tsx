@@ -36,12 +36,50 @@ export default function ConfigurationPage() {
         <p className="text-sm text-muted-fg mb-3">Shell env or <code className="text-foreground">.env</code> in project root. CLI also respects <code className="text-primary">.cli_config.json</code> written by <code className="text-foreground">py cli.py connect</code>.</p>
         <div className="rounded-xl bg-card border border-border p-4">
           <ConfigRow name="BENCHMAX_URL" default="http://127.0.0.1:8000" description="Server URL for CLI (overridden by --server)." />
+          <ConfigRow name="BENCHMAX_HOST" default="127.0.0.1" description="Bind address for run.bat. Set to 0.0.0.0 to share on the LAN (then set a LAN password)." />
+          <ConfigRow name="BENCHMAX_WORKERS" default="1" description="Single-process only — any other value logs a startup warning (run state lives in memory)." />
           <ConfigRow name="HF_HOME" description="Override HuggingFace cache directory." />
           <ConfigRow name="HF_TOKEN" description="HuggingFace token for gated datasets. Also available via POST /api/hf-token or cli hf-token." />
           <ConfigRow name="LOCALAPPDATA" description="Windows: %LOCALAPPDATA%\\BenchMax holds DB in .exe builds." />
           <ConfigRow name="XDG_CACHE_HOME" description="Linux/macOS fallback for DB cache dir." />
           <ConfigRow name="BENCHMAX_LOG_LEVEL" default="INFO" description="Log level (DEBUG / INFO / WARNING)." />
           <ConfigRow name="SUPABASE_URL / SUPABASE_KEY" description="Online leaderboard sync. Also available via POST /api/leaderboard/settings." />
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold tracking-tight mb-4">LAN password</h2>
+        <p className="text-sm text-muted-fg mb-4">
+          Sharing the server on your network (<code className="text-foreground">py cli.py serve --host 0.0.0.0</code>) shows visitors an un-skippable login screen. Your own browser on the server machine keeps working with no login. Set the password once from the server machine (<code className="text-foreground">py cli.py set-password</code> or <code className="text-foreground">POST /api/auth/setup</code>); visitors sign in via <code className="text-foreground">POST /api/auth/login</code> and get a Bearer token valid for 30 days. Forgotten password: stop the server, delete <code className="text-foreground">records/.lan_password</code>, and set a new one.
+        </p>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold tracking-tight mb-4">MCP (AI tool access)</h2>
+        <p className="text-sm text-muted-fg mb-4">
+          BenchMax speaks the Model Context Protocol, so tools like Claude, OpenCode, Cursor, and VS Code can list benchmarks, start runs, and read results directly. The MCP server runs as a stdio process or via Streamable HTTP at <code className="text-foreground">/mcp</code> (LAN-gated like the REST API).
+        </p>
+        <div className="space-y-3">
+          <div className="rounded-xl bg-card border border-border p-4">
+            <h3 className="font-semibold text-sm mb-1">One-command install</h3>
+            <CodeBlock>{`py cli.py install-mcp --client claude
+py cli.py install-mcp --client opencode
+py cli.py install-mcp --client cursor
+py cli.py install-mcp --client vscode
+py cli.py install-mcp --client all`}</CodeBlock>
+          </div>
+          <div className="rounded-xl bg-card border border-border p-4">
+            <h3 className="font-semibold text-sm mb-1">What it provides</h3>
+            <p className="text-sm text-muted-fg">16 tools: list benchmarks, start runs, check status, pause/halt/resume, get results, compare runs, view history, check telemetry, manage the provider endpoint, list models, check health, manage webhooks. The Settings tab shows live MCP status with copy-paste config snippets for each app.</p>
+          </div>
+          <div className="rounded-xl bg-card border border-border p-4">
+            <h3 className="font-semibold text-sm mb-1">Manual stdio usage</h3>
+            <CodeBlock>{`# Run directly via stdio:
+python mcp_server.py
+
+# Or via HTTP (server must be running):
+# Connect to http://localhost:8000/mcp`}</CodeBlock>
+          </div>
         </div>
       </section>
 
@@ -78,7 +116,7 @@ export default function ConfigurationPage() {
       <section className="mb-10">
         <h2 className="text-2xl font-bold tracking-tight mb-4">Docker sandbox</h2>
         <p className="text-sm text-muted-fg mb-4">
-          5 benchmarks require Docker. 25 run without it. (LiveBench is mixed: only its coding subset needs the sandbox.) The image is <code className="text-foreground">benchmax-sandbox</code> (Python 3.11 + Node 20 + GCC + Java 17 + Go 1.22 + Rust 1.75, ~6.14 GB, <code className="text-foreground">--cap-drop ALL --network none</code>). Clear error if Docker is unavailable.
+          5 benchmarks require Docker. 25 run without it. (LiveBench is mixed: only its coding subset needs the sandbox.) The image is <code className="text-foreground">benchmax-sandbox</code> (Python 3.11 + Node 20 + GCC + Java 17 + Go 1.22 + Rust 1.75, ~6.14 GB, <code className="text-foreground">--cap-drop ALL</code>, network blocked except Aider Polyglot which needs it for package downloads). Clear error if Docker is unavailable.
         </p>
         <div className="space-y-3">
           <div className="rounded-xl bg-card border border-border p-4">
@@ -88,12 +126,12 @@ export default function ConfigurationPage() {
           <div className="rounded-xl bg-card border border-border p-4">
             <h3 className="font-semibold text-sm mb-2">Build & check</h3>
             <CodeBlock>{`POST /api/docker/build   → builds benchmax-sandbox
-GET  /api/docker/status  → { docker_available, image_built }
+GET  /api/docker/status  → { available, image_exists, message }
 # or dashboard: Run tab → Build Docker Image`}</CodeBlock>
           </div>
           <div className="rounded-xl bg-card border border-border p-4">
             <h3 className="font-semibold text-sm mb-1">Config flags (backend/config.py)</h3>
-            <p className="text-sm text-muted-fg"><code className="text-foreground">SANDBOX_USE_DOCKER=True</code> (Docker-only), <code className="text-foreground">SANDBOX_ENABLED</code>, <code className="text-foreground">SANDBOX_MEMORY_LIMIT_MB=256</code>, <code className="text-foreground">SANDBOX_CPU_TIME_SEC=300</code>, network/child-process blocking.</p>
+            <p className="text-sm text-muted-fg"><code className="text-foreground">SANDBOX_USE_DOCKER=True</code> (Docker-only code execution in the benchmax-sandbox image; containers drop all capabilities, and every benchmark runs network-blocked except Aider Polyglot).</p>
           </div>
         </div>
       </section>
@@ -105,6 +143,7 @@ GET  /api/docker/status  → { docker_available, image_built }
           <ul className="text-sm text-muted-fg space-y-1.5 list-disc list-inside">
             <li>WAL via <code className="text-foreground">engine.connect()</code> (autocommit).</li>
             <li>Adaptive write batching: every 5 samples (25 for 500+ sample suites); DB refresh at batch boundaries; in-memory halt check every sample.</li>
+            <li>Live progress display updates every sample from in-memory rolling stats (accuracy, speed, token totals); the DB stays the source of truth.</li>
             <li>Dataset caching via <code className="text-foreground">BaseBenchmark._dataset_cache</code> (class-level).</li>
             <li>Run statuses: PENDING → RUNNING → PAUSED → COMPLETED / FAILED / HALTED.</li>
           </ul>

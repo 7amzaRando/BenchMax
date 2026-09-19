@@ -14,7 +14,7 @@ export default memo(function ShortcutsDialog() {
         </div>
         <div className="space-y-2 text-sm font-mono">
           <div className="flex justify-between border-b border-border/40 pb-1">
-            <span>Ctrl + 1..5</span>
+            <span>Ctrl + 1..6</span>
             <span className="text-muted-foreground">Switch tabs</span>
           </div>
           <div className="flex justify-between border-b border-border/40 pb-1">

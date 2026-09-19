@@ -1,6 +1,24 @@
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--timeout=60"
+filterwarnings = ["error"]
 markers = [
     "docker: tests requiring the benchmax-sandbox Docker image (skipped when not built)",
     "smoke: fast registration/shape checks",
 ]
+
+[tool.coverage.run]
+relative_files = true
+source = ["backend"]
+
+[tool.coverage.report]
+fail_under = 48
+exclude_lines = [
+  "if TYPE_CHECKING:",
+  "@abstractmethod",
+]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E501", "E741"]

@@ -100,7 +100,7 @@ export default function AboutPage() {
           </div>
           <div className="rounded-xl bg-card border border-border p-4 mt-3">
             <p className="text-sm text-muted-fg leading-relaxed">
-              <strong className="text-foreground">Benchmark datasets:</strong> HumanEval (OpenAI), MMLU-Pro (TIGER-Lab), IFEval (Google), AIME (AoPS/MATH), BigCodeBench (BigCode), BFCL (Berkeley), UncensorBench, LiveBench, LiveCodeBench, TruthfulQA, HellaSWAG / WinoGrande / ARC (Allen AI), CommonSenseQA (Talmor et al.), Aider Polyglot (Exercism), LongBench-v2 (THUDM), MMMU-Pro, LOCOMO, GAIA, and BenchMax originals (Personal, Lite, Code, Reason, Tectonic, NIAHS, Speed Tests).
+              <strong className="text-foreground">Benchmark datasets:</strong> HumanEval (OpenAI), MMLU-Pro (TIGER-Lab), IFEval (Google), AIME (AoPS/MATH), BigCodeBench (BigCode), BFCL (Berkeley), UncensorBench, LiveBench, LiveCodeBench, TruthfulQA, HellaSWAG / WinoGrande / ARC (Allen AI), CommonSenseQA (Talmor et al.), Aider Polyglot (Exercism), LongBench-v2 (THUDM), MMMU-Pro, LOCOMO, GAIA, Tau3-Airline (tau3-bench), and BenchMax originals (Personal, Lite, Code, Reason, Tectonic, NIAHS, ToolCall, Speed Tests).
             </p>
           </div>
         </div>

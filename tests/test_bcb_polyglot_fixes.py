@@ -132,35 +132,31 @@ class TestBCBEvaluateSample:
 
 class TestBCBImportHook:
     def test_allows_task_dependencies(self):
-        from backend.sandbox.safe_executor import _safe_bigcodebench_import as host_hook
         from backend.sandbox.container_runner import (
-            _safe_bigcodebench_import as container_hook,
+            _safe_bigcodebench_import as hook,
         )
-        for hook in (host_hook, container_hook):
-            hook("subprocess")
-            hook("unittest")
-            hook("importlib")
-            hook("os", fromlist=["path"])
-            hook("ftplib")
+        hook("subprocess")
+        hook("unittest")
+        hook("importlib")
+        hook("os", fromlist=["path"])
+        hook("ftplib")
 
     def test_blocks_process_escape_and_junk(self):
         import pytest
-        from backend.sandbox.safe_executor import _safe_bigcodebench_import as host_hook
         from backend.sandbox.container_runner import (
-            _safe_bigcodebench_import as container_hook,
+            _safe_bigcodebench_import as hook,
         )
-        for hook in (host_hook, container_hook):
-            for name in ("multiprocessing", "ctypes", "code", "codeop",
-                         "nonexistent_pkg_xyz123"):
-                with pytest.raises(ImportError):
-                    hook(name)
+        for name in ("multiprocessing", "ctypes", "code", "codeop",
+                     "nonexistent_pkg_xyz123"):
+            with pytest.raises(ImportError):
+                hook(name)
 
     def test_dotted_import_as_form(self):
         # Regression: `import matplotlib.pyplot as plt` failed with
         # "cannot import name 'pyplot'" because the hook returned the
         # submodule instead of the top module (real __import__ protocol).
         import builtins
-        from backend.sandbox.safe_executor import _safe_bigcodebench_import as hook
+        from backend.sandbox.container_runner import _safe_bigcodebench_import as hook
         g = {"__builtins__": {**vars(builtins), "__import__": hook}}
         exec("import os.path as p\nassert p.join('a', 'b')", g)
         exec("import xml.etree.ElementTree as ET\nassert hasattr(ET, 'fromstring')", g)

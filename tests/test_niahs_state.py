@@ -1,4 +1,4 @@
-"""Tests for NIAHS haystack logic, ops/state helpers, mitigation constants.
+"""Tests for NIAHS haystack logic and ops/state helpers.
 
 NIAHS evaluate_sample is fully hermetic: _load_corpus and _generate are
 mocked, needles are pinned deterministic. No LLM, no disk corpus needed.
@@ -131,22 +131,3 @@ class TestOpsState:
     def test_docker_daemon_check_bool(self):
         from backend.ops.state import _docker_daemon_running
         assert isinstance(_docker_daemon_running(), bool)
-
-
-class TestMitigation:
-    def test_dangerous_privileges_nonempty(self):
-        from backend.sandbox.mitigation import DANGEROUS_PRIVILEGES
-        assert len(DANGEROUS_PRIVILEGES) >= 10
-        assert "SeDebugPrivilege" in DANGEROUS_PRIVILEGES
-        assert all(isinstance(p, str) and p for p in DANGEROUS_PRIVILEGES)
-
-    def test_policy_constants_sane(self):
-        from backend.sandbox import mitigation as m
-        assert m.PROCESS_CREATION_MITIGATION_POLICY == 7
-        assert m.MITIGATION_FONT_DISABLE == 9
-        assert m.PROCESS_MITIGATION_FONT_DISABLE_POLICY_ENABLE_NON_MICROSOFT_FONT_DISABLE == 1
-
-    def test_apply_all_best_effort(self):
-        """apply_all_mitigations must never raise on this machine (best-effort)."""
-        from backend.sandbox import mitigation as m
-        m.apply_all_mitigations()  # passes if no exception

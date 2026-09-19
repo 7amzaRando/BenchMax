@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 from backend.database import init_db, get_db  # noqa: E402
 from backend.api import SafeJSONResponse  # noqa: E402
+from backend.version import __version__ as _APP_VERSION  # noqa: E402
 
 ENABLE_DIAG = False
 ROOT = Path(__file__).parent.parent
@@ -34,7 +35,7 @@ else:
 app = FastAPI(
     title="BenchMax Core Engine",
     description="Backend coordinator for local LLM performance and correctness evaluations",
-    version="2.0.2",
+    version=_APP_VERSION,
     default_response_class=SafeJSONResponse,
 )
 
@@ -77,9 +78,9 @@ class _LanAuthMiddleware(BaseHTTPMiddleware):
         if path.startswith(self._OPEN_PREFIXES):
             return await call_next(request)
         # The SPA shell (HTML/JS/CSS) must load so the login screen can
-        # render — it carries no data. All data flows through /api/*,
-        # which is gated below.
-        if not path.startswith("/api/"):
+        # render — it carries no data. All data flows through /api/* and
+        # /mcp, which are gated below.
+        if not path.startswith(("/api/", "/mcp")):
             return await call_next(request)
         if not lan_auth.lan_request_allowed(request):
             return _JSONResponse({"detail": "LAN login required."}, status_code=401)
@@ -120,7 +121,7 @@ except Exception as e:
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "app": "BenchMax", "database": "connected"}
+    return {"status": "healthy", "app": "BenchMax", "database": "connected", "version": _APP_VERSION}
 
 import threading  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -170,6 +171,36 @@ async def shutdown(request: Request, body: _ShutdownBody | None = None):
 # Register all REST API routes from api.py
 from backend.api import router as api_router  # noqa: E402
 app.include_router(api_router, prefix="/api")
+# MCP endpoint (Streamable HTTP): remote clients connect to /mcp with any
+# MCP-capable app. Stdio mode is mcp_server.py run directly.
+try:
+    # streamable_http_app() already carries the /mcp path on its routes,
+    # so append them directly (mounting would double-prefix to /mcp/mcp).
+    # The session manager needs a running task group: provide it via the
+    # app lifespan (same pattern as mcp.run() uses internally).
+    from contextlib import asynccontextmanager  # noqa: E402
+
+    from mcp_server import mcp as _benchmax_mcp  # noqa: E402
+
+    for _route in _benchmax_mcp.streamable_http_app().routes:
+        app.router.routes.append(_route)
+
+    _prev_lifespan = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def _lifespan_with_mcp(_app):
+        if _prev_lifespan is not None:
+            async with _prev_lifespan(_app):
+                async with _benchmax_mcp.session_manager.run():
+                    yield
+        else:
+            async with _benchmax_mcp.session_manager.run():
+                yield
+
+    app.router.lifespan_context = _lifespan_with_mcp
+    logger.info("MCP endpoint mounted at /mcp")
+except Exception as e:
+    logger.warning(f"MCP endpoint not mounted: {e}")
 # API versioning: /api/* is frozen (back-compat). /api/v1/* serves the same
 # router so new clients can pin a versioned base path; new breaking
 # endpoints go under /api/v2. Excluded from OpenAPI schema to avoid

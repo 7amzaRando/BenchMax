@@ -13,7 +13,10 @@ import argparse, json, sys, time, os, subprocess
 from pathlib import Path
 
 CLI_CONFIG = Path(__file__).parent / ".cli_config.json"
-VERSION = "2.0.2"
+try:
+    from backend.version import __version__ as VERSION
+except Exception:
+    VERSION = "2.0.3"
 
 try:
     import httpx
@@ -331,25 +334,72 @@ def cmd_connect(args):
 
 
 def cmd_models(args):
-    api_url = args.api_url or _get_saved_url()
-    if not api_url:
-        sys.exit("Error: No API URL saved. Run: py cli.py connect --url http://127.0.0.1:1234")
+    params = {"api_url": args.api_url} if args.api_url else None
     with _client(args.server) as c:
-        d = _post(c, "/api/connect", {"api_url": api_url, "api_key": _get_saved_api_key()})
+        d = _get(c, "/api/models", params)
         if _json_mode:
             _out(d.get("models", []))
             return
         models = d.get("models", [])
         if not models:
-            print("No models loaded in LM Studio.")
+            print(f"No models loaded (via {d.get('url', '?')}).")
             return
         print(f"\nLoaded models ({len(models)}):")
-        for m in models:
-            mid = m.get("id", "?") if isinstance(m, dict) else str(m)
+        for mid in models:
             print(f"  {_bold(mid)}")
-        choices = d.get("choices", [])
-        if choices:
-            print(f"\n  {_dim(f'{len(choices)} available for benchmarking')}")
+
+
+def cmd_provider(args):
+    with _client(args.server) as c:
+        _out(_get(c, "/api/provider"))
+
+
+def cmd_provider_set(args):
+    with _client(args.server) as c:
+        d = _post(c, "/api/provider", {"url": args.url, "api_key": args.api_key or ""})
+        if _json_mode:
+            _out(d)
+            return
+        print(f"Default provider: {_bold(d.get('url', '?'))}")
+        if d.get("reachable"):
+            print(f"  {_green('reachable')} ({d.get('latency_ms', '?')} ms, {d.get('models_loaded', 0)} model(s) loaded)")
+        else:
+            print(f"  {_yellow('saved, but not reachable right now')} — runs will fail until the backend is up.")
+
+
+def cmd_provider_health(args):
+    params = {"api_url": args.api_url} if args.api_url else None
+    with _client(args.server) as c:
+        d = _get(c, "/api/provider/health", params)
+        if _json_mode:
+            _out(d)
+            return
+        if d.get("reachable"):
+            print(f"{_green('UP')} {d.get('url', '')} ({d.get('latency_ms', '?')} ms, {d.get('models_loaded', 0)} model(s))")
+        else:
+            print(f"{_red('DOWN')} {d.get('url', '')} — {d.get('error', 'no response')}")
+
+
+def cmd_webhook_add(args):
+    with _client(args.server) as c:
+        d = _post(c, "/api/webhooks", {"url": args.url})
+        print(f"Webhook {d.get('id', '?')} registered for run completions.")
+
+
+def cmd_webhooks(args):
+    with _client(args.server) as c:
+        d = _get(c, "/api/webhooks")
+        hooks = d.get("webhooks", [])
+        if _json_mode or not hooks:
+            _out(d if _json_mode else "No webhooks registered.")
+            return
+        for h in hooks:
+            print(f"  {h.get('id')}  {h.get('url')}")
+
+
+def cmd_webhook_delete(args):
+    with _client(args.server) as c:
+        _out(_delete(c, f"/api/webhooks/{args.id}"))
 
 
 def cmd_benchmarks(args):
@@ -696,6 +746,25 @@ def cmd_version(args):
     print(f"BenchMax CLI v{VERSION}")
 
 
+def cmd_update_check(args):
+    with _client(args.server) as c:
+        path = "/api/version?refresh=true" if getattr(args, "refresh", False) else "/api/version"
+        d = _get(c, path)
+    if _json_mode:
+        _out(d)
+        return
+    cur, latest = d.get("current"), d.get("latest")
+    if not latest:
+        print(f"BenchMax v{cur} — could not reach GitHub releases (offline?).")
+        return
+    if d.get("update_available"):
+        print(f"Update available: v{cur} → v{latest}")
+        print(f"Release: {d.get('html_url')}")
+        print(f"Download: {d.get('download_url')}")
+    else:
+        print(f"BenchMax v{cur} is up to date.")
+
+
 def cmd_set_password(args):
     import getpass
     password = args.password or getpass.getpass("New LAN password: ")
@@ -712,6 +781,30 @@ def cmd_set_password(args):
         print("LAN password saved. Visitors on the network will now see a login screen.")
 
 
+# ── mcp install ──────────────────────────────────────────────────────────────
+
+def cmd_install_mcp(args):
+    # NOTE: _get_saved_url() is the LM Studio URL, not the BenchMax server —
+    # BENCHMAX_URL must point at BenchMax itself (--url or --server).
+    # The file writing lives server-side (backend/ops/update.py) so the
+    # Settings tab one-click button shares the exact same code path.
+    base = (args.url or args.server or DEFAULT_BASE).rstrip("/")
+    body = {"clients": [(args.client or "all").lower()], "url": base,
+            "remote": args.remote, "uninstall": args.uninstall}
+    with _client(args.server) as c:
+        try:
+            d = _post(c, "/api/mcp/install", body)
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                sys.exit("Error: install MCP from the server machine itself (localhost).")
+            raise
+    action = "Removed BenchMax MCP from" if args.uninstall else "Wrote BenchMax MCP to"
+    print(f"{action}:")
+    for name, path in (d.get("configs") or {}).items():
+        print(f"  {name}: {path}")
+    print(f"BenchMax server must be running ({base}). Restart your AI app to pick it up.")
+
+
 # ── parser ───────────────────────────────────────────────────────────────────
 
 def build_parser():
@@ -721,8 +814,11 @@ def build_parser():
         epilog="""
 commands:
   health                        Check server status
-  connect --url URL             Connect to LM Studio / OpenAI-compatible API
-  models                        List loaded models
+   connect --url URL             Connect to LM Studio / OpenAI-compatible API
+   models                        List loaded models
+   provider-set --url URL        Set the default provider endpoint
+   provider-health               Check the LLM backend is serving
+   webhook-add --url URL         Notify this URL when runs finish
   benchmarks                    List all benchmarks
   datasets                      Show dataset install status
   run --model M --benchmark B   Run a single benchmark
@@ -739,7 +835,9 @@ commands:
   docker-status                 Check Docker availability
    serve --port 8000             Start the server
    set-password                  Set the LAN login password (server machine only)
+   install-mcp --client all      Register BenchMax MCP in app configs
    version                       Show CLI version
+   update-check                  Check GitHub releases for a newer version
 
 global flags:
   --json                        Machine-readable JSON output
@@ -777,7 +875,20 @@ examples:
     cn.add_argument("--api-key", default="")
 
     md = sub.add_parser("models", parents=[common], help="List loaded models")
-    md.add_argument("--api-url", default="", help="Override API URL")
+    md.add_argument("--api-url", default="", help="Override API URL (default: saved provider)")
+
+    sub.add_parser("provider", parents=[common], help="Show the default provider endpoint")
+    ps = sub.add_parser("provider-set", parents=[common], help="Set the default provider endpoint")
+    ps.add_argument("--url", required=True, help="Base URL, e.g. http://127.0.0.1:1234/v1")
+    ps.add_argument("--api-key", default="", help="Probe-only key (never stored)")
+    ph = sub.add_parser("provider-health", parents=[common], help="Check the LLM backend is serving")
+    ph.add_argument("--api-url", default="", help="Override API URL (default: saved provider)")
+
+    wa = sub.add_parser("webhook-add", parents=[common], help="Register a run-completion webhook")
+    wa.add_argument("--url", required=True, help="https:// URL receiving the JSON POST")
+    sub.add_parser("webhooks", parents=[common], help="List run-completion webhooks")
+    wd = sub.add_parser("webhook-delete", parents=[common], help="Delete a run-completion webhook")
+    wd.add_argument("--id", required=True)
 
     sub.add_parser("benchmarks", parents=[common], help="List all benchmarks")
     sub.add_parser("datasets", parents=[common], help="Show dataset install status")
@@ -900,13 +1011,24 @@ examples:
     sub.add_parser("docker-status", parents=[common], help="Check Docker status")
     spw = sub.add_parser("set-password", parents=[common], help="Set the LAN login password (run on the server machine)")
     spw.add_argument("--password", default="", help="New password (prompted securely if omitted)")
+    mi = sub.add_parser("install-mcp", parents=[common], help="Register BenchMax MCP in app configs")
+    mi.add_argument("--client", default="all", help="all|claude|opencode|cursor|vscode")
+    mi.add_argument("--url", default="", help="BenchMax base URL (default: saved config or --server)")
+    mi.add_argument("--remote", action="store_true", help="Write remote /mcp URL entries instead of stdio")
+    mi.add_argument("--uninstall", action="store_true", help="Remove the benchmax entries again")
     sub.add_parser("version", parents=[common], help="Show CLI version")
+    uc = sub.add_parser("update-check", parents=[common], help="Check GitHub releases for a newer BenchMax")
+    uc.add_argument("--refresh", action="store_true", help="Bypass the 24h server cache")
     return p
 
 
 COMMANDS = {
     "health": cmd_health, "shutdown": cmd_shutdown, "serve": cmd_serve,
     "connect": cmd_connect, "models": cmd_models, "benchmarks": cmd_benchmarks,
+    "provider": cmd_provider, "provider-set": cmd_provider_set,
+    "provider-health": cmd_provider_health,
+    "webhook-add": cmd_webhook_add, "webhooks": cmd_webhooks,
+    "webhook-delete": cmd_webhook_delete,
     "datasets": cmd_datasets, "install-dataset": cmd_install_dataset,
     "install-all": cmd_install_all, "hf-token": cmd_hf_token,
     "run": cmd_run, "batch": cmd_batch, "model-queue": cmd_model_queue,
@@ -922,7 +1044,8 @@ COMMANDS = {
     "leaderboard-settings": cmd_leaderboard_settings, "telemetry": cmd_telemetry,
     "pause": cmd_pause, "resume": cmd_resume, "halt": cmd_halt,
     "build-docker": cmd_build_docker, "docker-status": cmd_docker_status, "version": cmd_version,
-    "set-password": cmd_set_password,
+    "set-password": cmd_set_password, "update-check": cmd_update_check,
+    "install-mcp": cmd_install_mcp,
 }
 
 

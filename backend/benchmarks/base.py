@@ -36,6 +36,86 @@ def clear_live_progress(run_id: int) -> None:
     with _live_progress_lock:
         _live_progress.pop(run_id, None)
 
+# In-memory rolling display stats (run_id -> aggregates). Updated on every
+# sample next to set_live_progress() so poll() can show fresh accuracy /
+# avg_tps / token totals without waiting for the batched DB flush (every 5,
+# or 25 for huge suites) and without paying per-sample fsyncs. Display-only:
+# the DB stays the source of truth; this is cleared when the run ends and
+# poll falls back to DB stats. Seeded from existing Result rows in _open_run
+# so resume keeps absolute totals.
+_live_stats: Dict[int, Dict[str, float]] = {}
+_live_stats_lock = threading.Lock()
+
+
+def _blank_live_stats() -> Dict[str, float]:
+    return {
+        "total": 0, "correct": 0,
+        "tps_sum": 0.0, "tps_n": 0,
+        "ttft_sum": 0.0, "ttft_n": 0,
+        "prompt_tps_sum": 0.0, "prompt_tps_n": 0,
+        "think_tk": 0, "resp_tk": 0, "total_tk": 0,
+    }
+
+
+def update_live_stats(run_id: int, result_data: Dict[str, Any]) -> None:
+    """Fold one sample's result into the in-memory rolling stats."""
+    tps = float(result_data.get("tps", 0.0) or 0.0)
+    ttft = float(result_data.get("ttft", 0.0) or 0.0)
+    prompt_tokens = int(result_data.get("prompt_tokens", 0) or 0)
+    think = int(result_data.get("thinking_tokens", 0) or 0)
+    resp = int(result_data.get("response_tokens", 0) or 0)
+    with _live_stats_lock:
+        s = _live_stats.get(run_id)
+        if s is None:
+            s = _blank_live_stats()
+            _live_stats[run_id] = s
+        s["total"] += 1
+        if result_data.get("correct"):
+            s["correct"] += 1
+        if tps > 0:
+            s["tps_sum"] += tps
+            s["tps_n"] += 1
+        if ttft > 0:
+            s["ttft_sum"] += ttft
+            s["ttft_n"] += 1
+            if prompt_tokens > 0:
+                s["prompt_tps_sum"] += prompt_tokens / ttft
+                s["prompt_tps_n"] += 1
+        s["think_tk"] += think
+        s["resp_tk"] += resp
+        s["total_tk"] += think + resp
+
+
+def get_live_stats(run_id: int) -> Dict[str, float] | None:
+    with _live_stats_lock:
+        s = _live_stats.get(run_id)
+        return dict(s) if s is not None else None
+
+
+def clear_live_stats(run_id: int) -> None:
+    with _live_stats_lock:
+        _live_stats.pop(run_id, None)
+
+
+def live_stats_to_display(s: Dict[str, float]) -> Dict[str, Any]:
+    """Shape a live-stats snapshot like the stats dicts poll() renders."""
+    total = int(s["total"])
+    correct = int(s["correct"])
+    avg_tps = round(s["tps_sum"] / s["tps_n"], 1) if s["tps_n"] else 0.0
+    avg_ttft = round(s["ttft_sum"] / s["ttft_n"], 1) if s["ttft_n"] else 0.0
+    avg_prompt_tps = round(s["prompt_tps_sum"] / s["prompt_tps_n"], 1) if s["prompt_tps_n"] else 0.0
+    return {
+        "avg_tps": avg_tps,
+        "avg_ttft": avg_ttft,
+        "avg_prompt_tps": avg_prompt_tps,
+        "accuracy": round(correct / total * 100, 1) if total else 0.0,
+        "correct": correct,
+        "total": total,
+        "total_tk": int(s["total_tk"]),
+        "think_tk": int(s["think_tk"]),
+        "resp_tk": int(s["resp_tk"]),
+    }
+
 # Batch commit size — flush results to DB every N samples to balance
 # live-progress visibility against SQLite write amplification.
 # Base value 5 keeps NIAHS (3 samples) and other small suites live; large
@@ -286,6 +366,48 @@ class BaseBenchmark(ABC):
                     self.db.commit()
 
         logger.info(f"Starting benchmark {run.benchmark_name} for model {model_name} from index {start_index}/{len(dataset)}")
+
+        # Seed the in-memory rolling display stats from already-committed
+        # rows so resume keeps absolute totals (new samples increment it).
+        # Single aggregate query (~1ms even at 10k rows); on failure poll
+        # just falls back to DB stats.
+        try:
+            from sqlalchemy import func as _sa_func, case as _sa_case, cast as _sa_cast
+            from sqlalchemy import Integer as _sa_Integer, Float as _sa_Float
+            agg = self.db.query(
+                _sa_func.count(Result.id).label("total"),
+                _sa_func.sum(_sa_cast(Result.correct, _sa_Integer)).label("correct"),
+                _sa_func.sum(_sa_case((Result.tps > 0, Result.tps), else_=0.0)).label("tps_sum"),
+                _sa_func.sum(_sa_case((Result.tps > 0, 1), else_=0)).label("tps_n"),
+                _sa_func.sum(_sa_case((Result.ttft > 0, Result.ttft), else_=0.0)).label("ttft_sum"),
+                _sa_func.sum(_sa_case((Result.ttft > 0, 1), else_=0)).label("ttft_n"),
+                _sa_func.sum(_sa_case(
+                    ((Result.ttft > 0) & (Result.prompt_tokens > 0),
+                     _sa_cast(Result.prompt_tokens, _sa_Float) / Result.ttft),
+                    else_=0.0)).label("pt_sum"),
+                _sa_func.sum(_sa_case(
+                    ((Result.ttft > 0) & (Result.prompt_tokens > 0), 1),
+                    else_=0)).label("pt_n"),
+                _sa_func.sum(_sa_func.coalesce(Result.thinking_tokens, 0)).label("think"),
+                _sa_func.sum(_sa_func.coalesce(Result.response_tokens, 0)).label("resp"),
+            ).filter(Result.run_id == run_id).first()
+            if agg is not None:
+                with _live_stats_lock:
+                    _live_stats[run_id] = {
+                        "total": int(agg.total or 0),
+                        "correct": int(agg.correct or 0),
+                        "tps_sum": float(agg.tps_sum or 0.0),
+                        "tps_n": int(agg.tps_n or 0),
+                        "ttft_sum": float(agg.ttft_sum or 0.0),
+                        "ttft_n": int(agg.ttft_n or 0),
+                        "prompt_tps_sum": float(agg.pt_sum or 0.0),
+                        "prompt_tps_n": int(agg.pt_n or 0),
+                        "think_tk": int(agg.think or 0),
+                        "resp_tk": int(agg.resp or 0),
+                        "total_tk": int((agg.think or 0) + (agg.resp or 0)),
+                    }
+        except Exception:
+            logger.debug("Live stats seeding failed for run %s", run_id, exc_info=True)
         return run, dataset, start_index, model_name, run_logger
 
     def _poll_run_status(self, run, run_logger, i: int, total: int,
@@ -342,6 +464,7 @@ class BaseBenchmark(ABC):
         run.current_index = i + 1
         self.db.commit()
         set_live_progress(run_id, i + 1)
+        update_live_stats(run_id, result_data)
 
     @staticmethod
     def _result_to_record(run_id: int, sample: Dict[str, Any], i: int,
@@ -422,6 +545,7 @@ class BaseBenchmark(ABC):
                 pass
             return "aborted"
         set_live_progress(run_id, i + 1)
+        update_live_stats(run_id, {"correct": False})
         return "continue"
 
     async def run_evaluation(self, run_id: int, params: Dict[str, Any]) -> None:
@@ -505,6 +629,7 @@ class BaseBenchmark(ABC):
                     consecutive_failures = 0
                     run.current_index = i + 1
                     set_live_progress(run_id, i + 1)
+                    update_live_stats(run_id, result_data)
 
                     # Adaptive flush: NIAHS (3 samples) and other tiny suites need
                     # per-sample visibility (otherwise RUNNING stays 0/3 until the end).
@@ -536,7 +661,16 @@ class BaseBenchmark(ABC):
             self.db.commit()
             run_logger.info("Completed successfully — %d samples.", len(dataset))
         finally:
+            try:
+                if run.status in ("COMPLETED", "FAILED", "HALTED"):
+                    from backend.ops.webhooks import fire_run_webhook
+                    fire_run_webhook(run_id, run.status, model_name,
+                                     run.benchmark_name, run.current_index,
+                                     len(dataset))
+            except Exception:
+                run_logger.debug("Completion webhook skipped (run row unreadable).", exc_info=True)
             clear_live_progress(run_id)
+            clear_live_stats(run_id)
             self.cleanup()
 
     @staticmethod

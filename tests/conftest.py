@@ -81,14 +81,54 @@ def _clean_test_db(_isolated_test_db):
 
 
 @pytest.fixture(autouse=True)
-def _preserve_docker_config():
-    """Preserve the real Docker configuration for tests.
+def _reset_process_globals():
+    """Reset process-global benchmark/run state before each test.
 
-    Code-execution benchmarks (HumanEval, BigCodeBench, LiveCodeBench,
-    Aider Polyglot) require Docker. Tests that exercise the
-    sandbox must use the real Docker path.
+    DB isolation (above) covers SQLite rows, but run progress, live-turn
+    slots, halt events, thread registry, batch markers, model-queue state,
+    EMA smoothing and telemetry history live in module globals and would
+    otherwise leak between tests (order-dependent failures). Dataset cache
+    is intentionally preserved (content-addressed, expensive to reload).
+    Run-slot semaphore is drained back to full capacity.
     """
+    from backend.ops import state as _state
+    from backend.benchmarks import base as _base
+    from backend.benchmarks import multi_turn_base as _mtb
+
+    with _state._telemetry_lock:
+        del _state.telemetry_history[:]
+    _state.clear_active_batch()
+    with _state._halt_events_lock:
+        _state._halt_events.clear()
+    with _state._active_threads_lock:
+        _state._active_threads.clear()
+    with _state._model_queue_lock:
+        _state._model_queue_state.update({
+            "queue_id": None, "models": [], "current_model_index": 0,
+            "total_models": 0, "benchmarks_per_model": {},
+            "current_benchmark": "", "status": "idle",
+            "message": "", "skip_model": False,
+        })
+    _state._ema_state["cpu"] = 0.0
+    _state._ema_state["gpu"] = 0.0
+    # Drain semaphore back to full capacity (a leaked acquire in a prior
+    # test would otherwise silently shrink capacity for the rest of session).
+    acquired = 0
+    while _state._run_slots.acquire(blocking=False):
+        acquired += 1
+    for _ in range(acquired):
+        _state._run_slots.release()
+    with _base._live_progress_lock:
+        _base._live_progress.clear()
+    with _base._live_stats_lock:
+        _base._live_stats.clear()
+    _mtb._live_turn_states.clear()
     yield
+    with _base._live_progress_lock:
+        _base._live_progress.clear()
+    with _base._live_stats_lock:
+        _base._live_stats.clear()
+    _mtb._live_turn_states.clear()
 
 
 @pytest.fixture
@@ -115,30 +155,6 @@ def mock_client():
 
 
 @pytest.fixture
-def mock_db():
-    """A mock SQLAlchemy session."""
-    db = MagicMock()
-    run = MagicMock()
-    run.id = 1
-    run.status = "PENDING"
-    run.model_name = "test-model"
-    run.benchmark_name = "TestBenchmark"
-    run.current_index = 0
-    run.total_samples = 5
-    run.get_parameters = MagicMock(return_value={
-        "temperature": 0.0,
-        "max_completion_tokens": 2048,
-        "system_prompt": "",
-        "api_key": "",
-        "quick_test": True,
-    })
-    run.set_parameters = MagicMock()
-    db.query.return_value.filter.return_value.first.return_value = run
-    db.query.return_value.filter.return_value.all.return_value = []
-    return db
-
-
-@pytest.fixture
 def sample_dataset():
     """A minimal dataset for testing."""
     return [
@@ -148,16 +164,13 @@ def sample_dataset():
 
 
 @pytest.fixture
-def tmp_dir():
+def tmp_dir(tmp_path):
     """A temporary directory that is cleaned up after the test."""
-    d = tempfile.mkdtemp(prefix="benchmax_test_")
-    yield d
-    import shutil
-    shutil.rmtree(d, ignore_errors=True)
+    yield str(tmp_path)
 
 
 @pytest.fixture
 def uuid_run_ids():
-    """Unique run IDs per test — avoids live-progress collisions under xdist."""
+    """Unique run IDs per test — avoids live-progress collisions."""
     import uuid
     return [int(uuid.uuid4().int % 10**9) for _ in range(4)]

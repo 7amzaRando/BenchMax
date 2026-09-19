@@ -127,13 +127,7 @@ PROVIDER_PRESETS = {
     "SiliconFlow":  {"url": "https://api.siliconflow.cn/v1",  "needs_key": True},
 }
 
-# Sandbox configuration for code execution isolation
-SANDBOX_ENABLED = True           # Enable/disable sandbox restrictions
-SANDBOX_MEMORY_LIMIT_MB = 256    # Memory limit per child process (MB)
-SANDBOX_CPU_TIME_SEC = 300       # CPU time limit per child process (seconds)
-SANDBOX_BLOCK_NETWORK = True     # Block network access in child processes
-SANDBOX_BLOCK_CHILD_PROCESSES = True  # Block child process creation (cmd.exe, powershell.exe, subprocess)
-SANDBOX_USE_APPCONTAINER = True  # Legacy — kept for compat, not used (Docker-only)
+# Sandbox configuration — Docker-only code execution (benchmax-sandbox image).
 SANDBOX_USE_DOCKER = True        # Docker-only sandbox (clear RuntimeError if Docker unavailable)
 
 

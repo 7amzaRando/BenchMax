@@ -155,7 +155,24 @@ async def test_telemetry(client):
 
 @pytest.mark.asyncio
 async def test_connect_refused(client):
-    resp = await client.post("/api/connect", json={"api_url": "http://127.0.0.1:19999/v1", "api_key": ""})
+    # No real socket: LMStudioClient._get_client() is patched to return a
+    # client whose transport raises ConnectError, so this never touches
+    # 127.0.0.1:19999. Intent preserved — a refused connection must surface
+    # as a "Connection failed" status (HTTP 200), not raise.
+    import httpx
+    from unittest.mock import patch
+    from backend.lm_studio.client import LMStudioClient
+
+    def _refused(request):
+        raise httpx.ConnectError("Connection refused (mocked, no real socket)", request=request)
+
+    def _fake_get_client(self):
+        if self._client is None:
+            self._client = httpx.AsyncClient(transport=httpx.MockTransport(_refused))
+        return self._client
+
+    with patch.object(LMStudioClient, "_get_client", _fake_get_client):
+        resp = await client.post("/api/connect", json={"api_url": "http://127.0.0.1:19999/v1", "api_key": ""})
     assert resp.status_code == 200
     data = resp.json()
     assert "status" in data

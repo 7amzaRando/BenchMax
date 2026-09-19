@@ -1,10 +1,7 @@
-import glob as glob_mod
 import json
 import logging
 import os
 import re
-import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import Dict, Any, List
@@ -13,21 +10,6 @@ from backend.benchmarks.base import BaseBenchmark, resolve_data_file
 from backend.sandbox.safe_executor import check_correctness_aider
 
 logger = logging.getLogger(__name__)
-
-RUNTIMES_DIR = Path(__file__).parents[2] / ".runtimes"
-RUNTIMES_EXISTS = RUNTIMES_DIR.exists()
-
-# Runtime paths — only valid when .runtimes/ is installed on host.
-# In Docker mode, these are not used (container has runtimes at system paths).
-GO_BIN = RUNTIMES_DIR / "go" / "go" / "bin" / "go.exe" if RUNTIMES_EXISTS else None
-RUST_DIR = RUNTIMES_DIR / "rust_standalone" / "rust-1.97.0-x86_64-pc-windows-msvc" if RUNTIMES_EXISTS else None
-RUSTC_BIN = RUST_DIR / "rustc" / "bin" if RUST_DIR else None
-CARGO_BIN = RUST_DIR / "cargo" / "bin" if RUST_DIR else None
-GCC_BIN = RUNTIMES_DIR / "w64devkit" / "w64devkit" / "bin" if RUNTIMES_EXISTS else None
-W64DEVKIT_ROOT = RUNTIMES_DIR / "w64devkit" if RUNTIMES_EXISTS else None
-CATCH2_INCLUDE = RUNTIMES_DIR / "include" if RUNTIMES_EXISTS else None
-JARS_DIR = RUNTIMES_DIR / "jars" if RUNTIMES_EXISTS else None
-NODE_MODULES = RUNTIMES_DIR / "node_pkg" / "node_modules" if RUNTIMES_EXISTS else None
 
 
 def _java_test_class(test_src_name: str) -> str:
@@ -51,132 +33,9 @@ def _cpp_test_rel(src_name: str, test_rel: str | None = None) -> str:
     return src_name + "_test.cpp"
 
 
-LANGUAGE_CONFIGS = {
-    "cpp": {
-        "test_cmd": None,
-        "run_test": lambda src_name, tmpdir: _run_cpp_test(src_name, tmpdir),
-    },
-    "go": {
-        "test_cmd": lambda src_name, tmpdir: [str(GO_BIN), "test", "./..."],
-    },
-    "java": {
-        "test_cmd": None,
-        "run_test": lambda src_name, tmpdir: _run_java_test(src_name, tmpdir),
-    },
-    "javascript": {
-        "test_cmd": lambda src_name, tmpdir: [
-            os.path.join(NODE_MODULES, ".bin", "jest.cmd"),
-            "--no-coverage",
-            "--runInBand",
-        ],
-        "env": {"NODE_PATH": str(NODE_MODULES)},
-    },
-    "python": {
-        "test_cmd": lambda src_name, tmpdir: [
-            sys.executable, "-m", "unittest", src_name.replace(os.sep, '.').replace(".py", ""),
-        ],
-    },
-    "rust": {
-        "test_cmd": lambda src_name, tmpdir: [str(CARGO_BIN / "cargo.exe"), "test", "--", "--test-threads=1"],
-    },
-}
-# Sorted language list for display
-SORTED_LANGUAGES = sorted(LANGUAGE_CONFIGS.keys())
-
-
-def _run_java_test(src_name: str, tmpdir: str) -> Dict[str, Any]:
-    classes_dir = os.path.join(tmpdir, "classes")
-    os.makedirs(classes_dir, exist_ok=True)
-    javac_cmd = "javac"
-    java_cmd = "java"
-    junit_jar = str(JARS_DIR / "junit-platform-console-standalone-1.11.4.jar")
-    assertj_jar = str(JARS_DIR / "assertj-core-3.27.3.jar")
-    sep = ";"
-
-    def run(cmd, timeout=30):
-        proc = None
-        try:
-            proc = subprocess.run(
-                cmd, cwd=tmpdir, capture_output=True, text=True,
-                encoding="utf-8", errors="replace", timeout=timeout,
-            )
-            return proc
-        except subprocess.TimeoutExpired:
-            if proc is not None:
-                proc.kill()
-                proc.wait()
-            return None
-        except Exception as e:
-            if proc is not None:
-                proc.kill()
-                proc.wait()
-            return type("R", (), {"returncode": -1, "stdout": "", "stderr": str(e)})()
-
-    src_files = glob_mod.glob(os.path.join(tmpdir, "src", "main", "java", "*.java"))
-    if not src_files:
-        return {"success": False, "stdout": "", "stderr": "", "error": "No Java source files found"}
-    r = run([javac_cmd, "-d", classes_dir] + src_files)
-    if r is None or r.returncode != 0:
-        return {"success": False, "stdout": r.stdout if r else "", "stderr": (r.stderr if r else "Compile timeout"), "error": f"javac main failed: {(r.stderr if r else '')[:500]}"}
-
-    test_files = glob_mod.glob(os.path.join(tmpdir, "src", "test", "java", "*.java"))
-    if not test_files:
-        return {"success": True, "stdout": "No tests found", "stderr": "", "error": None}
-    cp = f"{classes_dir}{sep}{junit_jar}{sep}{assertj_jar}"
-    r = run([javac_cmd, "-d", classes_dir, "-cp", cp] + test_files)
-    if r is None or r.returncode != 0:
-        return {"success": False, "stdout": r.stdout if r else "", "stderr": (r.stderr if r else "Test compile timeout"), "error": f"javac test failed: {(r.stderr if r else '')[:500]}"}
-
-    test_class = _java_test_class(src_name)
-    r = run([java_cmd, "-jar", junit_jar, "--classpath", f"{classes_dir}{sep}{junit_jar}{sep}{assertj_jar}", "--select-class", test_class], timeout=30)
-    if r is None:
-        return {"success": False, "stdout": "", "stderr": "", "error": "JUnit timeout (30s)"}
-    return {
-        "success": r.returncode == 0,
-        "stdout": (r.stdout or "")[:5000],
-        "stderr": (r.stderr or "")[:2000],
-        "error": None if r.returncode == 0 else f"JUnit exit {r.returncode}",
-    }
-
-
-def _run_cpp_test(src_name: str, tmpdir: str, test_rel: str | None = None) -> Dict[str, Any]:
-    gxx = str(GCC_BIN / "g++.exe")
-    test_file = _cpp_test_rel(src_name, test_rel)
-    test_path = os.path.join(tmpdir, test_file)
-    exe_path = os.path.join(tmpdir, "test.exe")
-
-    try:
-        cpp_env = os.environ.copy()
-        cpp_env["PATH"] = str(GCC_BIN) + os.pathsep + cpp_env.get("PATH", "")
-        r = subprocess.run(
-            [gxx, "-std=c++20", "-DEXERCISM_RUN_ALL_TESTS", "-DEXERCISM_TEST_SUITE", "-DCATCH_CONFIG_MAIN",
-             f"-I{W64DEVKIT_ROOT / 'include'}", f"-I{CATCH2_INCLUDE}",
-             "-o", exe_path, test_path],
-            cwd=tmpdir, capture_output=True, text=True, timeout=60, env=cpp_env,
-            encoding="utf-8", errors="replace",
-        )
-        if r.returncode != 0:
-            return {"success": False, "stdout": r.stdout, "stderr": r.stderr, "error": f"g++ compile failed: {r.stderr[:500]}"}
-    except subprocess.TimeoutExpired:
-        return {"success": False, "stdout": "", "stderr": "", "error": "g++ compile timeout (60s)"}
-    except Exception as e:
-        return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
-
-    try:
-        cpp_env = os.environ.copy()
-        cpp_env["PATH"] = str(GCC_BIN) + os.pathsep + cpp_env.get("PATH", "")
-        r = subprocess.run([exe_path], cwd=tmpdir, capture_output=True, text=True, timeout=30, env=cpp_env,
-            encoding="utf-8", errors="replace")
-        return {
-            "success": r.returncode == 0,
-            "stdout": (r.stdout or "")[:5000],
-            "stderr": (r.stderr or "")[:2000],
-            "error": None if r.returncode == 0 else f"Test exit {r.returncode}",
-        }
-    except subprocess.TimeoutExpired:
-        return {"success": False, "stdout": "", "stderr": "", "error": "C++ test timeout (30s)"}
-    except Exception as e:
-        return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
+# Languages covered by the Docker image (benchmax-sandbox has all toolchains
+# at system paths). Sorted for display.
+SORTED_LANGUAGES = sorted(["cpp", "go", "java", "javascript", "python", "rust"])
 
 
 def _write_temp_workspace(sample: Dict[str, Any], edited_code: str, tmpdir: str) -> None:
@@ -232,76 +91,6 @@ def _write_temp_workspace(sample: Dict[str, Any], edited_code: str, tmpdir: str)
         has_mod = any(k.endswith("go.mod") for k in (extra_files or {}))
         if not has_mod:
             write_file("go.mod", "module aider_polyglot\n\ngo 1.22\n")
-
-
-def _run_test(tmpdir: str, sample: Dict[str, Any]) -> Dict[str, Any]:
-    if not RUNTIMES_EXISTS:
-        return {"success": False, "stdout": "", "stderr": "",
-                "error": ".runtimes/ not installed — run scripts/setup_runtimes.py or use Docker sandbox"}
-    lang = sample["language"]
-    config = LANGUAGE_CONFIGS.get(lang)
-    if not config:
-        return {"success": False, "stdout": "", "stderr": "",
-                "error": f"Unknown language: {lang}"}
-
-    if "run_test" in config:
-        # Java test-class derivation needs the TEST path (source path gives
-        # wrong classes like TreeTest for PovTest.java); C++ needs the
-        # dataset test_path to respect nested layouts.
-        if lang == "java":
-            return config["run_test"](sample.get("test_path", sample["source_path"]), tmpdir)
-        if lang == "cpp":
-            return _run_cpp_test(sample["source_path"], tmpdir, sample.get("test_path"))
-        return config["run_test"](sample["source_path"], tmpdir)
-
-    test_name = sample["test_path"]
-    cmd = config["test_cmd"](test_name, tmpdir)
-    env = config.get("env", {})
-    full_env = os.environ.copy()
-    full_env.update(env)
-    if lang == "rust":
-        full_env["PATH"] = str(RUSTC_BIN) + os.pathsep + str(CARGO_BIN) + os.pathsep + full_env.get("PATH", "")
-        full_env["CARGO_HOME"] = os.path.join(tmpdir, ".cargo")
-    if lang == "go":
-        full_env["PATH"] = str(GO_BIN.parent) + os.pathsep + full_env.get("PATH", "")
-        full_env["GOCACHE"] = os.path.join(tmpdir, ".gocache")
-        full_env["GOPATH"] = os.path.join(tmpdir, ".gopath")
-    if lang == "cpp":
-        full_env["PATH"] = str(GCC_BIN) + os.pathsep + full_env.get("PATH", "")
-
-    logger.info("Running %s test: %s", lang, " ".join(str(c) for c in cmd))
-    proc = None
-    try:
-        proc = subprocess.run(
-            cmd, cwd=tmpdir, capture_output=True, text=True, timeout=120, env=full_env,
-            encoding="utf-8", errors="replace",
-        )
-        return {
-            "success": proc.returncode == 0,
-            "stdout": (proc.stdout or "")[:5000],
-            "stderr": (proc.stderr or "")[:2000],
-            "error": None,
-        }
-    except subprocess.TimeoutExpired:
-        if proc is not None:
-            proc.kill()
-            proc.wait()
-        return {"success": False, "stdout": "", "stderr": "", "error": "Test timed out (120s)"}
-    except Exception as e:
-        if proc is not None:
-            proc.kill()
-            proc.wait()
-        return {"success": False, "stdout": "", "stderr": "", "error": str(e)}
-
-
-def _run_test_in_sandbox(sample, edited_code, tmpdir):
-    """Standalone function for sandboxed aider test execution.
-    
-    Uses tmpdir created by parent process (check_correctness_aider).
-    Parent handles cleanup in its finally block — guaranteed even on kill.
-    """
-    _write_temp_workspace(sample, edited_code, tmpdir)
-    return _run_test(tmpdir, sample)
 
 
 class AiderPolyglotBenchmark(BaseBenchmark):
@@ -434,7 +223,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
 
         _t0 = time.monotonic()
         tr = check_correctness_aider(
-            _run_test_in_sandbox, sample, edited_code,
+            sample, edited_code,
             timeout=300,
         )
         _test_secs_1 = time.monotonic() - _t0
@@ -490,7 +279,7 @@ class AiderPolyglotBenchmark(BaseBenchmark):
 
         _t1 = time.monotonic()
         tr2 = check_correctness_aider(
-            _run_test_in_sandbox, sample, edited_code2,
+            sample, edited_code2,
             timeout=300,
         )
         _test_secs_2 = time.monotonic() - _t1

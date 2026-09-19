@@ -62,7 +62,7 @@ export default function GettingStartedPage() {
         <div className="rounded-xl border border-primary/25 bg-primary/[0.07] p-5">
           <h3 className="font-semibold">Option A — download the app (easiest, Windows)</h3>
           <p className="text-sm text-muted-fg mt-1 leading-relaxed">
-            Grab <code className="text-foreground">BenchMax.exe</code> (~170 MB, no install) from the{' '}
+            Grab <code className="text-foreground">BenchMax.exe</code> (~100 MB, no install) from the{' '}
             <a href={LATEST_RELEASE_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">latest GitHub Release</a>{' '}
             and run it. Then skip to <span className="text-foreground font-medium">First run</span> below.
           </p>
@@ -134,7 +134,7 @@ cd ..`}</CodeBlock>
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-xl bg-card border border-border p-5">
           <h3 className="font-semibold">Quick Test mode</h3>
-          <p className="text-sm text-muted-fg mt-1 leading-relaxed">Every benchmark has a <code className="text-primary">quick_test</code> toggle that loads a 5-sample mini dataset. Use it to validate the pipeline before burning through 12k MMLU-Pro items.</p>
+          <p className="text-sm text-muted-fg mt-1 leading-relaxed">Every benchmark has a <code className="text-primary">quick_test</code> toggle that loads a 5-sample mini dataset (6 for Aider Polyglot, one per language). Use it to validate the pipeline before burning through 12k MMLU-Pro items.</p>
         </div>
         <div className="rounded-xl bg-card border border-border p-5">
           <h3 className="font-semibold">Standalone .exe</h3>

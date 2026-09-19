@@ -1,10 +1,11 @@
 import { useCallback, useState, lazy, Suspense, type ReactNode } from 'react'
 import { BenchMaxProvider, useApp } from '@/lib/context'
-import { useRunPolling, useHealthPolling, useVisibilityPause, useHardwarePolling, useDarkModeSync, useTitleSync, useKeyboardShortcuts } from '@/lib/hooks'
+import { useRunPolling, useHealthPolling, useVisibilityPause, useHardwarePolling, useDarkModeSync, useTitleSync, useKeyboardShortcuts, useSettingsSync } from '@/lib/hooks'
 import Sidebar from '@/components/Sidebar'
 import TopBar from '@/components/TopBar'
 import ShortcutsDialog from '@/components/ShortcutsDialog'
 import ServerStatusBanner from '@/components/ServerStatusBanner'
+import UpdateBanner from '@/components/UpdateBanner'
 import LanLoginGate from '@/components/LanLoginGate'
 import Background from '@/components/ui/background'
 import * as api from '@/lib/api'
@@ -66,6 +67,7 @@ const RunBenchmarkTab = lazy(() => import('@/pages/RunBenchmarkTab'))
 const HardwareTab = lazy(() => import('@/pages/HardwareTab'))
 const HistoryResultsTab = lazy(() => import('@/pages/HistoryResultsTab'))
 const LeaderboardTab = lazy(() => import('@/pages/LeaderboardTab'))
+const SettingsTab = lazy(() => import('@/pages/SettingsTab'))
 
 function LoadingFallback({ children }: { children: ReactNode }) {
   return <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>}>{children}</Suspense>
@@ -83,6 +85,7 @@ function AppContent() {
   useTitleSync()
   useKeyboardShortcuts()
   useVisibilityPause()
+  useSettingsSync()
 
   const handleConnect = useCallback(async () => {
     const result = await api.connectLMStudio(state.connection.apiUrl, state.connection.apiKey)
@@ -116,6 +119,7 @@ function AppContent() {
           <TopBar onMenu={() => setSidebarOpen(v => !v)} />
 
           <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 lg:px-6 py-6">
+            <UpdateBanner />
             {/* quick status strip when running */}
             {state.activeRunId && state.runStatus?.run_progress && (
               <div className="mb-5 rounded-xl border bg-card shadow-sm px-4 py-3 flex items-center gap-3 text-xs">
@@ -143,11 +147,14 @@ function AppContent() {
             {state.activeTab === 'leaderboard' && (
               <TabErrorBoundary name="Leaderboard"><LoadingFallback><LeaderboardTab onDelete={() => dispatch({ type: 'INCREMENT_HISTORY_REFRESH' })} /></LoadingFallback></TabErrorBoundary>
             )}
+            {state.activeTab === 'settings' && (
+              <TabErrorBoundary name="Settings"><LoadingFallback><SettingsTab /></LoadingFallback></TabErrorBoundary>
+            )}
           </main>
 
           <footer className="border-t border-border/40 bg-card/30 backdrop-blur">
             <div className="max-w-[1280px] mx-auto px-4 lg:px-6 py-3 flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
-              <span className="font-mono font-medium tracking-tight">BenchMax <span className="text-foreground">v2.0.2</span></span>
+              <span className="font-mono font-medium tracking-tight">BenchMax <span className="text-foreground">v2.0.3</span></span>
               <span className="hidden sm:inline-flex items-center gap-2">
                 <span className="w-px h-3 bg-border hidden sm:block" />
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 font-medium">

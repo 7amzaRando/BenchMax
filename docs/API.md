@@ -1,6 +1,6 @@
 # BenchMax REST API
 
-52 route handlers under `/api/` — 50 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py` (48 unique paths: `/hf-token`, `/runs`, `/leaderboard`, and `/leaderboard/settings` each serve two methods). Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running.
+62 route handlers under `/api/` — 60 in `backend/api.py` plus `GET /api/health` and `POST /api/shutdown` in `backend/main.py` (57 unique paths; several serve two methods). Interactive docs (Swagger UI) at **http://localhost:8000/docs** when the server is running. MCP lives at `POST /mcp` (Streamable HTTP, outside the `/api` router).
 
 **Versioning:** `/api/*` is frozen for back-compat. The same router is also served under `/api/v1/*` (same paths, e.g. `GET /api/v1/poll`) so new clients can pin a versioned base path; future breaking changes go under `/api/v2`.
 
@@ -16,11 +16,18 @@
 | `POST` | `/api/model-queue/halt` | Halt the active model queue | — | `{status}` |
 | `POST` | `/api/model-queue/skip` | Skip current model in queue | — | `{status}` |
 | `GET` | `/api/run/{id}/status` | Live run status | — | `{run_id, status, accuracy, avg_tps, ...}` |
-| `GET` | `/api/poll` | Combined telemetry + progress | `?active_run_id=N` | `{telemetry, run_progress, batch_progress, live_turn}` |
+| `GET` | `/api/poll` | Combined telemetry + progress | `?active_run_id=N` | `{telemetry, run_progress, batch_progress, live_turn, active_runs}` |
 | `GET` | `/api/poll/stream` | Same as `/poll` as SSE stream (3s heartbeat) | `?active_run_id=N` | `text/event-stream` |
 | `POST` | `/api/run/{id}/pause` | Pause a run | — | `{status}` |
 | `POST` | `/api/run/{id}/resume` | Resume a run | `ResumeRequest` | `{status}` |
 | `POST` | `/api/run/{id}/halt` | Halt a run (cannot resume) | — | `{status}` |
+| `GET` | `/api/provider` | Saved default provider endpoint | — | `{url, set}` |
+| `POST` | `/api/provider` | Validate + probe + save default endpoint | `{url, api_key?}` (key probe-only) | `{url, reachable, latency_ms, models_loaded}` |
+| `GET` | `/api/provider/health` | Backend reachable? (`?api_url=` overrides default) | — | `{reachable, latency_ms, models_loaded, models}` |
+| `GET` | `/api/models` | Loaded model IDs (`?api_url=` overrides default) | — | `{url, models}` |
+| `POST` | `/api/webhooks` | Register run-completion webhook (HTTP 201) | `{url}` | `{id, url}` |
+| `GET` | `/api/webhooks` | List webhooks | — | `{webhooks}` |
+| `DELETE` | `/api/webhooks/{id}` | Delete a webhook | — | `{status}` |
 
 ## RunRequest / BatchRequest / ModelQueueRequest
 
@@ -43,6 +50,8 @@ All three share a `BaseRunParams` base:
 
 `BatchRequest` replaces `benchmark` with `benchmarks: ["HumanEval", "MMLU-Pro"]`.
 `ModelQueueRequest` adds `models: ["model-a", "model-b"]`.
+
+Omit `api_url` to use the saved default provider (`POST /api/provider`); omit `api_key` for local backends. Keys are never stored server-side.
 
 ## Data & Export
 
@@ -92,6 +101,7 @@ All three share a `BaseRunParams` base:
 | `GET` | `/api/health` | Health check |
 | `GET` | `/api/telemetry` | System telemetry snapshot |
 | `GET` | `/api/benchmarks` | List all benchmarks |
+| `GET` | `/api/version` | App version + GitHub-release update status (`?refresh=true` bypasses the 24h cache) |
 | `POST` | `/api/run/check` | Pre-flight dataset/runtime check |
 | `POST` | `/api/shutdown` | Shut down server (localhost only) |
 | `GET` | `/api/auth/status` | LAN gate state (open — backing for the login screen) |
@@ -109,7 +119,7 @@ All three share a `BaseRunParams` base:
 
 ## CLI Reference
 
-`cli.py` wraps every endpoint — 40 commands for scripting and agent automation:
+`cli.py` wraps every endpoint — 48 commands for scripting and agent automation:
 
 ```powershell
 py cli.py serve                                            # Start the server (auto-starts if not running)
@@ -160,7 +170,52 @@ py cli.py results --run-id 1 --json                        # Results as JSON
 | `models` | List loaded models |
 | `build-docker` | Build Docker sandbox image |
 | `docker-status` | Check Docker status |
+| `update-check --refresh` | Check GitHub releases for a newer BenchMax |
+| `install-mcp --client all` | Register BenchMax MCP in app configs (claude/opencode/cursor/vscode) |
+| `provider` | Show the saved default provider endpoint |
+| `provider-set --url URL` | Set the default provider endpoint (validated + probed) |
+| `provider-health` | Check the LLM backend is serving (no run burned) |
+| `webhook-add --url URL` | Register a run-completion webhook |
+| `webhooks` | List run-completion webhooks |
+| `webhook-delete --id ID` | Delete a run-completion webhook |
 
 **Global flags** (before subcommand): `--json` (machine-readable output), `--server URL` (override server address), `--verbose` (debug HTTP traffic on stderr), `--yes` (skip confirmation prompts).
+
+## Provider endpoints
+
+BenchMax keeps one server-side default LLM provider (`records/.provider.json`, URL only — API keys stay memory-only). Runs without an explicit `api_url` fall back to it, so an empty or schemeless URL can never reach httpx again:
+
+| Endpoint | What it does |
+|----------|-------------|
+| `GET /api/provider` | Show the saved default endpoint |
+| `POST /api/provider` | Validate + probe + save the default endpoint (`{url, api_key?}` — key is probe-only) |
+| `GET /api/provider/health` | Reachability + latency + loaded-model count (`?api_url=` overrides the default) |
+| `GET /api/models` | Model IDs loaded at the provider (`?api_url=` overrides the default) |
+
+## Completion webhooks
+
+Register an HTTP(S) URL once; every run that reaches COMPLETED/FAILED/HALTED fires one background JSON POST (`{event: "run.completed", run_id, status, model_name, benchmark_name, samples_done, total_samples}`) so agents don't poll:
+
+| Endpoint | What it does |
+|----------|-------------|
+| `POST /api/webhooks` | Register a webhook (`{url}` → `{id, url}`) |
+| `GET /api/webhooks` | List webhooks |
+| `DELETE /api/webhooks/{id}` | Delete a webhook |
+
+## MCP Server
+
+BenchMax speaks the Model Context Protocol two ways (16 tools: benchmarks/history/results/status/control/telemetry plus `set_endpoint`, `get_endpoint`, `list_models`, `check_endpoint_health`, `register_webhook`, `list_webhooks`, `delete_webhook`):
+
+- **Stdio** (same machine): `.venv\Scripts\python mcp_server.py` — point any MCP client at it.
+- **Remote** (LAN included): `http://127.0.0.1:8000/mcp` (Streamable HTTP, LAN clients need the Bearer token).
+
+One-command setup writes the entries for you:
+
+```powershell
+py cli.py install-mcp                      # stdio entries for all detected apps
+py cli.py install-mcp --client claude      # just Claude Desktop
+py cli.py install-mcp --remote             # remote /mcp URL entries instead
+py cli.py install-mcp --uninstall          # remove them again
+```
 
 See `AGENT_GUIDE.md` for detailed usage, examples, and agent workflows.

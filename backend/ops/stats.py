@@ -190,10 +190,19 @@ def _compute_run_progress(run, stats=None) -> dict:
     # Prefer the in-memory per-sample counter (fresher than the batched DB
     # commit) so live progress moves every sample, not every 5/25.
     try:
-        from backend.benchmarks.base import get_live_progress
+        from backend.benchmarks.base import (
+            get_live_progress,
+            get_live_stats,
+            live_stats_to_display,
+        )
         live = get_live_progress(run.id)
         if live is not None and live > current:
             current = live
+        # Rolling display stats: fresh accuracy/avgs without waiting for
+        # the DB flush. Seeded from committed rows at run start (resume-safe).
+        ls = get_live_stats(run.id)
+        if ls is not None and ls.get("total", 0) > 0:
+            stats = live_stats_to_display(ls)
     except Exception:
         logger.debug("Live progress lookup failed for run %s", run.id, exc_info=True)
     if stats is None:
@@ -380,6 +389,15 @@ def get_run_status(run_id: int) -> dict:
             )
         ).filter(Result.run_id == run_id).all()
         stats = _compute_result_stats(results)
+        # Live rolling stats (per-sample fresh) override DB aggregates while
+        # the run is active; falls back to DB once cleared at run end.
+        try:
+            from backend.benchmarks.base import get_live_stats as _gls2, live_stats_to_display as _ltd2
+            _ls2 = _gls2(run_id)
+            if _ls2 is not None and _ls2.get("total", 0) > 0:
+                stats = _ltd2(_ls2)
+        except Exception:
+            logger.debug("Live stats lookup failed for run %s", run_id, exc_info=True)
         rep_warnings = [r.error_message or "" for r in results if "Repetition" in (r.error_message or "")]
         safety_metrics = None
         if run.benchmark_name == "UncensorBench":
@@ -518,6 +536,7 @@ def build_poll_payload(result: dict):
         },
         "active_run_override": result["active_run_override"],
         "live_turn": result.get("live_turn"),
+        "active_runs": result.get("active_runs", []),
     }
 
 
@@ -550,6 +569,7 @@ def poll(active_run_id: int | None = None) -> dict:
     batch_total = 0
     batch_current_name = ""
     active_run_override = None
+    active_runs: list[dict] = []
 
     with _batch_lock:
         bid = _state._active_batch_id
@@ -593,8 +613,16 @@ def poll(active_run_id: int | None = None) -> dict:
                 rows = []
                 batch_run_ids = [r.id for r in runs]
                 batch_stats = _compute_batch_stats_sql(db, batch_run_ids)
+                try:
+                    from backend.benchmarks.base import get_live_stats as _gls, live_stats_to_display as _ltd
+                except Exception:
+                    _gls = None
                 for r in runs:
                     stats = batch_stats[r.id]
+                    if _gls is not None and r.status == "RUNNING":
+                        _ls = _gls(r.id)
+                        if _ls is not None and _ls.get("total", 0) > 0:
+                            stats = _ltd(_ls)
                     rows.append({
                         "Run ID": r.id,
                         "Benchmark": r.benchmark_name,
@@ -633,6 +661,22 @@ def poll(active_run_id: int | None = None) -> dict:
             else:
                 active_run_override = None
 
+        try:
+            for r in db.query(Run).filter(
+                Run.status.in_(["RUNNING", "PAUSED"])
+            ).order_by(Run.id.desc()).limit(10).all():
+                active_runs.append({
+                    "run_id": r.id,
+                    "model_name": r.model_name,
+                    "benchmark_name": r.benchmark_name,
+                    "status": r.status,
+                    "batch_id": r.batch_id,
+                    "current_index": r.current_index or 0,
+                    "total_samples": r.total_samples or 0,
+                })
+        except Exception:
+            active_runs = []
+
     # Live multi-turn progress (if any multi-turn benchmark is currently running)
     live_turn = None
     try:
@@ -658,4 +702,5 @@ def poll(active_run_id: int | None = None) -> dict:
         "batch_current_name": batch_current_name, "active_run_override": active_run_override,
         "metrics": metrics,
         "live_turn": live_turn,
+        "active_runs": active_runs,
     }

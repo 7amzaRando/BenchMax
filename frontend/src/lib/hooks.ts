@@ -15,6 +15,7 @@ export function useRunPolling() {
   const sparkDataRef = useRef(state.sparkData)
   const activeRunIdRef = useRef(activeRunId)
   const activeBatchIdRef = useRef(activeBatchId)
+  const runPollMsRef = useRef(state.settings.runPollMs)
 
   useEffect(() => {
     mountedRef.current = true
@@ -25,6 +26,7 @@ export function useRunPolling() {
     sparkDataRef.current = state.sparkData
     activeRunIdRef.current = activeRunId
     activeBatchIdRef.current = activeBatchId
+    runPollMsRef.current = Math.min(10000, Math.max(1000, state.settings.runPollMs || 3000))
   })
 
   useEffect(() => {
@@ -40,12 +42,28 @@ export function useRunPolling() {
       if (data.active_run_override != null && typeof data.active_run_override === 'number') {
         dispatch({ type: 'SET_ACTIVE_RUN_ID', payload: data.active_run_override })
       }
+      // Adopt externally-started runs (CLI/MCP/other browsers): when this
+      // client is idle but the server reports RUNNING/PAUSED runs, track the
+      // newest one so the Run tab shows live progress. Only adopts from idle
+      // to avoid stealing a run the user just started (last-writer-wins guard
+      // lives in the refs, updated every render).
+      const idleRun = activeRunIdRef.current
+      const idleBatch = activeBatchIdRef.current
+      const ext = (data as PollResponse).active_runs
+      if (!idleRun && !idleBatch && ext && ext.length > 0) {
+        const pick = ext.find(r => r.status === 'RUNNING') || ext[0]
+        if (pick && typeof pick.run_id === 'number') {
+          dispatch({ type: 'SET_ACTIVE_RUN_ID', payload: pick.run_id })
+          if (pick.batch_id) dispatch({ type: 'SET_ACTIVE_BATCH_ID', payload: pick.batch_id })
+        }
+      }
       const prevBatchId = prevBatchIdRef.current
       const curBatchId = activeBatchIdRef.current
       prevBatchIdRef.current = curBatchId
       if (data.run_progress?.status_md && /COMPLETED|FAILED|HALTED/.test(data.run_progress.status_md)) {
         if (!curBatchId) {
           dispatch({ type: 'SET_ACTIVE_RUN_ID', payload: null })
+          dispatch({ type: 'INCREMENT_HISTORY_REFRESH' })
         }
       }
       if (curBatchId && data.batch_progress) {
@@ -53,6 +71,7 @@ export function useRunPolling() {
         if (bp.completed != null && bp.total != null && bp.total > 0 && bp.completed >= bp.total) {
           dispatch({ type: 'SET_ACTIVE_RUN_ID', payload: null })
           dispatch({ type: 'SET_ACTIVE_BATCH_ID', payload: null })
+          dispatch({ type: 'INCREMENT_HISTORY_REFRESH' })
         }
       }
     }
@@ -66,22 +85,22 @@ export function useRunPolling() {
       pollInterval = setInterval(async () => {
         if (!mountedRef.current) return
         const curRunId = activeRunIdRef.current
-        const curBatchId = activeBatchIdRef.current
-        if (!curRunId && !curBatchId) return
+        // No early return when idle: the id-less poll carries active_runs
+        // so this client can discover CLI/MCP-started runs.
         try {
           const data = await api.poll(curRunId || undefined)
           handlePollData(data)
         } catch (err) {
           console.warn('Poll failed:', err)
         }
-      }, 3000)
+      }, runPollMsRef.current)
     }
 
     function startSSE() {
       if (es) { es.close(); es = null }
       const curRunId = activeRunIdRef.current
-      const curBatchId = activeBatchIdRef.current
-      if (!curRunId && !curBatchId) return
+      // SSE also connects when idle (no active_run_id query) — the stream
+      // payload includes active_runs for external-run discovery.
       try {
         es = new EventSource(api.pollStreamUrl(curRunId || undefined))
         es.onmessage = (ev) => {
@@ -112,7 +131,7 @@ export function useRunPolling() {
       if (document.hidden) {
         es?.close(); es = null
         if (pollInterval) { clearInterval(pollInterval); pollInterval = null }
-      } else if (useSSE && (activeRunIdRef.current || activeBatchIdRef.current)) {
+      } else if (useSSE) {
         if (pollInterval) { clearInterval(pollInterval); pollInterval = null }
         startSSE()
       }
@@ -139,7 +158,7 @@ export function useRunPolling() {
         return
       }
       lastRunId = curRun; lastBatchId = curBatch
-      if (!es && (curRun || curBatch) && !document.hidden) {
+      if (!es && !document.hidden) {
         startSSE()
       }
     }, 1000)
@@ -158,8 +177,9 @@ export function useRunPolling() {
  * Server health check polling — runs every 30s.
  */
 export function useHealthPolling() {
-  const { dispatch } = useApp()
+  const { state, dispatch } = useApp()
   const wasOnlineRef = useRef(true)
+  const healthPollMs = Math.min(120000, Math.max(15000, state.settings.healthPollMs || 30000))
 
   useEffect(() => {
     const check = async () => {
@@ -173,9 +193,9 @@ export function useHealthPolling() {
       }
     }
     check()
-    const interval = setInterval(check, 30000)
+    const interval = setInterval(check, healthPollMs)
     return () => clearInterval(interval)
-  }, [dispatch])
+  }, [dispatch, healthPollMs])
 }
 
 /**
@@ -217,6 +237,7 @@ export function useHardwarePolling() {
   const { state, dispatch } = useApp()
   const pausedRef = useRef(state.telemetryPaused)
   const mountedRef = useRef(true)
+  const hardwarePollMs = Math.min(30000, Math.max(1000, state.settings.hardwarePollMs || 3000))
 
   useEffect(() => { pausedRef.current = state.telemetryPaused }, [state.telemetryPaused])
   useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
@@ -244,9 +265,9 @@ export function useHardwarePolling() {
       } catch { /* ignore */ }
     }
     tick()
-    const id = setInterval(tick, 3000)
+    const id = setInterval(tick, hardwarePollMs)
     return () => clearInterval(id)
-  }, [dispatch])
+  }, [dispatch, hardwarePollMs])
 }
 
 /**
@@ -264,6 +285,20 @@ export function useDarkModeSync() {
     }
     localStorage.setItem('benchmax-theme-dark', String(state.darkMode))
   }, [state.darkMode])
+}
+
+/**
+ * Settings persistence — writes state.settings to localStorage on change.
+ * Secrets are never part of settings (keys stay memory- or server-side).
+ */
+export function useSettingsSync() {
+  const { state } = useApp()
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('benchmax-settings', JSON.stringify(state.settings))
+    } catch { /* storage full or unavailable — settings just won't persist */ }
+  }, [state.settings])
 }
 
 /**
@@ -293,9 +328,9 @@ export function useKeyboardShortcuts() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
 
-      if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
+      if (e.ctrlKey && e.key >= '1' && e.key <= '6') {
         e.preventDefault()
-        const tabs = ['connection', 'run', 'hardware', 'history', 'leaderboard']
+        const tabs = ['connection', 'run', 'hardware', 'history', 'leaderboard', 'settings']
         dispatch({ type: 'SET_ACTIVE_TAB', payload: tabs[parseInt(e.key) - 1] })
       }
       if (e.key === '?') {

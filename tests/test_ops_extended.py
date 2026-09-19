@@ -239,3 +239,77 @@ class TestClientExceptionSample:
         with pytest.raises(RuntimeError, match="boom"):
             asyncio.run(bench.evaluate_sample(
                 {"task_id": "a/0", "problem": "q", "answer": "42"}, {}, "m"))
+
+
+class TestExportBranches:
+    def test_export_dataframe_json_branch(self):
+        import os
+        import pandas as pd
+        from backend.ops.exports import _export_dataframe
+        df = pd.DataFrame([{"a": 1, "b": "x"}])
+        path, msg = _export_dataframe(df, "probe", "JSON")
+        try:
+            assert path is not None and path.endswith(".json")
+            assert os.path.getsize(path) > 0
+        finally:
+            if path and os.path.exists(path):
+                os.remove(path)
+
+    def test_export_dataframe_xlsx_branch(self):
+        import os
+        import pandas as pd
+        from backend.ops.exports import _export_dataframe
+        df = pd.DataFrame([{"a": 1, "b": "x"}])
+        path, msg = _export_dataframe(df, "probe", "XLSX")
+        try:
+            assert path is not None and path.endswith(".xlsx")
+            assert os.path.getsize(path) > 0
+        finally:
+            if path and os.path.exists(path):
+                os.remove(path)
+
+    def test_export_file_or_404_empty_raises_404(self):
+        from fastapi import HTTPException
+        from backend.api import _export_file_or_404
+        with pytest.raises(HTTPException) as exc:
+            _export_file_or_404(None, "No results to export.", "CSV")
+        assert exc.value.status_code == 404
+
+    def test_run_markdown_has_configuration_and_samples(self):
+        import os
+        from backend.operations import export_run_markdown
+        from backend.database import Result, get_db
+        rid = _seed_run(status="COMPLETED")
+        with get_db() as db:
+            db.add(Result(run_id=rid, task_id="t/0", prompt="q",
+                          raw_response="B", correct=True,
+                          elapsed_time=1.0, tps=10.0, ttft=0.2,
+                          thinking_tokens=4, response_tokens=6, prompt_tokens=10))
+            db.commit()
+        path, _ = export_run_markdown(str(rid))
+        try:
+            assert path is not None
+            with open(path, encoding="utf-8") as f:
+                content = f.read()
+            assert "## Configuration" in content
+            assert "## All Samples" in content
+        finally:
+            if path and os.path.exists(path):
+                os.remove(path)
+
+
+class TestDatasetInstallPaths:
+    def test_install_unknown_dataset_errors_without_network(self):
+        """Unknown benchmark name errors out before any subprocess/network call."""
+        from backend.ops import datasets as dsmod
+        with patch.object(dsmod.subprocess, "run",
+                          side_effect=AssertionError("must not hit subprocess")):
+            msg = asyncio.run(dsmod.install_dataset("NoSuchBench"))
+        assert "No dataset entry" in msg
+
+    def test_hf_token_roundtrip(self, tmp_path):
+        from backend.ops import datasets as dsmod
+        fake = tmp_path / ".hf_token"
+        with patch.object(dsmod, "HF_TOKEN_FILE", fake):
+            assert dsmod._save_hf_token("tok123") == "Token saved."
+            assert dsmod._load_hf_token() == "tok123"

@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Container, Shield, BarChart3, Cpu, Zap, GitBranch, Terminal, Trophy, ArrowUpRight, Layers, Gauge } from 'lucide-react'
+import { Container, Shield, BarChart3, Cpu, Zap, GitBranch, Terminal, Trophy, ArrowUpRight, Layers, Gauge, Settings, Bell, Plug } from 'lucide-react'
 import Card from '@/components/shared/Card'
 import Badge from '@/components/shared/Badge'
 import GradientText from '@/components/shared/GradientText'
@@ -106,7 +106,7 @@ const SECTIONS = [
     description: 'Keep your best scores, share them online if you like, and export any result for reports or spreadsheets.',
     highlights: [
       'Local leaderboard, with optional online sync',
-      'Export runs, batches, or history as CSV, JSON, or Markdown',
+      'Export runs, batches, or history as CSV, JSON, Excel, or Markdown',
       'Compare two runs question by question',
       'Add your own notes to any run',
     ],
@@ -123,6 +123,39 @@ const SECTIONS = [
     ],
     link: '/docs/cli-reference/',
     linkText: 'CLI Reference',
+  },
+  {
+    icon: Plug,
+    title: 'AI tools can talk to BenchMax',
+    description: 'BenchMax speaks the Model Context Protocol (MCP), so tools like Claude, OpenCode, Cursor, and VS Code can list benchmarks, start runs, and read results directly.',
+    highlights: [
+      '16 tools: list, run, status, control, results, history, compare, telemetry',
+      'One-command install: py cli.py install-mcp --client claude',
+      'Works via stdio or Streamable HTTP',
+      'Settings tab shows live status with config snippets for each app',
+    ],
+  },
+  {
+    icon: Settings,
+    title: 'Settings for every run',
+    description: 'A dedicated Settings tab holds run defaults, update preferences, and connection settings. Set once, and every new run starts with your values.',
+    highlights: [
+      'Run defaults: temperature, max tokens, system prompt, quick-test toggle',
+      'Loop detection and NIAHS context length defaults',
+      'Provider URL and telemetry refresh intervals',
+      'Theme, LAN password, and stored API tokens',
+    ],
+  },
+  {
+    icon: Bell,
+    title: 'Never miss an update',
+    description: 'BenchMax checks GitHub for new releases once a day. When a newer version exists, a small banner appears with a Download button and release notes.',
+    highlights: [
+      'Automatic daily check (can be turned off in Settings)',
+      'One-click download from the banner',
+      'Manual check via Settings or CLI (py cli.py update-check)',
+      'Per-version dismiss so you are not nagged about old releases',
+    ],
   },
 ]
 

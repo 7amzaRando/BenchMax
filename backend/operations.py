@@ -116,12 +116,32 @@ from backend.ops.exports import (  # noqa: E402,F401
     build_trusted_card,
     generate_diff,
 )
+from backend.ops.update import (  # noqa: E402,F401
+    get_version_info,
+    clear_version_cache,
+    is_newer,
+    get_mcp_info,
+    install_mcp_configs,
+    MCP_CLIENTS,
+)
+from backend.ops.webhooks import (  # noqa: E402,F401
+    register_webhook,
+    list_webhooks,
+    delete_webhook,
+    fire_run_webhook,
+)
 from backend.ops.datasets import (  # noqa: E402,F401
     _dataset_scan_cache,
     _dataset_scan_cache_time,
     _DATASET_SCAN_CACHE_TTL,
     HF_TOKEN_FILE,
     LB_SETTINGS_FILE,
+    normalize_provider_url,
+    get_default_provider,
+    set_default_provider,
+    resolve_api_url,
+    check_provider_health,
+    list_provider_models,
     _dataset_files,
     _docker_runtime_issues,
     check_benchmark_readiness,
@@ -154,6 +174,11 @@ __all__ = [
     "export_leaderboard", "export_comparison", "export_run_markdown", "export_all_history_markdown",
     "delete_runs", "delete_leaderboard_entry", "clear_all_history",
     "install_dataset", "install_all_missing", "build_docker_image", "get_docker_status",
+    "normalize_provider_url", "get_default_provider", "set_default_provider",
+    "resolve_api_url", "check_provider_health", "list_provider_models",
+    "register_webhook", "list_webhooks", "delete_webhook", "fire_run_webhook",
     "save_lb_api_key", "load_lb_settings", "sync_to_online_leaderboard",
     "get_run_status", "get_run_meta", "update_run_notes", "get_depth_results", "build_poll_payload",
+    "get_version_info", "clear_version_cache", "is_newer", "get_mcp_info",
+    "install_mcp_configs", "MCP_CLIENTS",
 ]

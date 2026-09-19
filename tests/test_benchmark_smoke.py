@@ -45,3 +45,14 @@ class TestMiniDatasets:
         # Every sample must carry some task identifier
         assert any(k in first for k in (
             "task_id", "question_id", "key", "id", "problem_id", "name")), first.keys()
+
+
+class TestRealDbConstruction:
+    def test_aime_constructs_with_real_session(self):
+        """Prove a benchmark builds against a real DB session (not just MagicMock)."""
+        from backend.benchmarks.aime import AIMEBenchmark
+        from backend.database import get_db
+        with get_db() as db:
+            bench = AIMEBenchmark(db, MagicMock(), quick_test=True)
+            ds = bench.load_dataset()
+            assert isinstance(ds, list) and len(ds) > 0

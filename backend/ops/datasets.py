@@ -1,5 +1,6 @@
 """Dataset scan/install, provider connect, secrets, Docker status."""
 
+import json
 import logging
 import os
 import subprocess
@@ -229,6 +230,124 @@ async def connect_lm_studio(api_url: str, api_key: str = "") -> tuple[str, pd.Da
         choices = []
 
     return status, df, choices, metadata
+
+
+PROVIDER_FILE = ROOT / "records" / ".provider.json"
+DEFAULT_API_URL = "http://127.0.0.1:1234/v1"
+
+
+def normalize_provider_url(raw: str) -> str:
+    """Clean an LLM-provider base URL. Prepends http:// when the scheme is
+    missing (the classic agent mistake that surfaces later as httpx
+    "Request URL is missing an 'http://' or 'https://' protocol").
+
+    Raises:
+        ValueError: when the result still has no http(s) scheme or no host.
+    """
+    from urllib.parse import urlparse
+    url = (raw or "").strip().rstrip("/")
+    if url and "://" not in url:
+        url = "http://" + url
+    host = urlparse(url).hostname or ""
+
+    def _host_ok(h: str) -> bool:
+        if h in ("localhost",):
+            return True
+        if "." in h or h.startswith("["):
+            return True
+        try:
+            import ipaddress
+            ipaddress.ip_address(h)
+            return True
+        except ValueError:
+            return False
+
+    if urlparse(url).scheme not in ("http", "https") or not _host_ok(host):
+        raise ValueError(
+            f"Bad provider URL {raw!r} — use http(s)://host[:port][/v1] "
+            "(e.g. http://127.0.0.1:1234/v1)."
+        )
+    return url
+
+
+def get_default_provider() -> dict:
+    """Server-side default provider. URL only — api keys are memory-only
+    by security policy and are never persisted."""
+    url = ""
+    try:
+        if PROVIDER_FILE.exists():
+            url = (json.loads(PROVIDER_FILE.read_text(encoding="utf-8")) or {}).get("url", "") or ""
+    except Exception:
+        logger.warning(f"Failed to read provider file {PROVIDER_FILE}", exc_info=True)
+    return {"url": url, "set": bool(url)}
+
+
+async def set_default_provider(url: str) -> dict:
+    """Validate, probe, and persist the default provider URL (key never stored)."""
+    normalized = normalize_provider_url(url)
+    os.makedirs(PROVIDER_FILE.parent, exist_ok=True)
+    PROVIDER_FILE.write_text(json.dumps({"url": normalized}), encoding="utf-8")
+    _harden_secret_file(PROVIDER_FILE)
+    try:
+        health = await check_provider_health(normalized)
+    except Exception:
+        logger.warning("Provider probe after save failed", exc_info=True)
+        health = {"reachable": False, "latency_ms": None, "models_loaded": 0, "models": []}
+    return {"url": normalized, **health}
+
+
+def resolve_api_url(explicit: str = "") -> str:
+    """Run-time provider URL: explicit per-run override, else the saved
+    default, else the LM Studio default. Never returns a bare empty string,
+    so httpx never sees a schemeless URL."""
+    if (explicit or "").strip():
+        return explicit.strip()
+    return get_default_provider()["url"] or DEFAULT_API_URL
+
+
+async def check_provider_health(api_url: str = "", timeout: float = 10.0) -> dict:
+    """Is the LLM backend serving? Times GET <url>/models and counts models.
+
+    Answers the "is LM Studio actually up" question without burning a run.
+    Never raises — unreachable backends yield reachable=False + error text.
+    """
+    import time as _time
+    url = resolve_api_url(api_url)
+    start = _time.monotonic()
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as c:
+            r = await c.get(f"{url.rstrip('/')}/models")
+            r.raise_for_status()
+            data = r.json()
+        models = [m.get("id", "?") for m in data.get("data", []) if isinstance(m, dict)]
+        return {"url": url, "reachable": True,
+                "latency_ms": round((_time.monotonic() - start) * 1000),
+                "models_loaded": len(models), "models": models}
+    except Exception as e:
+        return {"url": url, "reachable": False,
+                "latency_ms": round((_time.monotonic() - start) * 1000),
+                "models_loaded": 0, "models": [],
+                "error": f"{type(e).__name__}: {e}"[:300]}
+
+
+async def list_provider_models(api_url: str = "") -> dict:
+    """Loaded-model IDs at the provider (default or explicit URL).
+
+    Never raises — a dead backend yields an empty list plus error text,
+    so agents can branch on it instead of catching HTTP 500s.
+    """
+    url = resolve_api_url(api_url)
+    try:
+        client = _make_client(url, "")
+        try:
+            models_raw = await client.get_loaded_models()
+        finally:
+            await client.aclose()
+    except Exception as e:
+        return {"url": url, "models": [],
+                "error": f"{type(e).__name__}: {e}"[:300]}
+    ids = [m.get("id", f"model_{i}") for i, m in enumerate(models_raw or [])]
+    return {"url": url, "models": ids}
 
 
 async def install_dataset(bench_name: str, hf_token: str = "") -> str:

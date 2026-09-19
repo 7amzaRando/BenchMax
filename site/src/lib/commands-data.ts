@@ -28,6 +28,21 @@ export const commandCategories: CommandCategory[] = [
         description: 'List currently loaded models in LM Studio.',
         example: 'py cli.py models',
       },
+      {
+        name: 'provider',
+        description: 'Show the saved default provider endpoint.',
+        example: 'py cli.py provider',
+      },
+      {
+        name: 'provider-set',
+        description: 'Set the default provider endpoint (validated and probed).',
+        example: 'py cli.py provider-set --url http://127.0.0.1:1234/v1',
+      },
+      {
+        name: 'provider-health',
+        description: 'Check the LLM backend is serving before burning a run.',
+        example: 'py cli.py provider-health',
+      },
     ],
   },
   {
@@ -267,6 +282,31 @@ export const commandCategories: CommandCategory[] = [
         name: 'shutdown',
         description: 'Shut down the running server.',
         example: 'py cli.py shutdown --yes',
+      },
+      {
+        name: 'install-mcp',
+        description: 'Register BenchMax MCP in app configs (Claude, OpenCode, Cursor, VS Code).',
+        example: 'py cli.py install-mcp --client all',
+      },
+      {
+        name: 'update-check',
+        description: 'Check for new BenchMax releases on GitHub.',
+        example: 'py cli.py update-check',
+      },
+      {
+        name: 'webhook-add',
+        description: 'Notify a URL whenever a run finishes.',
+        example: 'py cli.py webhook-add --url https://my-agent.example.com/benchmax-hook',
+      },
+      {
+        name: 'webhooks',
+        description: 'List run-completion webhooks.',
+        example: 'py cli.py webhooks',
+      },
+      {
+        name: 'webhook-delete',
+        description: 'Delete a run-completion webhook.',
+        example: 'py cli.py webhook-delete --id abc123',
       },
     ],
   },

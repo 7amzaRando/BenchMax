@@ -257,6 +257,7 @@ export interface PollResponse {
   };
   active_run_override?: number | null;
   live_turn?: { run_id: number; turn: number; max_turns: number; elapsed: number; ts: number } | null;
+  active_runs?: { run_id: number; model_name: string; benchmark_name: string; status: string; batch_id: string | null; current_index: number; total_samples: number }[];
 }
 
 export function poll(activeRunId?: number) {
@@ -561,6 +562,43 @@ export function checkRunReadiness(params: { benchmarks: string[]; quick_test?: b
     method: 'POST',
     body: JSON.stringify({ benchmarks: params.benchmarks, quick_test: params.quick_test }),
   })
+}
+
+export interface VersionInfo {
+  current: string
+  latest: string | null
+  update_available: boolean
+  html_url: string | null
+  published_at: string | null
+  name: string | null
+  notes_excerpt: string | null
+  download_url: string | null
+  asset_name: string | null
+  asset_size: number | null
+  checked_at: number
+}
+
+export function getVersion(refresh = false) {
+  return fetchJson<VersionInfo>(refresh ? '/version?refresh=true' : '/version');
+}
+
+export interface McpInfo {
+  mounted: boolean
+  endpoint: string
+  tools: string[]
+  stdio_command: string[]
+  install_command: string
+}
+
+export function getMcpInfo() {
+  return fetchJson<McpInfo>('/mcp/info');
+}
+
+export function installMcp(body: { clients?: string[]; url?: string; remote?: boolean; uninstall?: boolean }) {
+  return fetchJson<{ status: string; action: string; configs: Record<string, string> }>('/mcp/install', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 

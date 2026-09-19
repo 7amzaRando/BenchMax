@@ -10,6 +10,27 @@ export interface ConnectionState {
   metadata: Record<string, ModelMetadata>
 }
 
+export interface RunDefaults {
+  temperature: number
+  useCustomTemp: boolean
+  maxTokens: number
+  systemPrompt: string
+  quickTest: boolean
+  disableRepDetection: boolean
+  contextLength: number
+}
+
+export interface Settings {
+  runDefaults: RunDefaults
+  exportFormat: 'CSV' | 'JSON' | 'XLSX'
+  runPollMs: number
+  hardwarePollMs: number
+  healthPollMs: number
+  providerUrl: string
+  telemetryPausedByDefault: boolean
+  updateCheckEnabled: boolean
+}
+
 export interface BenchMaxState {
   activeTab: string
   activeRunId: number | null
@@ -25,6 +46,7 @@ export interface BenchMaxState {
   pendingRerun: { model: string; benchmark: string; params: Record<string, unknown> } | null
   historyRefreshKey: number
   showShortcuts: boolean
+  settings: Settings
 }
 
 export type Action =
@@ -42,6 +64,8 @@ export type Action =
   | { type: 'SET_PENDING_RERUN'; payload: { model: string; benchmark: string; params: Record<string, unknown> } | null }
   | { type: 'INCREMENT_HISTORY_REFRESH' }
   | { type: 'SET_SHOW_SHORTCUTS'; payload: boolean }
+  | { type: 'SET_SETTINGS'; payload: Omit<Partial<Settings>, 'runDefaults'> & { runDefaults?: Partial<RunDefaults> } }
+  | { type: 'RESET_SETTINGS' }
 
 const defaultConnection: ConnectionState = {
   apiUrl: 'http://127.0.0.1:1234/v1',
@@ -52,14 +76,53 @@ const defaultConnection: ConnectionState = {
   metadata: {},
 }
 
+const SETTINGS_KEY = 'benchmax-settings'
+
+export const DEFAULT_SETTINGS: Settings = {
+  runDefaults: {
+    temperature: 0.0,
+    useCustomTemp: false,
+    maxTokens: 8192,
+    systemPrompt: 'You are a precise AI assistant. Follow instructions exactly. Give direct, concise answers without preamble or explanation.',
+    quickTest: false,
+    disableRepDetection: false,
+    contextLength: 65536,
+  },
+  exportFormat: 'CSV',
+  runPollMs: 3000,
+  hardwarePollMs: 3000,
+  healthPollMs: 30000,
+  providerUrl: 'http://127.0.0.1:1234/v1',
+  telemetryPausedByDefault: false,
+  updateCheckEnabled: true,
+}
+
+function loadSettings(): Settings {
+  if (typeof window === 'undefined') return DEFAULT_SETTINGS
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    if (!raw) return DEFAULT_SETTINGS
+    const parsed = JSON.parse(raw) as Partial<Settings>
+    return {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      runDefaults: { ...DEFAULT_SETTINGS.runDefaults, ...(parsed.runDefaults || {}) },
+    }
+  } catch {
+    return DEFAULT_SETTINGS
+  }
+}
+
+const loadedSettings = loadSettings()
+
 const initialState: BenchMaxState = {
   activeTab: 'connection',
   activeRunId: null,
   activeBatchId: null,
-  connection: defaultConnection,
+  connection: { ...defaultConnection, apiUrl: loadedSettings.providerUrl || defaultConnection.apiUrl },
   runStatus: null,
   darkMode: typeof window !== 'undefined' ? localStorage.getItem('benchmax-theme-dark') !== 'false' : true,
-  telemetryPaused: false,
+  telemetryPaused: loadedSettings.telemetryPausedByDefault,
   serverOnline: true,
   sparkData: [],
   hardwareHistory: [],
@@ -67,6 +130,7 @@ const initialState: BenchMaxState = {
   pendingRerun: null,
   historyRefreshKey: 0,
   showShortcuts: false,
+  settings: loadedSettings,
 }
 
 function reducer(state: BenchMaxState, action: Action): BenchMaxState {
@@ -103,6 +167,19 @@ function reducer(state: BenchMaxState, action: Action): BenchMaxState {
       return { ...state, historyRefreshKey: state.historyRefreshKey + 1 }
     case 'SET_SHOW_SHORTCUTS':
       return { ...state, showShortcuts: action.payload }
+    case 'SET_SETTINGS': {
+      const { runDefaults, ...rest } = action.payload
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ...rest,
+          runDefaults: { ...state.settings.runDefaults, ...(runDefaults || {}) },
+        },
+      }
+    }
+    case 'RESET_SETTINGS':
+      return { ...state, settings: DEFAULT_SETTINGS }
     default:
       return state
   }

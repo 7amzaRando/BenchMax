@@ -118,7 +118,7 @@ export default function HomeClient() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-semibold text-primary">
                   <Sparkles className="w-3.5 h-3.5" /> Free & open-source · AGPL v3
                 </span>
-                <span className="inline-flex items-center rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1 text-xs font-medium text-muted-fg">v2.0.1 · 30 benchmarks</span>
+                <span className="inline-flex items-center rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1 text-xs font-medium text-muted-fg">v2.0.3 · 30 benchmarks</span>
               </motion.div>
 
               <motion.h1 variants={fade} transition={{ duration: 0.55, delay: 0.05 }} className="text-[40px] sm:text-[52px] lg:text-[58px] font-extrabold leading-[0.95] tracking-[-0.03em]">
@@ -145,7 +145,7 @@ export default function HomeClient() {
                 </a>
               </motion.div>
               <motion.p variants={fade} transition={{ duration: 0.55, delay: 0.2 }} className="mt-3 text-xs text-muted-fg">
-                Free download from GitHub Releases (BenchMax.exe, ~170 MB, no install). Or build from source below.
+                Free download from GitHub Releases (BenchMax.exe, ~100 MB, no install). Or build from source below.
               </motion.p>
 
               <motion.div variants={fade} transition={{ duration: 0.55, delay: 0.22 }} className="mt-6 flex flex-wrap gap-2 text-xs text-muted-fg">

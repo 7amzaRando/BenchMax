@@ -15,22 +15,23 @@ const CATEGORY_ORDER = ["All","Coding","Reasoning","Knowledge","Instruction","To
 
 export default function RunBenchmarkTab() {
   const { state, dispatch } = useApp()
-  const { connection, activeRunId, activeBatchId, runStatus, pendingRerun, activeTab } = state
+  const { connection, activeRunId, activeBatchId, runStatus, pendingRerun, activeTab, settings } = state
   const { toast } = useToast()
   const queueNotifiedRef = useRef(false)
   const [benchmarks, setBenchmarks] = useState<BenchMeta[]>([])
   const [selectedBenchmark, setSelectedBenchmark] = useState('')
-  const [quickTest, setQuickTest] = useState(false)
-  const [temperature, setTemperature] = useState(0.0)
-  const [useCustomTemp, setUseCustomTemp] = useState(false)
-  const [maxTokens, setMaxTokens] = useState(8192)
-  const [systemPrompt, setSystemPrompt] = useState("You are a precise AI assistant. Follow instructions exactly. Give direct, concise answers without preamble or explanation.")
+  // Run defaults come from Settings (initial values only — per-run edits stay local).
+  const [quickTest, setQuickTest] = useState(() => settings.runDefaults.quickTest)
+  const [temperature, setTemperature] = useState(() => settings.runDefaults.temperature)
+  const [useCustomTemp, setUseCustomTemp] = useState(() => settings.runDefaults.useCustomTemp)
+  const [maxTokens, setMaxTokens] = useState(() => settings.runDefaults.maxTokens)
+  const [systemPrompt, setSystemPrompt] = useState(() => settings.runDefaults.systemPrompt)
   const [selectedBatchBenches, setSelectedBatchBenches] = useState<string[]>([])
   const [runMsg, setRunMsg] = useState('')
   const [contextWindow, setContextWindow] = useState('N/A')
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [disableRepDetection, setDisableRepDetection] = useState(false)
-  const [contextLength, setContextLength] = useState(65536)
+  const [disableRepDetection, setDisableRepDetection] = useState(() => settings.runDefaults.disableRepDetection)
+  const [contextLength, setContextLength] = useState(() => settings.runDefaults.contextLength)
   const [mode, setMode] = useState<'single' | 'batch' | 'model-queue'>('single')
   const [benchSearch, setBenchSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
